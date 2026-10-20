@@ -54,7 +54,7 @@ class _SchoolLookupScreenState extends State<SchoolLookupScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Gunakan 10.0.2.2:8001 untuk Emulator Android atau IP Wi-Fi laptop untuk Device Fisik.',
+              'Aplikasi secara bawaan terhubung ke Server Resmi Vintech Cloud (https://school.vintech.cloud). Anda juga dapat menggantinya untuk pengujian lokal.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: AppTheme.textMuted,
@@ -65,27 +65,30 @@ class _SchoolLookupScreenState extends State<SchoolLookupScreen> {
               controller: serverController,
               decoration: const InputDecoration(
                 labelText: 'Backend Base URL',
-                hintText: 'http://10.0.2.2:8001',
+                hintText: 'https://school.vintech.cloud',
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  flex: 3,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.cloud_done_rounded, size: 16),
                     onPressed: () {
-                      serverController.text = 'http://10.0.2.2:8001';
+                      serverController.text = 'https://school.vintech.cloud';
                     },
-                    child: const Text('Emulator'),
+                    label: const Text('Resmi (Cloud)'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
+                  flex: 2,
                   child: OutlinedButton(
                     onPressed: () {
-                      serverController.text = 'http://127.0.0.1:8001';
+                      serverController.text = 'http://10.0.2.2:8001';
                     },
-                    child: const Text('Localhost'),
+                    child: const Text('Lokal AVD'),
                   ),
                 ),
               ],

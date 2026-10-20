@@ -78,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Gunakan alamat IP lokal laptop jika menguji aplikasi pada HP fisik melalui Wi-Fi yang sama.',
+              'Aplikasi terhubung ke Server Resmi Vintech Cloud (https://school.vintech.cloud).',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: AppTheme.textMuted,
@@ -89,8 +89,33 @@ class ProfileScreen extends StatelessWidget {
               controller: serverController,
               decoration: const InputDecoration(
                 labelText: 'Backend Base URL',
-                hintText: 'http://10.0.2.2:8001',
+                hintText: 'https://school.vintech.cloud',
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.cloud_done_rounded, size: 16),
+                    onPressed: () {
+                      serverController.text = 'https://school.vintech.cloud';
+                    },
+                    label: const Text('Resmi (Cloud)'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      serverController.text = 'http://10.0.2.2:8001';
+                    },
+                    child: const Text('Lokal AVD'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             SizedBox(

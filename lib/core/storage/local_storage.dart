@@ -76,13 +76,18 @@ class LocalStorage {
 
   // Custom Base URL Override
   Future<void> saveBaseUrl(String url) async {
-    await _prefs.setString(_keyBaseUrl, url);
+    await _prefs.setString(_keyBaseUrl, url.trim());
   }
 
   String getBaseUrl() {
     final saved = _prefs.getString(_keyBaseUrl);
     if (saved != null && saved.trim().isNotEmpty) {
-      return saved.trim();
+      final trimmed = saved.trim();
+      // Auto-upgrade legacy localhost/emulator loopback to official cloud server
+      if (trimmed == 'http://10.0.2.2:8001' || trimmed == 'http://127.0.0.1:8001') {
+        return ApiConstants.defaultBaseUrl;
+      }
+      return trimmed;
     }
     return ApiConstants.defaultBaseUrl;
   }

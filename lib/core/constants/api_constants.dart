@@ -1,22 +1,12 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
-
 class ApiConstants {
   static const int connectTimeoutSeconds = 15;
   static const int receiveTimeoutSeconds = 15;
 
-  /// Default local development backend URL based on platform.
-  static String get defaultBaseUrl {
-    if (kIsWeb) {
-      return 'http://127.0.0.1:8001';
-    }
-    if (Platform.isAndroid) {
-      // 10.0.2.2 points to host machine loopback inside Android Emulator
-      return 'http://10.0.2.2:8001';
-    }
-    // iOS Simulator, macOS, Windows
-    return 'http://127.0.0.1:8001';
-  }
+  /// Official Production Cloud Server for Vintech School.
+  static const String officialBaseUrl = 'https://school.vintech.cloud';
+
+  /// Default backend URL points directly to the official cloud server.
+  static String get defaultBaseUrl => officialBaseUrl;
 
   // Auth & Tenant
   static const String schoolLookup = '/api/v1/schools/lookup/';
