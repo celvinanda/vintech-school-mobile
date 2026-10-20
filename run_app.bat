@@ -1,6 +1,5 @@
 @echo off
-title Vintech School Mobile - Launcher
-color 0B
+setlocal
 cd /d "%~dp0"
 
 :: Cek apakah Windows Terminal (wt.exe) tersedia
@@ -9,6 +8,15 @@ if not errorlevel 1 (
     set "USE_WT=1"
 ) else (
     set "USE_WT=0"
+)
+
+:: Jika Windows Terminal tersedia tapi script dijalankan di jendela conhost biasa,
+:: buka otomatis di dalam Windows Terminal agar menu dan runner selalu dalam satu jendela bertab.
+if "%USE_WT%"=="1" (
+    if "%WT_SESSION%"=="" (
+        start wt.exe --title "Vintech School Mobile - Launcher" -d "%CD%" cmd.exe /k ""%~f0""
+        exit /b
+    )
 )
 
 :menu
@@ -42,9 +50,9 @@ if "%opt%"=="1" (
     echo.
     echo Membuka Flutter Web di tab terminal baru...
     if "%USE_WT%"=="1" (
-        wt.exe -w 0 nt --title "Vintech Web (Chrome)" -d "%~dp0" cmd /k "flutter run -d chrome"
+        wt.exe -w 0 nt --title "Vintech Web (Chrome)" -d "%CD%" cmd.exe /k run_web.bat
     ) else (
-        start "Vintech Web (Chrome)" cmd /k "flutter run -d chrome"
+        start "Vintech Web (Chrome)" cmd.exe /k run_web.bat
     )
     echo Tab baru telah dibuat di Windows Terminal!
     pause
@@ -54,9 +62,9 @@ if "%opt%"=="2" (
     echo.
     echo Membuka Flutter App Runner di tab terminal baru...
     if "%USE_WT%"=="1" (
-        wt.exe -w 0 nt --title "Vintech App Runner" -d "%~dp0" cmd /k "flutter run -d emulator-5554"
+        wt.exe -w 0 nt --title "Vintech App Runner" -d "%CD%" cmd.exe /k run_android.bat
     ) else (
-        start "Vintech App Runner" cmd /k "flutter run -d emulator-5554"
+        start "Vintech App Runner" cmd.exe /k run_android.bat
     )
     echo Tab baru telah dibuat di Windows Terminal yang sama!
     echo.
@@ -67,9 +75,9 @@ if "%opt%"=="3" (
     echo.
     echo Membuka Logcat Android real-time dengan waktu dan milidetik di tab baru...
     if "%USE_WT%"=="1" (
-        wt.exe -w 0 nt --title "Android Logcat (ms)" -d "%~dp0" cmd /k "call view_logcat.bat"
+        wt.exe -w 0 nt --title "Android Logcat (ms)" -d "%CD%" cmd.exe /k view_logcat.bat
     ) else (
-        start "Android Logcat (ms)" cmd /k "call view_logcat.bat"
+        start "Android Logcat (ms)" cmd.exe /k view_logcat.bat
     )
     echo Tab Logcat telah dibuka di Windows Terminal yang sama!
     echo.
