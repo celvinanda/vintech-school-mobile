@@ -34,6 +34,11 @@ class _LoginScreenState extends State<LoginScreen> {
     // Default demo account
     _usernameController.text = 'siswa.sman1jkt.20261001';
     _passwordController.text = 'siswa123';
+
+    // Pastikan keyboard tertutup saat layar pertama kali dibuka
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
   }
 
   @override
@@ -44,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onLogin() {
+    FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthCubit>().login(
             _usernameController.text.trim(),
@@ -148,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _fillAccount(String username, String password) {
+    FocusScope.of(context).unfocus();
     setState(() {
       _usernameController.text = username;
       _passwordController.text = password;
@@ -209,78 +216,85 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header Branding (Universal vs Dedicated School)
-                  if (isSpecificSchool)
-                    _buildDedicatedSchoolHeader()
-                  else
-                    _buildUniversalHeader(),
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Branding (Universal vs Dedicated School)
+                    if (isSpecificSchool)
+                      _buildDedicatedSchoolHeader()
+                    else
+                      _buildUniversalHeader(),
 
-                  const SizedBox(height: 28),
+                    const SizedBox(height: 28),
 
-                  // Smart Discovery Highlight Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: Color(0xFF2563EB),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Sistem cerdas Vintech otomatis mendeteksi sekolah dan peran Anda (Siswa, Wali Murid, atau Guru).',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12.5,
-                              color: const Color(0xFF475569),
-                              height: 1.4,
+                    // Smart Discovery Highlight Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Color(0xFF2563EB),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Sistem cerdas Vintech otomatis mendeteksi sekolah dan peran Anda (Siswa, Wali Murid, atau Guru).',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12.5,
+                                color: const Color(0xFF475569),
+                                height: 1.4,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Input Username / NISN / NIP / Email
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'ID Pengguna / Username / NISN / NIP',
-                      hintText: 'Contoh: siswa.sman1jkt.20261001',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                    // Input Username / NISN / NIP / Email
+                    TextFormField(
+                      controller: _usernameController,
+                      textInputAction: TextInputAction.next,
+                      decoration: const InputDecoration(
+                        labelText: 'ID Pengguna / Username / NISN / NIP',
+                        hintText: 'Contoh: siswa.sman1jkt.20261001',
+                        prefixIcon: Icon(Icons.badge_outlined),
+                      ),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'ID Pengguna wajib diisi';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'ID Pengguna wajib diisi';
-                      }
-                      return null;
-                    },
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
-                  // Input Password
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
+                    // Input Password
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _onLogin(),
+                      decoration: InputDecoration(
                       labelText: 'Kata Sandi',
                       hintText: '••••••••',
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -368,8 +382,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildUniversalHeader() {
     return Column(
