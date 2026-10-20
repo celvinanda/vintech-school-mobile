@@ -19,272 +19,475 @@ class TeacherDashboardView extends StatelessWidget {
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
+  String get _firstName {
+    final names = profile.user.fullName.trim().split(' ');
+    return names.isNotEmpty ? names.first : profile.user.username;
+  }
+
+  String get _initials {
+    final names = profile.user.fullName.trim().split(' ');
+    if (names.length >= 2) {
+      return '${names[0][0]}${names[1][0]}'.toUpperCase();
+    }
+    return names.isNotEmpty && names[0].isNotEmpty ? names[0][0].toUpperCase() : 'G';
+  }
+
+  String get _cleanNip {
+    final raw = profile.user.username;
+    if (raw.contains('.')) {
+      return raw.split('.').last;
+    }
+    return raw;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => context.read<HomeCubit>().loadDashboard(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Teacher Identity Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [_schoolColor, _schoolColor.withAlpha(220)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: _schoolColor.withAlpha(60),
-                    blurRadius: 18,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withAlpha(50),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          profile.activeSchool?.role ?? 'GURU',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        profile.activeSchool?.code ?? '',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: Colors.white.withAlpha(180),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    profile.user.fullName,
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'NIP / Akun: ${profile.user.username}',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white.withAlpha(200),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(30),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.school_outlined, color: Colors.white, size: 16),
-                        const SizedBox(width: 8),
-                        Text(
-                          profile.activeSchool?.name ?? 'Vintech School',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: _schoolColor,
+          onRefresh: () => context.read<HomeCubit>().loadDashboard(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Greeting Bar
+                _buildTopGreetingBar(),
+
+                const SizedBox(height: 18),
+
+                // Teacher Smart Digital Card
+                _buildTeacherSmartCard(),
+
+                const SizedBox(height: 20),
+
+                // Action Banner: Input Presensi Siswa Cepat
+                _buildQuickAttendanceAction(context),
+
+                const SizedBox(height: 24),
+
+                // Real-time School Metrics
+                _buildSchoolStatisticsSection(),
+
+                const SizedBox(height: 24),
+              ],
             ),
-
-            const SizedBox(height: 24),
-
-            // Quick Input Attendance Action Banner
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF), // Blue-50
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.edit_calendar_rounded, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Catat Presensi Siswa',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1E3A8A),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Input kehadiran harian siswa kelas yang diampu secara instan.',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: const Color(0xFF3B82F6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                        ),
-                        builder: (_) => const AttendanceEntrySheet(),
-                      );
-                    },
-                    child: const Text('Input', style: TextStyle(fontSize: 13)),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Real-Time School Overview from Backend
-            BlocBuilder<HomeCubit, HomeState>(
-              builder: (context, state) {
-                if (state is HomeLoading) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    ),
-                  );
-                }
-                if (state is HomeLoaded) {
-                  final d = state.dashboard;
-                  final att = d.attendanceToday;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Statistik Sekolah (${d.levelDisplay})',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.textMain,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricCard(
-                              title: 'Total Siswa',
-                              value: d.totalStudents.toString(),
-                              icon: Icons.groups_rounded,
-                              color: const Color(0xFF2563EB),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              title: 'Total Guru',
-                              value: d.totalTeachers.toString(),
-                              icon: Icons.person_pin_rounded,
-                              color: const Color(0xFF0F766E),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildMetricCard(
-                              title: 'Rombel Kelas',
-                              value: d.totalClassrooms.toString(),
-                              icon: Icons.class_outlined,
-                              color: const Color(0xFF7C3AED),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildMetricCard(
-                              title: 'Kehadiran Hari Ini',
-                              value: '${att.attendanceRate}%',
-                              icon: Icons.check_circle_outline_rounded,
-                              color: AppTheme.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMetricCard({
+  Widget _buildTopGreetingBar() {
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: _schoolColor.withAlpha(25),
+            shape: BoxShape.circle,
+            border: Border.all(color: _schoolColor.withAlpha(60), width: 1.5),
+          ),
+          child: Center(
+            child: Text(
+              _initials,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: _schoolColor,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Halo, $_firstName 👨‍🏫',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF0F172A),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                profile.activeSchool?.name ?? 'Vintech School',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(5),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: _schoolColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                profile.activeSchool?.code ?? 'GURU',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF334155),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTeacherSmartCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF0F172A),
+            Color.lerp(const Color(0xFF0F172A), _schoolColor, 0.45)!,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withAlpha(45),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(20),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.badge_rounded,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'KARTU TENAGA PENDIDIK',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white.withAlpha(190),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B82F6).withAlpha(40),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF3B82F6).withAlpha(120),
+                    width: 0.8,
+                  ),
+                ),
+                child: Text(
+                  'GURU AKTIF',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: const Color(0xFF93C5FD),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            profile.user.fullName,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            profile.activeSchool?.title.isNotEmpty == true
+                ? profile.activeSchool!.title
+                : 'Tenaga Pendidik & Pengajar',
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white.withAlpha(180),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            height: 1,
+            color: Colors.white.withAlpha(25),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'NOMOR INDUK PEGAWAI (NIP)',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white.withAlpha(140),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _cleanNip,
+                    style: GoogleFonts.jetBrainsMono(
+                      color: Colors.white,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+              const Icon(
+                Icons.fingerprint_rounded,
+                color: Colors.white70,
+                size: 26,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAttendanceAction(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(4),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: _schoolColor.withAlpha(25),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.edit_calendar_rounded, color: _schoolColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Catat Presensi Siswa',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Input kehadiran rombel kelas harian',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _schoolColor,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (_) => const AttendanceEntrySheet(),
+              );
+            },
+            child: const Text('Input', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSchoolStatisticsSection() {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        int totalStudents = 120;
+        int totalTeachers = 18;
+        int totalClassrooms = 6;
+        double attRate = 98.0;
+
+        if (state is HomeLoaded) {
+          final d = state.dashboard;
+          totalStudents = d.totalStudents;
+          totalTeachers = d.totalTeachers;
+          totalClassrooms = d.totalClassrooms;
+          attRate = d.attendanceToday.attendanceRate;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Statistik Sekolah',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0F172A),
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMetricTile(
+                    title: 'Total Siswa',
+                    value: '$totalStudents',
+                    icon: Icons.groups_rounded,
+                    accentColor: const Color(0xFF2563EB),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildMetricTile(
+                    title: 'Total Guru',
+                    value: '$totalTeachers',
+                    icon: Icons.person_pin_rounded,
+                    accentColor: const Color(0xFF0F766E),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildMetricTile(
+                    title: 'Rombel Kelas',
+                    value: '$totalClassrooms',
+                    icon: Icons.class_outlined,
+                    accentColor: const Color(0xFF7C3AED),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildMetricTile(
+                    title: 'Presensi Hari Ini',
+                    value: '${attRate.toStringAsFixed(0)}%',
+                    icon: Icons.check_circle_outline_rounded,
+                    accentColor: const Color(0xFF16A34A),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMetricTile({
     required String title,
     required String value,
     required IconData icon,
-    required Color color,
+    required Color accentColor,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderLight),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,19 +500,19 @@ class TeacherDashboardView extends StatelessWidget {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.textMuted,
+                  color: const Color(0xFF64748B),
                 ),
               ),
-              Icon(icon, color: color, size: 20),
+              Icon(icon, color: accentColor, size: 18),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             value,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textMain,
+              color: const Color(0xFF0F172A),
             ),
           ),
         ],

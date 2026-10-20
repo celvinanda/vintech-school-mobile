@@ -54,32 +54,44 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         index: _currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
-        indicatorColor: _schoolColor.withAlpha(40),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Beranda',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.checklist_outlined),
-            selectedIcon: Icon(Icons.checklist_rounded),
-            label: 'Presensi',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Tagihan SPP',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profil',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          height: 65,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
+          indicatorColor: _schoolColor.withAlpha(25),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined, size: 22),
+              selectedIcon: Icon(Icons.home_rounded, color: _schoolColor, size: 22),
+              label: 'Beranda',
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.checklist_outlined, size: 22),
+              selectedIcon: Icon(Icons.checklist_rounded, color: _schoolColor, size: 22),
+              label: 'Presensi',
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.account_balance_wallet_outlined, size: 22),
+              selectedIcon: Icon(Icons.account_balance_wallet_rounded, color: _schoolColor, size: 22),
+              label: 'Tagihan SPP',
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.person_outline_rounded, size: 22),
+              selectedIcon: Icon(Icons.person_rounded, color: _schoolColor, size: 22),
+              label: 'Profil',
+            ),
+          ],
+        ),
       ),
     );
   }
