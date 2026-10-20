@@ -26,7 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     try {
-      final profile = await _repository.getMe();
+      final profile = await _repository.getMe().timeout(const Duration(seconds: 4));
       emit(Authenticated(profile));
     } catch (_) {
       // If fetching user fails with saved token, revert to unauthenticated

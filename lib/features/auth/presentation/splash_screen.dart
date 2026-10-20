@@ -15,38 +15,60 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _hasNavigated = false;
+
   @override
   void initState() {
     super.initState();
-    // Check session on start
-    context.read<AuthCubit>().checkSession();
+    _initAppFlow();
+  }
+
+  Future<void> _initAppFlow() async {
+    final cubit = context.read<AuthCubit>();
+    // 1. Trigger session checking
+    cubit.checkSession();
+
+    // 2. Minimum splash presentation duration (1.2s) & wait until frame renders
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+
+    _handleNavigation(cubit.state);
+  }
+
+  void _handleNavigation(AuthState state) {
+    if (_hasNavigated || !mounted) return;
+
+    if (state is Authenticated) {
+      _hasNavigated = true;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => MainNavigationScreen(profile: state.profile),
+        ),
+      );
+    } else if (state is Unauthenticated) {
+      _hasNavigated = true;
+      if (state.schoolCode != null && state.cachedSchool != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => LoginScreen(school: state.cachedSchool!),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const SchoolLookupScreen(),
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is Authenticated) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => MainNavigationScreen(profile: state.profile),
-            ),
-          );
-        } else if (state is Unauthenticated) {
-          if (state.schoolCode != null && state.cachedSchool != null) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => LoginScreen(school: state.cachedSchool!),
-              ),
-            );
-          } else {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => const SchoolLookupScreen(),
-              ),
-            );
-          }
-        }
+        // Handle late navigation if async check finishes after splash duration
+        _handleNavigation(state);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F172A), // Dark slate
