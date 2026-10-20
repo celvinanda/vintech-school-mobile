@@ -281,11 +281,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Settings & Tools List
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderLight),
+                side: const BorderSide(color: AppTheme.borderLight),
               ),
               child: Column(
                 children: [
