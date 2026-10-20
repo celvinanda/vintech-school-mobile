@@ -4,15 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../home/presentation/main_navigation_screen.dart';
-import '../data/models/school_lookup_model.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
-import 'school_lookup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final SchoolLookupModel? school;
-
-  const LoginScreen({super.key, this.school});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,18 +20,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
 
-  Color get _activeThemeColor => widget.school != null
-      ? AppTheme.parseHexColor(widget.school!.primaryColor)
-      : AppTheme.defaultPrimary;
-
   @override
   void initState() {
     super.initState();
-    // Default demo account
+    // Default demo student
     _usernameController.text = 'siswa.sman1jkt.20261001';
     _passwordController.text = 'siswa123';
 
-    // Pastikan keyboard tertutup saat layar pertama kali dibuka
+    // Pastikan keyboard tidak auto-fokus saat layar dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
     });
@@ -54,9 +46,16 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<AuthCubit>().login(
             _usernameController.text.trim(),
             _passwordController.text.trim(),
-            schoolCode: widget.school?.code,
           );
     }
+  }
+
+  void _fillAccount(String username, String password) {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _usernameController.text = username;
+      _passwordController.text = password;
+    });
   }
 
   void _showServerSettingsModal() {
@@ -89,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Aplikasi secara bawaan terhubung ke Server Resmi Vintech Cloud (https://school.vintech.cloud).',
+              'Aplikasi terhubung langsung ke Server Resmi Vintech Cloud (https://school.vintech.cloud).',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 13,
                 color: AppTheme.textMuted,
@@ -153,18 +152,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _fillAccount(String username, String password) {
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _usernameController.text = username;
-      _passwordController.text = password;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isSpecificSchool = widget.school != null;
-
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
@@ -188,30 +177,10 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          leading: isSpecificSchool
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () {
-                    // Back to universal login
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  },
-                )
-              : null,
           actions: [
             IconButton(
-              icon: const Icon(Icons.search_rounded),
-              tooltip: 'Direktori Profil Sekolah',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SchoolLookupScreen()),
-                );
-              },
-            ),
-            IconButton(
               icon: const Icon(Icons.settings_outlined),
-              tooltip: 'Pengaturan Server API',
+              tooltip: 'Server API',
               onPressed: _showServerSettingsModal,
             ),
           ],
@@ -228,55 +197,89 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Branding (Universal vs Dedicated School)
-                    if (isSpecificSchool)
-                      _buildDedicatedSchoolHeader()
-                    else
-                      _buildUniversalHeader(),
+                    const SizedBox(height: 8),
+
+                    // Header Logo & Title
+                    Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF2563EB).withAlpha(60),
+                                blurRadius: 16,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.school_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Vintech School',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              'Sistem Informasi Akademik & Presensi',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: AppTheme.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
 
                     const SizedBox(height: 28),
 
-                    // Smart Discovery Highlight Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                    Text(
+                      'Masuk ke Akun Anda',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.auto_awesome_rounded,
-                            color: Color(0xFF2563EB),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Sistem cerdas Vintech otomatis mendeteksi sekolah dan peran Anda (Siswa, Wali Murid, atau Guru).',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12.5,
-                                color: const Color(0xFF475569),
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Satu akun untuk Siswa, Guru, dan Wali Murid.',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        color: AppTheme.textMuted,
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
 
-                    // Input Username / NISN / NIP / Email
+                    // Input Username / NISN / NIP
                     TextFormField(
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
                       decoration: const InputDecoration(
                         labelText: 'ID Pengguna / Username / NISN / NIP',
                         hintText: 'Contoh: siswa.sman1jkt.20261001',
-                        prefixIcon: Icon(Icons.badge_outlined),
+                        prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
                       validator: (val) {
                         if (val == null || val.trim().isEmpty) {
@@ -295,236 +298,98 @@ class _LoginScreenState extends State<LoginScreen> {
                       textInputAction: TextInputAction.done,
                       onFieldSubmitted: (_) => _onLogin(),
                       decoration: InputDecoration(
-                      labelText: 'Kata Sandi',
-                      hintText: '••••••••',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Kata sandi wajib diisi';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Login Button
-                  BlocBuilder<AuthCubit, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _activeThemeColor,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                        labelText: 'Kata Sandi',
+                        hintText: '••••••••',
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
                           ),
-                          onPressed: isLoading ? null : _onLogin,
-                          child: isLoading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Masuk ke Akun',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(
-                                      Icons.arrow_forward_rounded,
-                                      size: 18,
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Kata sandi wajib diisi';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Login Button
+                    BlocBuilder<AuthCubit, AuthState>(
+                      builder: (context, state) {
+                        final isLoading = state is AuthLoading;
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.defaultPrimary,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            onPressed: isLoading ? null : _onLogin,
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
                                       color: Colors.white,
                                     ),
-                                  ],
-                                ),
-                        ),
-                      );
-                    },
-                  ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Masuk ke Akun',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
 
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-                  // Quick 1-Click Demo Accounts
-                  _buildQuickDemoAccountsSection(),
+                    // Quick 1-Click Demo Section
+                    _buildDemoSection(),
 
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ),
-  );
-}
-
-  Widget _buildUniversalHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2563EB).withAlpha(60),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.school_rounded,
-                color: Colors.white,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Vintech School',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-                Text(
-                  'Sistem Informasi & Presensi Terpadu',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    color: AppTheme.textMuted,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Masuk ke Akun Anda',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Satu pintu akses terpadu untuk Siswa, Guru, dan Wali Murid.',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 13,
-            color: AppTheme.textMuted,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDedicatedSchoolHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _activeThemeColor.withAlpha(15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _activeThemeColor.withAlpha(40)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: _activeThemeColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.domain_rounded,
-              color: Colors.white,
-              size: 26,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.school!.name,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.textMain,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${widget.school!.code} • ${widget.school!.levelDisplay}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _activeThemeColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
-            child: const Text('Ganti'),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildQuickDemoAccountsSection() {
+  Widget _buildDemoSection() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -544,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                'AKUN DEMO CEPAT (1-KLIK UJI COBA):',
+                'AKUN DEMO CEPAT (1-KLIK):',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -556,8 +421,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Siswa Category
-          _buildRoleSectionLabel('🎓 Akun Siswa (Pelajar):'),
+          // Siswa
+          _buildRoleHeader('🎓 Akun Siswa (Pelajar):'),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -586,8 +451,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 14),
 
-          // Guru Category
-          _buildRoleSectionLabel('👨‍🏫 Akun Guru (Tenaga Pendidik):'),
+          // Guru
+          _buildRoleHeader('👨‍🏫 Akun Guru (Tenaga Pendidik):'),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -605,19 +470,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 password: 'guru123',
                 color: const Color(0xFF0ea5e9),
               ),
-              _buildDemoChip(
-                label: 'Guru SMP Al-Hikmah (Tahfidz)',
-                username: 'guru.smpalhikmah.198501012012011009',
-                password: 'guru123',
-                color: const Color(0xFF10b981),
-              ),
             ],
           ),
 
           const SizedBox(height: 14),
 
-          // Admin Category
-          _buildRoleSectionLabel('🏢 Akun Admin Sekolah:'),
+          // Admin
+          _buildRoleHeader('🏢 Akun Admin Sekolah:'),
           const SizedBox(height: 6),
           Wrap(
             spacing: 6,
@@ -642,9 +501,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRoleSectionLabel(String label) {
+  Widget _buildRoleHeader(String title) {
     return Text(
-      label,
+      title,
       style: GoogleFonts.plusJakartaSans(
         fontSize: 11.5,
         fontWeight: FontWeight.w700,

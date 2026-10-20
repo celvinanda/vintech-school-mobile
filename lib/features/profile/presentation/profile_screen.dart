@@ -5,7 +5,7 @@ import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
-import '../../auth/presentation/school_lookup_screen.dart';
+import '../../auth/presentation/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final UserProfileResponse profile;
@@ -352,7 +352,7 @@ class ProfileScreen extends StatelessWidget {
                             if (context.mounted) {
                               Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(
-                                  builder: (_) => const SchoolLookupScreen(),
+                                  builder: (_) => const LoginScreen(),
                                 ),
                                 (route) => false,
                               );

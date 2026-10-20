@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
       _hasNavigated = true;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => LoginScreen(school: state.cachedSchool),
+          builder: (_) => const LoginScreen(),
         ),
       );
     }
