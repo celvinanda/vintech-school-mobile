@@ -1,0 +1,57 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:vintech_school_mobile/features/auth/data/models/school_lookup_model.dart';
+import 'package:vintech_school_mobile/features/billing/data/models/invoice_model.dart';
+
+void main() {
+  test('SchoolLookupModel serialization smoke test', () {
+    final json = {
+      'id': 'test-1',
+      'code': 'SMAN1-JKT',
+      'slug': 'sman-1-nusantara',
+      'name': 'SMA Negeri 1 Nusantara',
+      'level': 'SMA',
+      'level_display': 'SMA / MA',
+      'tier': 'ENTERPRISE',
+      'tier_display': 'Enterprise',
+      'branding': {
+        'primary_color': '#1E3A8A',
+        'logo_url': null,
+      },
+      'vintech_payment_configured': true,
+    };
+
+    final model = SchoolLookupModel.fromJson(json);
+    expect(model.code, 'SMAN1-JKT');
+    expect(model.name, 'SMA Negeri 1 Nusantara');
+    expect(model.primaryColor, '#1E3A8A');
+    expect(model.vintechPaymentConfigured, true);
+  });
+
+  test('InvoiceModel serialization smoke test', () {
+    final json = {
+      'id': 'inv-1',
+      'invoice_number': 'INV/202610/0001',
+      'period_label': 'Oktober 2026',
+      'amount': 250000,
+      'amount_display': 'Rp 250.000',
+      'status': 'UNPAID',
+      'status_display': 'Belum Bayar',
+      'vintech_payment': {
+        'checkout_url': 'https://pay.vintech.cloud/checkout/INV-001',
+      },
+      'fee_category': {
+        'name': 'SPP Bulanan',
+      },
+      'student': {
+        'nis': '2026001',
+        'full_name': 'Ahmad Fauzan',
+      },
+    };
+
+    final inv = InvoiceModel.fromJson(json);
+    expect(inv.invoiceNumber, 'INV/202610/0001');
+    expect(inv.isUnpaid, true);
+    expect(inv.isPaid, false);
+    expect(inv.checkoutUrl, 'https://pay.vintech.cloud/checkout/INV-001');
+  });
+}
