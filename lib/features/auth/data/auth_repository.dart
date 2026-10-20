@@ -45,13 +45,14 @@ class AuthRepository {
     String? schoolCode,
   }) async {
     try {
-      final targetSchoolCode = schoolCode ?? _storage.getSchoolCode();
       final response = await _dio.post(
         ApiConstants.login,
         data: {
           'username': username.trim(),
           'password': password.trim(),
-          if (targetSchoolCode != null) ...{'school_code': targetSchoolCode},
+          if (schoolCode != null && schoolCode.trim().isNotEmpty) ...{
+            'school_code': schoolCode.trim(),
+          },
         },
       );
 
@@ -66,9 +67,10 @@ class AuthRepository {
         if (profile.auth != null) {
           await _storage.saveToken(profile.auth!.accessToken);
         }
-        // Persist school code
+        // Persist school code and school details
         if (profile.activeSchool != null) {
           await _storage.saveSchoolCode(profile.activeSchool!.code);
+          await _storage.saveSchoolData(profile.activeSchool!.toJson());
         }
         // Persist user data
         await _storage.saveUserData(profile.toJson());

@@ -5,7 +5,6 @@ import '../../home/presentation/main_navigation_screen.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
 import 'login_screen.dart';
-import 'school_lookup_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -47,19 +46,11 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     } else if (state is Unauthenticated) {
       _hasNavigated = true;
-      if (state.schoolCode != null && state.cachedSchool != null) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => LoginScreen(school: state.cachedSchool!),
-          ),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const SchoolLookupScreen(),
-          ),
-        );
-      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => LoginScreen(school: state.cachedSchool),
+        ),
+      );
     }
   }
 
