@@ -127,13 +127,22 @@ class AuthRepository {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool clearLocalCache = false}) async {
     try {
       await _dio.post(ApiConstants.logout);
     } catch (_) {
       // Continue clearing session locally regardless of server error
     } finally {
-      await _storage.clearAllSession();
+      if (clearLocalCache) {
+        final schoolCode = _storage.getSchoolCode();
+        final schoolData = _storage.getSchoolData();
+        await _storage.resetAll();
+        // Preserve school branding for seamless login UX
+        if (schoolCode != null) await _storage.saveSchoolCode(schoolCode);
+        if (schoolData != null) await _storage.saveSchoolData(schoolData);
+      } else {
+        await _storage.clearAllSession();
+      }
     }
   }
 }

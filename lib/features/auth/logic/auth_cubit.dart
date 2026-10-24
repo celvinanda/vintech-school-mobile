@@ -79,9 +79,9 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool clearLocalCache = false}) async {
     emit(AuthLoading('Keluar akun...'));
-    await _repository.logout();
+    await _repository.logout(clearLocalCache: clearLocalCache);
     final schoolCode = _storage.getSchoolCode();
     final cachedSchoolData = _storage.getSchoolData();
     final SchoolLookupModel? cachedSchool = cachedSchoolData != null

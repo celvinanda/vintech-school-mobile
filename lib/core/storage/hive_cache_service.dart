@@ -80,6 +80,7 @@ class HiveCacheService {
     required String studentNis,
     required String status,
     required String notes,
+    String? recordedByUsername,
   }) async {
     final id = '${DateTime.now().millisecondsSinceEpoch}_$studentNis';
     final payload = jsonEncode({
@@ -88,19 +89,23 @@ class HiveCacheService {
       'student_nis': studentNis,
       'status': status,
       'notes': notes,
+      'recorded_by': recordedByUsername ?? '',
       'created_at': DateTime.now().toIso8601String(),
     });
     await _outboxBox.put(id, payload);
   }
 
-  List<Map<String, dynamic>> getPendingAttendances(String schoolCode) {
+  List<Map<String, dynamic>> getPendingAttendances(String schoolCode, {String? username}) {
     final List<Map<String, dynamic>> items = [];
     for (final key in _outboxBox.keys) {
       final raw = _outboxBox.get(key);
       if (raw != null) {
         try {
           final map = jsonDecode(raw) as Map<String, dynamic>;
-          if (map['school_code'] == schoolCode) {
+          final matchesSchool = map['school_code'] == schoolCode;
+          final matchesUser = (username == null || username.isEmpty) ||
+              (map['recorded_by'] == null || map['recorded_by'] == '' || map['recorded_by'] == username);
+          if (matchesSchool && matchesUser) {
             items.add(map);
           }
         } catch (_) {}

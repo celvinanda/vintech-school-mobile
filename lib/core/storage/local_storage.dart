@@ -108,6 +108,13 @@ class LocalStorage {
 
   String get _activeSchoolPrefix => getSchoolCode() ?? 'default';
 
+  /// Prefix unik per user: menjamin isolasi 100% saat berganti akun di perangkat yang sama
+  String get _activeUserPrefix {
+    final user = getUserData();
+    final userId = user?['user']?['id'] ?? user?['user']?['username'] ?? 'guest';
+    return '${_activeSchoolPrefix}_user_$userId';
+  }
+
   Future<void> cacheDashboard(Map<String, dynamic> data) async {
     await _hive.putJson('dashboard_$_activeSchoolPrefix', data);
   }
@@ -119,11 +126,11 @@ class LocalStorage {
   }
 
   Future<void> cacheAttendances(String filterKey, List<Map<String, dynamic>> items) async {
-    await _hive.putJson('attendances_${_activeSchoolPrefix}_$filterKey', items);
+    await _hive.putJson('attendances_${_activeUserPrefix}_$filterKey', items);
   }
 
   List<Map<String, dynamic>>? getCachedAttendances(String filterKey) {
-    final raw = _hive.getJson('attendances_${_activeSchoolPrefix}_$filterKey');
+    final raw = _hive.getJson('attendances_${_activeUserPrefix}_$filterKey');
     if (raw is List) {
       return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
@@ -155,11 +162,11 @@ class LocalStorage {
   }
 
   Future<void> cacheInvoices(String filterKey, List<Map<String, dynamic>> items) async {
-    await _hive.putJson('invoices_${_activeSchoolPrefix}_$filterKey', items);
+    await _hive.putJson('invoices_${_activeUserPrefix}_$filterKey', items);
   }
 
   List<Map<String, dynamic>>? getCachedInvoices(String filterKey) {
-    final raw = _hive.getJson('invoices_${_activeSchoolPrefix}_$filterKey');
+    final raw = _hive.getJson('invoices_${_activeUserPrefix}_$filterKey');
     if (raw is List) {
       return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
