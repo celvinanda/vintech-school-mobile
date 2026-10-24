@@ -26,7 +26,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AttendanceCubit>().loadAttendances();
+    _fetchAttendances();
+  }
+
+  Future<void> _fetchAttendances({String? classroomId, bool forceRefreshMeta = false}) async {
+    await context.read<AttendanceCubit>().loadAttendances(
+          classroomId: classroomId,
+          isStaff: _canRecordAttendance,
+          forceRefreshMeta: forceRefreshMeta,
+        );
   }
 
   @override
@@ -90,7 +98,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Muat Ulang',
-            onPressed: () => context.read<AttendanceCubit>().loadAttendances(),
+            onPressed: () => _fetchAttendances(forceRefreshMeta: true),
           ),
         ],
       ),
@@ -130,7 +138,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               title: 'Gagal Memuat Data Presensi',
               subtitle: state.message,
               actionLabel: 'Coba Lagi',
-              onAction: () => context.read<AttendanceCubit>().loadAttendances(),
+              onAction: () => _fetchAttendances(forceRefreshMeta: true),
             );
           }
           if (state is AttendanceLoaded) {
@@ -222,9 +230,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 fontWeight: isAll ? FontWeight.w700 : FontWeight.w500,
                                 color: isAll ? _schoolColor : const Color(0xFF475569),
                               ),
-                              onSelected: (_) => context
-                                  .read<AttendanceCubit>()
-                                  .loadAttendances(classroomId: null),
+                              onSelected: (_) => _fetchAttendances(classroomId: null),
                             ),
                           );
                         }
@@ -241,9 +247,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                               color: isSelected ? _schoolColor : const Color(0xFF475569),
                             ),
-                            onSelected: (_) => context
-                                .read<AttendanceCubit>()
-                                .loadAttendances(classroomId: c.id),
+                            onSelected: (_) => _fetchAttendances(classroomId: c.id),
                           ),
                         );
                       },
@@ -269,9 +273,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         )
                       : RefreshIndicator(
                           color: _schoolColor,
-                          onRefresh: () => context
-                              .read<AttendanceCubit>()
-                              .loadAttendances(classroomId: state.selectedClassroomId),
+                          onRefresh: () => _fetchAttendances(
+                            classroomId: state.selectedClassroomId,
+                            forceRefreshMeta: true,
+                          ),
                           child: ListView.builder(
                             padding: const EdgeInsets.fromLTRB(20, 16, 20, 88),
                             itemCount: filteredRecords.length,

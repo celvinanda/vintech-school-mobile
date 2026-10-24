@@ -7,8 +7,15 @@ class BillingCubit extends Cubit<BillingState> {
 
   BillingCubit(this._repository) : super(BillingInitial());
 
-  Future<void> loadInvoices({String filter = 'ALL', String? studentNis}) async {
-    emit(BillingLoading());
+  Future<void> loadInvoices({
+    String filter = 'ALL',
+    String? studentNis,
+    bool silent = false,
+  }) async {
+    final hasExistingData = state is BillingLoaded;
+    if (!hasExistingData && !silent) {
+      emit(BillingLoading());
+    }
     try {
       final invoices = await _repository.getInvoices(
         status: filter == 'ALL' ? null : filter,
@@ -16,7 +23,9 @@ class BillingCubit extends Cubit<BillingState> {
       );
       emit(BillingLoaded(invoices: invoices, currentFilter: filter));
     } catch (e) {
-      emit(BillingError(e.toString()));
+      if (!hasExistingData) {
+        emit(BillingError(e.toString()));
+      }
     }
   }
 

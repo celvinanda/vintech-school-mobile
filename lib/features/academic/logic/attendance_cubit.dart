@@ -8,27 +8,64 @@ import 'attendance_state.dart';
 class AttendanceCubit extends Cubit<AttendanceState> {
   final AcademicRepository _repository;
 
+  List<ClassroomModel> _cachedClassrooms = [];
+  List<StudentModel> _cachedStudents = [];
+
   AttendanceCubit(this._repository) : super(AttendanceInitial());
 
-  Future<void> loadAttendances({String? classroomId}) async {
-    emit(AttendanceLoading());
+  List<ClassroomModel> get cachedClassrooms => _cachedClassrooms;
+  List<StudentModel> get cachedStudents => _cachedStudents;
+
+  Future<void> loadAttendances({
+    String? classroomId,
+    bool isStaff = false,
+    bool forceRefreshMeta = false,
+  }) async {
+    final currentState = state;
+    final hasExistingData = currentState is AttendanceLoaded;
+
+    if (!hasExistingData) {
+      emit(AttendanceLoading());
+    }
+
     try {
-      final results = await Future.wait([
+      final futures = <Future<dynamic>>[
         _repository.getAttendances(classroomId: classroomId),
-        _repository.getClassrooms(),
-        _repository.getStudents(classroomId: classroomId),
-      ]);
+      ];
+
+      final bool needClassrooms = _cachedClassrooms.isEmpty || forceRefreshMeta;
+      if (needClassrooms) {
+        futures.add(_repository.getClassrooms());
+      }
+
+      final bool needStudents = isStaff && (_cachedStudents.isEmpty || forceRefreshMeta);
+      if (needStudents) {
+        futures.add(_repository.getStudents(classroomId: classroomId));
+      }
+
+      final results = await Future.wait(futures);
+      final attendances = results[0] as List<AttendanceModel>;
+
+      int nextIdx = 1;
+      if (needClassrooms) {
+        _cachedClassrooms = results[nextIdx++] as List<ClassroomModel>;
+      }
+      if (needStudents) {
+        _cachedStudents = results[nextIdx++] as List<StudentModel>;
+      }
 
       emit(
         AttendanceLoaded(
-          attendances: results[0] as List<AttendanceModel>,
-          classrooms: results[1] as List<ClassroomModel>,
-          students: results[2] as List<StudentModel>,
+          attendances: attendances,
+          classrooms: _cachedClassrooms,
+          students: _cachedStudents,
           selectedClassroomId: classroomId,
         ),
       );
     } catch (e) {
-      emit(AttendanceError(e.toString()));
+      if (!hasExistingData) {
+        emit(AttendanceError(e.toString()));
+      }
     }
   }
 
@@ -44,7 +81,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         notes: notes,
       );
       emit(AttendanceActionSuccess('Presensi ${att.studentName} (${att.statusDisplay}) berhasil dicatat!'));
-      await loadAttendances();
+      await loadAttendances(isStaff: true);
     } catch (e) {
       emit(AttendanceError(e.toString()));
     }
