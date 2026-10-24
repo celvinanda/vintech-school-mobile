@@ -54,7 +54,10 @@ class ApiClient {
           options.headers['X-Device-Platform'] = platform;
 
           if (kDebugMode) {
-            debugPrint('[DIO >>] ${options.method} ${options.baseUrl}${options.path}');
+            final queryStr = options.queryParameters.isNotEmpty
+                ? '?${Uri(queryParameters: options.queryParameters.map((k, v) => MapEntry(k, v.toString()))).query}'
+                : '';
+            debugPrint('[DIO >>] ${options.method} ${options.baseUrl}${options.path}$queryStr');
             if (options.data != null) debugPrint('   Body: ${options.data}');
           }
 
