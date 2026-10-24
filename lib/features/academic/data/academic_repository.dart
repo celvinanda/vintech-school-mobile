@@ -59,12 +59,16 @@ class AcademicRepository {
     }
   }
 
-  Future<List<AttendanceModel>> getAttendances({String? classroomId}) async {
+  Future<List<AttendanceModel>> getAttendances({
+    String? classroomId,
+    String? studentNis,
+  }) async {
     try {
       final response = await _dio.get(
         ApiConstants.attendance,
         queryParameters: {
           if (classroomId != null && classroomId.isNotEmpty) 'classroom_id': classroomId,
+          if (studentNis != null && studentNis.isNotEmpty) 'student_nis': studentNis,
         },
       );
 

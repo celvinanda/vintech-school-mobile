@@ -18,6 +18,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
   Future<void> loadAttendances({
     String? classroomId,
+    String? studentNis,
     bool isStaff = false,
     bool forceRefreshMeta = false,
   }) async {
@@ -30,7 +31,10 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
     try {
       final futures = <Future<dynamic>>[
-        _repository.getAttendances(classroomId: classroomId),
+        _repository.getAttendances(
+          classroomId: classroomId,
+          studentNis: studentNis,
+        ),
       ];
 
       final bool needClassrooms = _cachedClassrooms.isEmpty || forceRefreshMeta;
