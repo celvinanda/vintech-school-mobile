@@ -23,6 +23,15 @@ class AttendanceModel {
 
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
     final student = json['student'] as Map<String, dynamic>? ?? {};
+
+    String? classroomName;
+    final rawClassroom = json['classroom'] ?? student['classroom'];
+    if (rawClassroom is Map) {
+      classroomName = rawClassroom['name'] as String?;
+    } else if (rawClassroom is String) {
+      classroomName = rawClassroom;
+    }
+
     return AttendanceModel(
       id: json['id'] as String? ?? '',
       date: json['date'] as String? ?? '',
@@ -32,7 +41,7 @@ class AttendanceModel {
       studentId: student['id'] as String? ?? '',
       studentNis: student['nis'] as String? ?? json['student_nis'] as String? ?? '',
       studentName: student['full_name'] as String? ?? json['student_name'] as String? ?? '',
-      classroomName: json['classroom'] as String?,
+      classroomName: classroomName,
     );
   }
 }

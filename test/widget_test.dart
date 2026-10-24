@@ -1,9 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vintech_school_mobile/features/academic/data/models/attendance_model.dart';
+import 'package:vintech_school_mobile/features/academic/data/models/student_model.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/school_lookup_model.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 import 'package:vintech_school_mobile/features/billing/data/models/invoice_model.dart';
 
 void main() {
+  test('StudentModel and AttendanceModel handle map or string classroom safely', () {
+    final studentJson = {
+      'id': 'std-1',
+      'nis': '20261001',
+      'full_name': 'Rizky Pratama',
+      'gender': 'L',
+      'classroom': {'id': 'cls-1', 'name': 'X MIPA 1'},
+    };
+    final student = StudentModel.fromJson(studentJson);
+    expect(student.classroomName, 'X MIPA 1');
+
+    final attJson = {
+      'id': 'att-1',
+      'date': '2026-10-25',
+      'status': 'HADIR',
+      'status_display': 'Hadir',
+      'notes': 'Tepat waktu',
+      'student': {
+        'id': 'std-1',
+        'nis': '20261001',
+        'full_name': 'Rizky Pratama',
+      },
+      'classroom': {'name': 'X MIPA 1'},
+    };
+    final att = AttendanceModel.fromJson(attJson);
+    expect(att.classroomName, 'X MIPA 1');
+    expect(att.studentName, 'Rizky Pratama');
+  });
+
   test('UserModel smart identifier and initials extraction test', () {
     final student = UserModel(
       id: 1,

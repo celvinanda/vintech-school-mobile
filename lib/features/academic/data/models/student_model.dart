@@ -20,13 +20,21 @@ class StudentModel {
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
+    String? classroomName;
+    final rawClassroom = json['classroom'];
+    if (rawClassroom is Map) {
+      classroomName = rawClassroom['name'] as String?;
+    } else if (rawClassroom is String) {
+      classroomName = rawClassroom;
+    }
+
     return StudentModel(
       id: json['id'] as String? ?? '',
       nis: json['nis'] as String? ?? '',
       nisn: json['nisn'] as String?,
       fullName: json['full_name'] as String? ?? '',
       gender: json['gender'] as String? ?? 'L',
-      classroomName: json['classroom'] as String?,
+      classroomName: classroomName,
       parentName: json['parent_name'] as String?,
       parentPhone: json['parent_phone'] as String?,
     );

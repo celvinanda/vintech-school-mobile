@@ -41,6 +41,14 @@ class InvoiceModel {
     final feeCat = json['fee_category'] as Map<String, dynamic>? ?? {};
     final student = json['student'] as Map<String, dynamic>? ?? {};
 
+    String? classroomName;
+    final rawClassroom = student['classroom'] ?? json['classroom'];
+    if (rawClassroom is Map) {
+      classroomName = rawClassroom['name'] as String?;
+    } else if (rawClassroom is String) {
+      classroomName = rawClassroom;
+    }
+
     return InvoiceModel(
       id: json['id'] as String? ?? '',
       invoiceNumber: json['invoice_number'] as String? ?? '',
@@ -56,7 +64,7 @@ class InvoiceModel {
       feeCategoryName: feeCat['name'] as String? ?? 'SPP',
       studentNis: student['nis'] as String? ?? '',
       studentName: student['full_name'] as String? ?? '',
-      classroomName: student['classroom'] as String?,
+      classroomName: classroomName,
     );
   }
 }

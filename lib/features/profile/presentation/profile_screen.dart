@@ -212,7 +212,6 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Material(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
@@ -293,7 +292,6 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Material(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
