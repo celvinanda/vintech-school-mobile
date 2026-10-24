@@ -8,12 +8,22 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit(this._repository) : super(HomeInitial());
 
   Future<void> loadDashboard() async {
-    emit(HomeLoading());
+    // 1. Baca instan dari Hive Database Lokal (0 ms Latency)
+    final cached = _repository.getCachedDashboard();
+    if (cached != null && state is! HomeLoaded) {
+      emit(HomeLoaded(cached));
+    } else if (state is! HomeLoaded) {
+      emit(HomeLoading());
+    }
+
+    // 2. Sinkronisasi dengan Cloud Server di latar belakang
     try {
       final dashboard = await _repository.getCurrentSchoolDashboard();
       emit(HomeLoaded(dashboard));
     } catch (e) {
-      emit(HomeError(e.toString()));
+      if (state is! HomeLoaded) {
+        emit(HomeError(e.toString()));
+      }
     }
   }
 }

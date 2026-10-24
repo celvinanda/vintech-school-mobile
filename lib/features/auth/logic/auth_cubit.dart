@@ -25,20 +25,23 @@ class AuthCubit extends Cubit<AuthState> {
       return;
     }
 
+    // 1. Offline-First Instant Auth: Jika profil sudah tersimpan di Hive, langsung masuk (0 ms)
+    final cachedUserData = _storage.getUserData();
+    if (cachedUserData != null) {
+      try {
+        final cachedProfile = UserProfileResponse.fromJson(cachedUserData);
+        emit(Authenticated(cachedProfile));
+      } catch (_) {}
+    }
+
+    // 2. Sinkronisasi profil terbaru di latar belakang jika online
     try {
       final profile = await _repository.getMe().timeout(const Duration(seconds: 4));
       emit(Authenticated(profile));
     } catch (_) {
-      // If fetching user fails with saved token, revert to unauthenticated
-      final cachedUserData = _storage.getUserData();
-      if (cachedUserData != null) {
-        try {
-          final profile = UserProfileResponse.fromJson(cachedUserData);
-          emit(Authenticated(profile));
-          return;
-        } catch (_) {}
+      if (state is! Authenticated) {
+        emit(Unauthenticated(schoolCode: schoolCode, cachedSchool: cachedSchool));
       }
-      emit(Unauthenticated(schoolCode: schoolCode, cachedSchool: cachedSchool));
     }
   }
 

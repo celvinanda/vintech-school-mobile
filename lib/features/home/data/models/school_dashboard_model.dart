@@ -28,6 +28,16 @@ class AnnouncementModel {
       createdAt: json['created_at'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'content': content,
+        'audience': audience,
+        'audience_display': audienceDisplay,
+        'is_pinned': isPinned,
+        'created_at': createdAt,
+      };
 }
 
 class AttendanceTodaySummary {
@@ -60,6 +70,16 @@ class AttendanceTodaySummary {
       attendanceRate: (json['attendance_rate'] as num?)?.toDouble() ?? 100.0,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'date': date,
+        'present_count': presentCount,
+        'izin_count': izinCount,
+        'sakit_count': sakitCount,
+        'alpa_count': alpaCount,
+        'recorded_count': recordedCount,
+        'attendance_rate': attendanceRate,
+      };
 }
 
 class SchoolDashboardModel {
@@ -110,8 +130,27 @@ class SchoolDashboardModel {
       currentAcademicYear: summary['current_academic_year'] as String? ?? '',
       attendanceToday: AttendanceTodaySummary.fromJson(att),
       announcements: rawAnnouncements
-          .map((a) => AnnouncementModel.fromJson(a as Map<String, dynamic>))
+          .map((a) => AnnouncementModel.fromJson(Map<String, dynamic>.from(a as Map)))
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'code': code,
+        'name': name,
+        'level_display': levelDisplay,
+        'branding': {
+          'primary_color': primaryColor,
+          'logo_url': logoUrl,
+        },
+        'summary': {
+          'total_students': totalStudents,
+          'total_teachers': totalTeachers,
+          'total_classrooms': totalClassrooms,
+          'current_academic_year': currentAcademicYear,
+          'attendance_today': attendanceToday.toJson(),
+        },
+        'recent_announcements': announcements.map((a) => a.toJson()).toList(),
+      };
 }

@@ -44,4 +44,18 @@ class AttendanceModel {
       classroomName: classroomName,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
+        'status': status,
+        'status_display': statusDisplay,
+        'notes': notes,
+        'student': {
+          'id': studentId,
+          'nis': studentNis,
+          'full_name': studentName,
+        },
+        'classroom': classroomName,
+      };
 }

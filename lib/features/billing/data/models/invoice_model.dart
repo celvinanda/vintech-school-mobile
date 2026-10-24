@@ -67,4 +67,28 @@ class InvoiceModel {
       classroomName: classroomName,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'invoice_number': invoiceNumber,
+        'period_label': periodLabel,
+        'amount': amount,
+        'amount_display': amountDisplay,
+        'status': status,
+        'status_display': statusDisplay,
+        'due_date': dueDate,
+        'paid_at': paidAt,
+        'payment_channel': paymentChannel,
+        'vintech_payment': {
+          'checkout_url': checkoutUrl,
+        },
+        'fee_category': {
+          'name': feeCategoryName,
+        },
+        'student': {
+          'nis': studentNis,
+          'full_name': studentName,
+          'classroom': classroomName,
+        },
+      };
 }

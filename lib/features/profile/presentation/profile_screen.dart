@@ -365,6 +365,49 @@ class ProfileScreen extends StatelessWidget {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
+                        color: const Color(0xFF7C3AED).withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.storage_rounded,
+                        color: Color(0xFF7C3AED),
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Database Lokal Hive (Offline-First)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${context.read<LocalStorage>().hive.totalCachedEntries} Modul Tersimpan • Akses Tanpa Sinyal Aktif',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.bolt_rounded,
+                        color: Color(0xFF7C3AED), size: 20),
+                    onTap: () {
+                      final hive = context.read<LocalStorage>().hive;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Hive Offline DB aktif (${hive.totalCachedEntries} cache tersimpan, '
+                            '${hive.totalPendingOutbox} antrean sinkronisasi).',
+                          ),
+                          backgroundColor: const Color(0xFF0F172A),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
                         color: const Color(0xFF64748B).withAlpha(20),
                         borderRadius: BorderRadius.circular(10),
                       ),

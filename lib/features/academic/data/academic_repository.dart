@@ -2,16 +2,53 @@ import 'package:dio/dio.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
+import '../../../core/storage/local_storage.dart';
 import 'models/attendance_model.dart';
 import 'models/classroom_model.dart';
 import 'models/student_model.dart';
 
 class AcademicRepository {
   final ApiClient _apiClient;
+  final LocalStorage _storage;
 
-  AcademicRepository(this._apiClient);
+  AcademicRepository(this._apiClient, this._storage);
 
   Dio get _dio => _apiClient.dio;
+
+  String _attCacheKey(String? classroomId, String? studentNis) =>
+      '${classroomId ?? "all"}_${studentNis ?? "all"}';
+
+  String _stuCacheKey(String? classroomId, String? search) =>
+      '${classroomId ?? "all"}_${search ?? "all"}';
+
+  // ===========================================================================
+  // LOCAL HIVE CACHE READERS (INSTANT 0 MS)
+  // ===========================================================================
+
+  List<ClassroomModel>? getCachedClassrooms() {
+    final raw = _storage.getCachedClassrooms();
+    if (raw == null) return null;
+    return raw.map((c) => ClassroomModel.fromJson(c)).toList();
+  }
+
+  List<StudentModel>? getCachedStudents({String? classroomId, String? search}) {
+    final raw = _storage.getCachedStudents(_stuCacheKey(classroomId, search));
+    if (raw == null) return null;
+    return raw.map((s) => StudentModel.fromJson(s)).toList();
+  }
+
+  List<AttendanceModel>? getCachedAttendances({
+    String? classroomId,
+    String? studentNis,
+  }) {
+    final raw = _storage.getCachedAttendances(_attCacheKey(classroomId, studentNis));
+    if (raw == null) return null;
+    return raw.map((a) => AttendanceModel.fromJson(a)).toList();
+  }
+
+  // ===========================================================================
+  // OFFLINE-FIRST NETWORK + HIVE PERSISTENCE
+  // ===========================================================================
 
   Future<List<ClassroomModel>> getClassrooms() async {
     try {
@@ -23,16 +60,22 @@ class AcademicRepository {
 
       if (envelope.success && envelope.data != null) {
         final list = envelope.data!['classrooms'] as List<dynamic>? ?? [];
-        return list.map((c) => ClassroomModel.fromJson(c as Map<String, dynamic>)).toList();
+        final models =
+            list.map((c) => ClassroomModel.fromJson(c as Map<String, dynamic>)).toList();
+        await _storage.cacheClassrooms(models.map((m) => m.toJson()).toList());
+        return models;
       }
-      return [];
+      return getCachedClassrooms() ?? [];
     } on DioException catch (e) {
+      final cached = getCachedClassrooms();
+      if (cached != null) return cached;
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal memuat daftar kelas: ${e.message}');
     }
   }
 
   Future<List<StudentModel>> getStudents({String? classroomId, String? search}) async {
+    final cacheKey = _stuCacheKey(classroomId, search);
     try {
       final response = await _dio.get(
         ApiConstants.students,
@@ -48,12 +91,16 @@ class AcademicRepository {
       );
 
       if (envelope.success && envelope.data != null) {
-        return envelope.data!
+        final models = envelope.data!
             .map((s) => StudentModel.fromJson(s as Map<String, dynamic>))
             .toList();
+        await _storage.cacheStudents(cacheKey, models.map((m) => m.toJson()).toList());
+        return models;
       }
-      return [];
+      return getCachedStudents(classroomId: classroomId, search: search) ?? [];
     } on DioException catch (e) {
+      final cached = getCachedStudents(classroomId: classroomId, search: search);
+      if (cached != null) return cached;
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal memuat direktori siswa: ${e.message}');
     }
@@ -63,7 +110,11 @@ class AcademicRepository {
     String? classroomId,
     String? studentNis,
   }) async {
+    final cacheKey = _attCacheKey(classroomId, studentNis);
     try {
+      // Sinkronkan antrean presensi offline terlebih dahulu jika ada
+      await flushOfflineOutbox();
+
       final response = await _dio.get(
         ApiConstants.attendance,
         queryParameters: {
@@ -78,14 +129,41 @@ class AcademicRepository {
       );
 
       if (envelope.success && envelope.data != null) {
-        return envelope.data!
+        final models = envelope.data!
             .map((a) => AttendanceModel.fromJson(a as Map<String, dynamic>))
             .toList();
+        await _storage.cacheAttendances(cacheKey, models.map((m) => m.toJson()).toList());
+        return models;
       }
-      return [];
+      return getCachedAttendances(classroomId: classroomId, studentNis: studentNis) ?? [];
     } on DioException catch (e) {
+      final cached = getCachedAttendances(classroomId: classroomId, studentNis: studentNis);
+      if (cached != null) return cached;
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal memuat riwayat presensi: ${e.message}');
+    }
+  }
+
+  Future<void> flushOfflineOutbox() async {
+    final schoolCode = _storage.getSchoolCode() ?? 'default';
+    final pending = _storage.hive.getPendingAttendances(schoolCode);
+    if (pending.isEmpty) return;
+
+    for (final item in pending) {
+      try {
+        await _dio.post(
+          ApiConstants.attendance,
+          data: {
+            'student_nis': item['student_nis'],
+            'status': item['status'],
+            'notes': item['notes'],
+          },
+        );
+        await _storage.hive.removePendingAttendance(item['id'] as String);
+      } catch (_) {
+        // Berhenti jika masih offline
+        break;
+      }
     }
   }
 
@@ -112,8 +190,48 @@ class AcademicRepository {
       if (envelope.success && envelope.data != null) {
         return envelope.data!;
       }
-      throw ApiException(envelope.message.isNotEmpty ? envelope.message : 'Gagal mencatat presensi');
+      throw ApiException(
+        envelope.message.isNotEmpty ? envelope.message : 'Gagal mencatat presensi',
+      );
     } on DioException catch (e) {
+      // Jika offline (tidak ada sinyal), simpan ke Hive Offline Outbox Queue
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        final schoolCode = _storage.getSchoolCode() ?? 'default';
+        await _storage.hive.enqueueAttendance(
+          schoolCode: schoolCode,
+          studentNis: studentNis.trim(),
+          status: status.toUpperCase(),
+          notes: notes.trim(),
+        );
+
+        final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+        final offlineRecord = AttendanceModel(
+          id: 'offline_${DateTime.now().millisecondsSinceEpoch}',
+          date: todayStr,
+          status: status.toUpperCase(),
+          statusDisplay: '${status.toUpperCase()} (Offline)',
+          notes: notes.trim().isNotEmpty
+              ? '${notes.trim()} • Tersimpan di Hive (Menunggu Sinyal)'
+              : 'Tersimpan di Hive (Menunggu Sinyal)',
+          studentId: '',
+          studentNis: studentNis.trim(),
+          studentName: 'Siswa ($studentNis)',
+        );
+
+        // Tambahkan secara optimistik ke cache Hive lokal
+        final cacheKey = _attCacheKey(null, null);
+        final existing = getCachedAttendances() ?? [];
+        final updated = [offlineRecord, ...existing];
+        await _storage.cacheAttendances(
+          cacheKey,
+          updated.map((m) => m.toJson()).toList(),
+        );
+
+        return offlineRecord;
+      }
+
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal mencatat presensi: ${e.message}');
     }

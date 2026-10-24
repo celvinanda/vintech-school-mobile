@@ -39,4 +39,15 @@ class StudentModel {
       parentPhone: json['parent_phone'] as String?,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'nis': nis,
+        'nisn': nisn,
+        'full_name': fullName,
+        'gender': gender,
+        'classroom': classroomName,
+        'parent_name': parentName,
+        'parent_phone': parentPhone,
+      };
 }

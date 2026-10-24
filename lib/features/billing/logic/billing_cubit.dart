@@ -12,10 +12,18 @@ class BillingCubit extends Cubit<BillingState> {
     String? studentNis,
     bool silent = false,
   }) async {
-    final hasExistingData = state is BillingLoaded;
-    if (!hasExistingData && !silent) {
+    // 1. Baca instan dari Hive Database Lokal (0 ms Latency)
+    final cached = _repository.getCachedInvoices(
+      status: filter == 'ALL' ? null : filter,
+      studentNis: studentNis,
+    );
+    if (cached != null) {
+      emit(BillingLoaded(invoices: cached, currentFilter: filter));
+    } else if (state is! BillingLoaded && !silent) {
       emit(BillingLoading());
     }
+
+    // 2. Sinkronisasi dengan Cloud Server di latar belakang
     try {
       final invoices = await _repository.getInvoices(
         status: filter == 'ALL' ? null : filter,
@@ -23,7 +31,7 @@ class BillingCubit extends Cubit<BillingState> {
       );
       emit(BillingLoaded(invoices: invoices, currentFilter: filter));
     } catch (e) {
-      if (!hasExistingData) {
+      if (state is! BillingLoaded && cached == null) {
         emit(BillingError(e.toString()));
       }
     }

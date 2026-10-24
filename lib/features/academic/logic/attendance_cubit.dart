@@ -22,13 +22,38 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     bool isStaff = false,
     bool forceRefreshMeta = false,
   }) async {
-    final currentState = state;
-    final hasExistingData = currentState is AttendanceLoaded;
+    // 1. Muat instan dari Hive Database Lokal (0 ms Latency) jika belum ada di layar
+    if (state is! AttendanceLoaded) {
+      final hiveAtt = _repository.getCachedAttendances(
+        classroomId: classroomId,
+        studentNis: studentNis,
+      );
+      final hiveClassrooms = _repository.getCachedClassrooms();
+      final hiveStudents =
+          isStaff ? _repository.getCachedStudents(classroomId: classroomId) : null;
 
-    if (!hasExistingData) {
-      emit(AttendanceLoading());
+      if (hiveClassrooms != null && _cachedClassrooms.isEmpty) {
+        _cachedClassrooms = hiveClassrooms;
+      }
+      if (hiveStudents != null && _cachedStudents.isEmpty) {
+        _cachedStudents = hiveStudents;
+      }
+
+      if (hiveAtt != null) {
+        emit(
+          AttendanceLoaded(
+            attendances: hiveAtt,
+            classrooms: _cachedClassrooms,
+            students: _cachedStudents,
+            selectedClassroomId: classroomId,
+          ),
+        );
+      } else {
+        emit(AttendanceLoading());
+      }
     }
 
+    // 2. Sinkronisasi dengan Cloud Server di latar belakang
     try {
       final futures = <Future<dynamic>>[
         _repository.getAttendances(
@@ -67,7 +92,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         ),
       );
     } catch (e) {
-      if (!hasExistingData) {
+      if (state is! AttendanceLoaded) {
         emit(AttendanceError(e.toString()));
       }
     }
@@ -84,7 +109,11 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         status: status,
         notes: notes,
       );
-      emit(AttendanceActionSuccess('Presensi ${att.studentName} (${att.statusDisplay}) berhasil dicatat!'));
+      emit(
+        AttendanceActionSuccess(
+          'Presensi ${att.studentName} (${att.statusDisplay}) berhasil dicatat!',
+        ),
+      );
       await loadAttendances(isStaff: true);
     } catch (e) {
       emit(AttendanceError(e.toString()));

@@ -1,11 +1,79 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vintech_school_mobile/features/academic/data/models/attendance_model.dart';
+import 'package:vintech_school_mobile/features/academic/data/models/classroom_model.dart';
 import 'package:vintech_school_mobile/features/academic/data/models/student_model.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/school_lookup_model.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 import 'package:vintech_school_mobile/features/billing/data/models/invoice_model.dart';
+import 'package:vintech_school_mobile/features/home/data/models/school_dashboard_model.dart';
 
 void main() {
+  test('Hive Offline-First JSON roundtrip serialization test for all domain models', () {
+    final att = AttendanceModel(
+      id: 'att-100',
+      date: '2026-10-25',
+      status: 'HADIR',
+      statusDisplay: 'Hadir',
+      notes: 'Tepat waktu',
+      studentId: 'std-1',
+      studentNis: '20261001',
+      studentName: 'Rizky Pratama',
+      classroomName: 'X MIPA 1',
+    );
+    final attRestored = AttendanceModel.fromJson(att.toJson());
+    expect(attRestored.id, 'att-100');
+    expect(attRestored.studentNis, '20261001');
+    expect(attRestored.classroomName, 'X MIPA 1');
+
+    final cls = ClassroomModel(
+      id: 'c-1',
+      name: 'X MIPA 1',
+      gradeLevel: 10,
+      capacity: 36,
+      studentCount: 32,
+      homeroomTeacher: 'Budi Santoso, S.Pd',
+    );
+    final clsRestored = ClassroomModel.fromJson(cls.toJson());
+    expect(clsRestored.name, 'X MIPA 1');
+    expect(clsRestored.studentCount, 32);
+
+    final dash = SchoolDashboardModel(
+      id: 'sch-1',
+      code: 'SMAN1',
+      name: 'SMAN 1 Jakarta',
+      levelDisplay: 'SMA',
+      primaryColor: '#10A83D',
+      totalStudents: 120,
+      totalTeachers: 18,
+      totalClassrooms: 6,
+      currentAcademicYear: '2026/2027 Ganjil',
+      attendanceToday: AttendanceTodaySummary(
+        date: '2026-10-25',
+        presentCount: 24,
+        izinCount: 1,
+        sakitCount: 0,
+        alpaCount: 0,
+        recordedCount: 25,
+        attendanceRate: 96.0,
+      ),
+      announcements: [
+        AnnouncementModel(
+          id: 'ann-1',
+          title: 'Ujian Tengah Semester',
+          content: 'Jadwal UTS dimulai minggu depan.',
+          audience: 'ALL',
+          audienceDisplay: 'Semua',
+          isPinned: true,
+          createdAt: '25 Okt 2026',
+        ),
+      ],
+    );
+    final dashRestored = SchoolDashboardModel.fromJson(dash.toJson());
+    expect(dashRestored.name, 'SMAN 1 Jakarta');
+    expect(dashRestored.attendanceToday.attendanceRate, 96.0);
+    expect(dashRestored.announcements.first.title, 'Ujian Tengah Semester');
+  });
+
   test('StudentModel and AttendanceModel handle map or string classroom safely', () {
     final studentJson = {
       'id': 'std-1',

@@ -19,12 +19,12 @@ void main() async {
   // Initialize Local Storage
   final storage = await LocalStorage.init();
 
-  // Initialize Network & Repositories
+  // Initialize Network & Repositories (Offline-First with Hive + Cloud API)
   final apiClient = ApiClient(storage);
   final authRepository = AuthRepository(apiClient, storage);
-  final homeRepository = HomeRepository(apiClient);
-  final academicRepository = AcademicRepository(apiClient);
-  final billingRepository = BillingRepository(apiClient);
+  final homeRepository = HomeRepository(apiClient, storage);
+  final academicRepository = AcademicRepository(apiClient, storage);
+  final billingRepository = BillingRepository(apiClient, storage);
 
   runApp(
     VintechSchoolApp(

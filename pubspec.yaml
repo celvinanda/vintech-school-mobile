@@ -41,6 +41,8 @@ dependencies:
   google_fonts: ^9.0.0
   cached_network_image: ^4.0.4
   url_launcher: ^6.3.3
+  hive_ce: ^2.22.0
+  hive_ce_flutter: ^2.5.0
 
 dev_dependencies:
   flutter_test:
