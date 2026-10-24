@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/background_sync_service.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../academic/data/academic_repository.dart';
+import '../../academic/logic/attendance_cubit.dart';
 import '../../academic/presentation/attendance_screen.dart';
 import '../../auth/data/models/user_model.dart';
+import '../../billing/logic/billing_cubit.dart';
 import '../../billing/presentation/billing_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../logic/home_cubit.dart';
@@ -20,12 +25,40 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
+  BackgroundSyncService? _bgSyncService;
 
   @override
   void initState() {
     super.initState();
-    // Load home dashboard
+    // Load home dashboard (0ms Hive + Background Cloud Sync)
     context.read<HomeCubit>().loadDashboard();
+
+    // Start Background Sync & App Lifecycle Engine
+    _bgSyncService = BackgroundSyncService(
+      storage: context.read<LocalStorage>(),
+      academicRepository: context.read<AcademicRepository>(),
+      homeCubit: context.read<HomeCubit>(),
+      attendanceCubit: context.read<AttendanceCubit>(),
+      billingCubit: context.read<BillingCubit>(),
+      profile: widget.profile,
+      onOutboxSynced: (count) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✓ $count presensi offline dari Hive berhasil disinkronkan ke server!',
+            ),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      },
+    )..start();
+  }
+
+  @override
+  void dispose() {
+    _bgSyncService?.dispose();
+    super.dispose();
   }
 
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);

@@ -10,10 +10,12 @@ import 'models/student_model.dart';
 class AcademicRepository {
   final ApiClient _apiClient;
   final LocalStorage _storage;
+  bool _isFlushingOutbox = false;
 
   AcademicRepository(this._apiClient, this._storage);
 
   Dio get _dio => _apiClient.dio;
+  bool get isFlushingOutbox => _isFlushingOutbox;
 
   String _attCacheKey(String? classroomId, String? studentNis) =>
       '${classroomId ?? "all"}_${studentNis ?? "all"}';
@@ -144,27 +146,38 @@ class AcademicRepository {
     }
   }
 
-  Future<void> flushOfflineOutbox() async {
+  /// Mengirim seluruh antrean presensi offline dari Hive ke Cloud Server
+  /// Dilengkapi Mutex Lock (_isFlushingOutbox) untuk mencegah duplikasi pengiriman.
+  Future<int> flushOfflineOutbox() async {
+    if (_isFlushingOutbox) return 0;
     final schoolCode = _storage.getSchoolCode() ?? 'default';
     final pending = _storage.hive.getPendingAttendances(schoolCode);
-    if (pending.isEmpty) return;
+    if (pending.isEmpty) return 0;
 
-    for (final item in pending) {
-      try {
-        await _dio.post(
-          ApiConstants.attendance,
-          data: {
-            'student_nis': item['student_nis'],
-            'status': item['status'],
-            'notes': item['notes'],
-          },
-        );
-        await _storage.hive.removePendingAttendance(item['id'] as String);
-      } catch (_) {
-        // Berhenti jika masih offline
-        break;
+    _isFlushingOutbox = true;
+    int syncedCount = 0;
+    try {
+      for (final item in pending) {
+        try {
+          await _dio.post(
+            ApiConstants.attendance,
+            data: {
+              'student_nis': item['student_nis'],
+              'status': item['status'],
+              'notes': item['notes'],
+            },
+          );
+          await _storage.hive.removePendingAttendance(item['id'] as String);
+          syncedCount++;
+        } catch (_) {
+          // Berhenti jika koneksi masih terputus; akan dicoba ulang oleh BackgroundSyncService
+          break;
+        }
       }
+    } finally {
+      _isFlushingOutbox = false;
     }
+    return syncedCount;
   }
 
   Future<AttendanceModel> recordAttendance({
