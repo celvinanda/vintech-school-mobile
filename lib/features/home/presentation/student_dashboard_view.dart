@@ -19,26 +19,9 @@ class StudentDashboardView extends StatelessWidget {
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
-  String get _firstName {
-    final names = profile.user.fullName.trim().split(' ');
-    return names.isNotEmpty ? names.first : profile.user.username;
-  }
-
-  String get _initials {
-    final names = profile.user.fullName.trim().split(' ');
-    if (names.length >= 2) {
-      return '${names[0][0]}${names[1][0]}'.toUpperCase();
-    }
-    return names.isNotEmpty && names[0].isNotEmpty ? names[0][0].toUpperCase() : 'S';
-  }
-
-  String get _cleanNis {
-    final raw = profile.user.username;
-    if (raw.contains('.')) {
-      return raw.split('.').last;
-    }
-    return raw;
-  }
+  String get _firstName => profile.user.firstName;
+  String get _initials => profile.user.initials;
+  String get _cleanNis => profile.user.cleanIdentifier;
 
   @override
   Widget build(BuildContext context) {

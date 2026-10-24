@@ -13,6 +13,37 @@ class UserModel {
     required this.isSuperuser,
   });
 
+  /// Mengambil NIS atau NIP murni dari format username multi-tenant
+  /// (contoh: "siswa.sman1jkt.20261001" -> "20261001")
+  String get cleanIdentifier {
+    final raw = username.trim();
+    if (raw.contains('.')) {
+      return raw.split('.').last;
+    }
+    return raw;
+  }
+
+  /// Mengambil nama panggilan depan pengguna
+  String get firstName {
+    final cleaned = fullName.trim();
+    if (cleaned.isEmpty) return username;
+    final parts = cleaned.split(RegExp(r'\s+'));
+    return parts.first;
+  }
+
+  /// Mengambil inisial 2 huruf untuk avatar
+  String get initials {
+    final cleaned = fullName.trim();
+    if (cleaned.isEmpty) {
+      return username.isNotEmpty ? username[0].toUpperCase() : 'U';
+    }
+    final parts = cleaned.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as int? ?? 0,
@@ -60,6 +91,32 @@ class ActiveSchoolModel {
   bool get isAdmin => role == 'SCHOOL_ADMIN' || role == 'SUPERADMIN';
   bool get isPrincipal => role == 'PRINCIPAL';
   bool get isParent => role == 'PARENT';
+  bool get isStaffOrTeacher => isTeacher || isAdmin || isPrincipal;
+
+  String get roleDisplayLabel {
+    switch (role) {
+      case 'STUDENT':
+        return 'Siswa Aktif';
+      case 'TEACHER':
+        return 'Tenaga Pendidik';
+      case 'SCHOOL_ADMIN':
+      case 'SUPERADMIN':
+        return 'Administrator Sekolah';
+      case 'PRINCIPAL':
+        return 'Kepala Sekolah';
+      case 'PARENT':
+        return 'Wali Murid';
+      default:
+        return role;
+    }
+  }
+
+  String get cardBadgeTitle {
+    if (isAdmin) return 'KARTU ADMINISTRATOR';
+    if (isPrincipal) return 'KARTU KEPALA SEKOLAH';
+    if (isTeacher) return 'KARTU TENAGA PENDIDIK';
+    return 'KARTU PELAJAR DIGITAL';
+  }
 
   factory ActiveSchoolModel.fromJson(Map<String, dynamic> json) {
     return ActiveSchoolModel(

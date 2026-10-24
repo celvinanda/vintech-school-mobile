@@ -19,26 +19,9 @@ class TeacherDashboardView extends StatelessWidget {
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
-  String get _firstName {
-    final names = profile.user.fullName.trim().split(' ');
-    return names.isNotEmpty ? names.first : profile.user.username;
-  }
-
-  String get _initials {
-    final names = profile.user.fullName.trim().split(' ');
-    if (names.length >= 2) {
-      return '${names[0][0]}${names[1][0]}'.toUpperCase();
-    }
-    return names.isNotEmpty && names[0].isNotEmpty ? names[0][0].toUpperCase() : 'G';
-  }
-
-  String get _cleanNip {
-    final raw = profile.user.username;
-    if (raw.contains('.')) {
-      return raw.split('.').last;
-    }
-    return raw;
-  }
+  String get _firstName => profile.user.firstName;
+  String get _initials => profile.user.initials;
+  String get _cleanNip => profile.user.cleanIdentifier;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +200,7 @@ class TeacherDashboardView extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'KARTU TENAGA PENDIDIK',
+                    profile.activeSchool?.cardBadgeTitle ?? 'KARTU TENAGA PENDIDIK',
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white.withAlpha(190),
                       fontSize: 11,
@@ -238,7 +221,7 @@ class TeacherDashboardView extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'GURU AKTIF',
+                  (profile.activeSchool?.isAdmin == true) ? 'ADMIN AKTIF' : 'GURU AKTIF',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF93C5FD),
                     fontSize: 10,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/server_settings_sheet.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
 import '../../auth/presentation/login_screen.dart';
@@ -18,124 +19,87 @@ class ProfileScreen extends StatelessWidget {
     final memberships = profile.memberships;
     if (memberships.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Akun Anda saat ini hanya terdaftar pada 1 sekolah.')),
+        const SnackBar(
+          content: Text('Akun Anda saat ini terdaftar pada 1 institusi sekolah.'),
+        ),
       );
       return;
     }
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Beralih Sekolah'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: memberships.map((m) {
-            final isCurrent = m.schoolCode == profile.activeSchool?.code;
-            return ListTile(
-              title: Text(m.schoolName),
-              subtitle: Text('${m.schoolCode} • ${m.roleLabel}'),
-              trailing: isCurrent ? const Icon(Icons.check_circle, color: AppTheme.success) : null,
-              onTap: isCurrent
-                  ? null
-                  : () {
-                      Navigator.pop(ctx);
-                      context.read<AuthCubit>().switchSchool(m.schoolCode);
-                    },
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  void _showServerSettingsModal(BuildContext context) {
-    final storage = context.read<LocalStorage>();
-    final serverController = TextEditingController(text: storage.getBaseUrl());
-
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Konfigurasi Server Vintech API',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Aplikasi terhubung ke Server Resmi Vintech Cloud (https://school.vintech.cloud).',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: AppTheme.textMuted,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: serverController,
-              decoration: const InputDecoration(
-                labelText: 'Backend Base URL',
-                hintText: 'https://school.vintech.cloud',
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.cloud_done_rounded, size: 16),
-                    onPressed: () {
-                      serverController.text = 'https://school.vintech.cloud';
-                    },
-                    label: const Text('Resmi (Cloud)'),
-                  ),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      serverController.text = 'http://10.0.2.2:8001';
-                    },
-                    child: const Text('Lokal AVD'),
-                  ),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await storage.saveBaseUrl(serverController.text.trim());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Server URL diperbarui: ${serverController.text.trim()}'),
-                        backgroundColor: AppTheme.success,
+            Text(
+              'Pilih Sekolah Aktif',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...memberships.map((m) {
+              final isCurrent = m.schoolCode == profile.activeSchool?.code;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: isCurrent ? _schoolColor.withAlpha(18) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(14),
+                  child: ListTile(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      side: BorderSide(
+                        color: isCurrent ? _schoolColor : const Color(0xFFE2E8F0),
                       ),
-                    );
-                  }
-                },
-                child: const Text('Simpan URL'),
-              ),
-            ),
+                    ),
+                    leading: CircleAvatar(
+                      backgroundColor: _schoolColor.withAlpha(30),
+                      child: Icon(Icons.school_rounded, color: _schoolColor, size: 20),
+                    ),
+                    title: Text(
+                      m.schoolName,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${m.schoolCode} • ${m.roleLabel}',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 12),
+                    ),
+                    trailing: isCurrent
+                        ? Icon(Icons.check_circle_rounded, color: _schoolColor)
+                        : null,
+                    onTap: isCurrent
+                        ? null
+                        : () {
+                            Navigator.pop(ctx);
+                            context.read<AuthCubit>().switchSchool(m.schoolCode);
+                          },
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -148,88 +112,162 @@ class ProfileScreen extends StatelessWidget {
     final school = profile.activeSchool;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Profil Pengguna'),
+        title: const Text('Profil & Akun'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Avatar & Name
-            Center(
-              child: Column(
+            // Clean Modern Profile Header Card
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
                 children: [
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      color: _schoolColor.withAlpha(20),
+                      color: _schoolColor.withAlpha(22),
                       shape: BoxShape.circle,
-                      border: Border.all(color: _schoolColor, width: 2),
+                      border: Border.all(color: _schoolColor.withAlpha(90), width: 2),
                     ),
                     child: Center(
                       child: Text(
-                        user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U',
+                        user.initials,
                         style: GoogleFonts.plusJakartaSans(
-                          fontSize: 28,
+                          fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: _schoolColor,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    user.fullName,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textMain,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '@${user.username} • ${school?.role ?? 'User'}',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: AppTheme.textMuted,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _schoolColor.withAlpha(20),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            school?.roleDisplayLabel ?? 'Pengguna Aktif',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: _schoolColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          user.fullName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'ID: ${user.cleanIdentifier} • @${user.username}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
 
-            // Active School Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.borderLight),
+            // Active School Section
+            Text(
+              'Institusi Sekolah',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF475569),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            const SizedBox(height: 8),
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              child: InkWell(
+                onTap: () => _showSwitchSchoolDialog(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
                     children: [
-                      Text(
-                        'Sekolah Terhubung',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textMuted,
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _schoolColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              school?.name ?? 'Vintech School',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Kode: ${school?.code ?? '-'} • ${school?.level ?? 'Sekolah'} ${school?.city ?? ''}',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (profile.memberships.length > 1)
-                        InkWell(
-                          onTap: () => _showSwitchSchoolDialog(context),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: _schoolColor.withAlpha(20),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           child: Text(
-                            'Ganti Sekolah',
+                            'Ganti',
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: _schoolColor,
                             ),
@@ -237,85 +275,127 @@ class ProfileScreen extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: _schoolColor,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.school, color: Colors.white, size: 22),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              school?.name ?? 'Sekolah',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textMain,
-                              ),
-                            ),
-                            Text(
-                              'Kode: ${school?.code ?? '-'} • ${school?.city ?? ''}',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                color: AppTheme.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // Settings & Tools List
+            // Settings & System Info Section
+            Text(
+              'Pengaturan & Sistem',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF475569),
+              ),
+            ),
+            const SizedBox(height: 8),
             Material(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               clipBehavior: Clip.antiAlias,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppTheme.borderLight),
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
               ),
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.settings_ethernet_rounded, color: Color(0xFF2563EB)),
-                    title: const Text('Pengaturan Server API'),
-                    subtitle: Text(context.read<LocalStorage>().getBaseUrl(),
-                        style: const TextStyle(fontSize: 11)),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _showServerSettingsModal(context),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.cloud_done_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Server Vintech Cloud API',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      context.read<LocalStorage>().getBaseUrl(),
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                    onTap: () => ServerSettingsSheet.show(context),
                   ),
-                  const Divider(height: 1),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    leading: const Icon(Icons.notifications_outlined, color: Color(0xFFD97706)),
-                    title: const Text('Notifikasi & Pengumuman'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {},
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F766E).withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.verified_user_rounded,
+                        color: Color(0xFF0F766E),
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Keamanan Sesi & Multi-Tenant',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Token Bearer Aktif • Deteksi Peran Otomatis',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.check_circle_rounded,
+                        color: Color(0xFF16A34A), size: 18),
                   ),
-                  const Divider(height: 1),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    leading: const Icon(Icons.info_outline_rounded, color: Color(0xFF0F766E)),
-                    title: const Text('Tentang Vintech School v1.0.0'),
-                    trailing: const Icon(Icons.chevron_right_rounded),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF64748B).withAlpha(20),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Color(0xFF475569),
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Tentang Vintech School Mobile',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Versi 1.1.0 • Clean Modern Architecture',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
                     onTap: () {
                       showAboutDialog(
                         context: context,
                         applicationName: 'Vintech School',
-                        applicationVersion: '1.0.0 (Clean Architecture)',
+                        applicationVersion: '1.1.0 (Clean Modern UI)',
                         applicationLegalese: '© 2026 Vintech Cloud Platform',
                       );
                     },
@@ -329,25 +409,49 @@ class ProfileScreen extends StatelessWidget {
             // Logout Button
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 50,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.danger,
-                  side: const BorderSide(color: AppTheme.danger),
+                  side: const BorderSide(color: Color(0xFFFECACA), width: 1.5),
+                  backgroundColor: const Color(0xFFFEF2F2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () {
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Keluar dari Akun?'),
-                      content: const Text('Sesi aktif pada perangkat ini akan diakhiri.'),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      title: Text(
+                        'Keluar dari Akun?',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                      content: Text(
+                        'Sesi aktif Anda akan diakhiri dan Anda akan kembali ke halaman Login.',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13.5,
+                          color: const Color(0xFF475569),
+                        ),
+                      ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
                           child: const Text('Batal'),
                         ),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.danger),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.danger,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           onPressed: () async {
                             Navigator.pop(ctx);
                             await context.read<AuthCubit>().logout();
@@ -360,16 +464,23 @@ class ProfileScreen extends StatelessWidget {
                               );
                             }
                           },
-                          child: const Text('Keluar'),
+                          child: const Text('Ya, Keluar'),
                         ),
                       ],
                     ),
                   );
                 },
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text('Keluar Akun'),
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: Text(
+                  'Keluar Akun',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),

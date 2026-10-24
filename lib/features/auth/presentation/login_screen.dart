@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/server_settings_sheet.dart';
 import '../../home/presentation/main_navigation_screen.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
@@ -58,100 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _showServerSettingsModal() {
-    final storage = context.read<LocalStorage>();
-    final serverController = TextEditingController(text: storage.getBaseUrl());
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pengaturan Server Backend',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Aplikasi terhubung langsung ke Server Resmi Vintech Cloud (https://school.vintech.cloud).',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                color: AppTheme.textMuted,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: serverController,
-              decoration: const InputDecoration(
-                labelText: 'Backend Base URL',
-                hintText: 'https://school.vintech.cloud',
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.cloud_done_rounded, size: 16),
-                    onPressed: () {
-                      serverController.text = 'https://school.vintech.cloud';
-                    },
-                    label: const Text('Resmi (Cloud)'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      serverController.text = 'http://10.0.2.2:8001';
-                    },
-                    child: const Text('Lokal AVD'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await storage.saveBaseUrl(serverController.text.trim());
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Base URL disimpan: ${serverController.text.trim()}'),
-                        backgroundColor: AppTheme.success,
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Simpan URL'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
@@ -181,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
             IconButton(
               icon: const Icon(Icons.settings_outlined),
               tooltip: 'Server API',
-              onPressed: _showServerSettingsModal,
+              onPressed: () => ServerSettingsSheet.show(context),
             ),
           ],
         ),

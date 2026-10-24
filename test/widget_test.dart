@@ -1,8 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/school_lookup_model.dart';
+import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 import 'package:vintech_school_mobile/features/billing/data/models/invoice_model.dart';
 
 void main() {
+  test('UserModel smart identifier and initials extraction test', () {
+    final student = UserModel(
+      id: 1,
+      username: 'siswa.sman1jkt.20261001',
+      fullName: 'Rizky Pratama Putra',
+      email: 'rizky@sman1.sch.id',
+      isSuperuser: false,
+    );
+
+    expect(student.cleanIdentifier, '20261001');
+    expect(student.firstName, 'Rizky');
+    expect(student.initials, 'RP');
+  });
+
   test('SchoolLookupModel serialization smoke test', () {
     final json = {
       'id': 'test-1',

@@ -30,12 +30,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
 
-  bool get _isTeacher => widget.profile.activeSchool?.isTeacher == true;
+  bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
 
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      _isTeacher
+      _isStaffOrTeacher
           ? TeacherDashboardView(
               profile: widget.profile,
               onNavigateTab: (index) => setState(() => _currentIndex = index),
