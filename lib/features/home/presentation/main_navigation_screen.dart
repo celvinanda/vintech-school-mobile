@@ -14,6 +14,7 @@ import '../../profile/presentation/profile_screen.dart';
 import '../logic/home_cubit.dart';
 import 'student_dashboard_view.dart';
 import 'teacher_dashboard_view.dart';
+import 'widgets/app_bottom_nav_bar.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   final UserProfileResponse profile;
@@ -101,44 +102,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         index: _currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
-          ),
-        ),
-        child: NavigationBar(
-          height: 65,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (idx) => setState(() => _currentIndex = idx),
-          indicatorColor: _schoolColor.withAlpha(25),
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.home_outlined, size: 22),
-              selectedIcon: Icon(Icons.home_rounded, color: _schoolColor, size: 22),
-              label: 'Beranda',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.checklist_outlined, size: 22),
-              selectedIcon: Icon(Icons.checklist_rounded, color: _schoolColor, size: 22),
-              label: 'Presensi',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.account_balance_wallet_outlined, size: 22),
-              selectedIcon: Icon(Icons.account_balance_wallet_rounded, color: _schoolColor, size: 22),
-              label: 'Tagihan SPP',
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.person_outline_rounded, size: 22),
-              selectedIcon: Icon(Icons.person_rounded, color: _schoolColor, size: 22),
-              label: 'Profil',
-            ),
-          ],
-        ),
+      bottomNavigationBar: AppBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: (idx) => setState(() => _currentIndex = idx),
+        schoolColor: _schoolColor,
+        isStaffOrTeacher: _isStaffOrTeacher,
+        pendingOutboxCount: context.watch<LocalStorage>().hive.totalPendingOutbox,
       ),
     );
   }
