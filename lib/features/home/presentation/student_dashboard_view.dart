@@ -46,10 +46,15 @@ class StudentDashboardView extends StatelessWidget {
                   ),
                 ],
               ),
-              child: HomeTopBar(
-                profile: profile,
-                schoolColor: _schoolColor,
-                onAvatarTap: () => onNavigateTab(3),
+              child: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
+                  return HomeTopBar(
+                    profile: profile,
+                    schoolColor: _schoolColor,
+                    announcements: announcements,
+                  );
+                },
               ),
             ),
 

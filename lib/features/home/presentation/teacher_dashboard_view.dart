@@ -46,10 +46,13 @@ class TeacherDashboardView extends StatelessWidget {
                   ),
                 ],
               ),
-              child: HomeTopBar(
-                profile: profile,
-                schoolColor: _schoolColor,
-                onAvatarTap: () => onNavigateTab(3),
+              child: BlocBuilder<HomeCubit, HomeState>(
+                builder: (context, state) {
+                  return HomeTopBar(
+                    profile: profile,
+                    schoolColor: _schoolColor,
+                  );
+                },
               ),
             ),
 

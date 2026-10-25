@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../auth/data/models/user_model.dart';
+import '../../data/models/school_dashboard_model.dart';
 
-/// Komponen Top Bar Beranda (Greeting & School Badge) yang modular,
-/// terisolasi, dan adaptif untuk peran Siswa maupun Guru/Staf.
+/// Komponen Top Bar Beranda yang clean, minimalis, dan modern.
+/// Fitur:
+/// 1. Kiri: Profile Sekolah (School Emblem & Profile Info) menggantikan avatar personal.
+/// 2. Tengah: Sapaan pengguna yang ramah dan nama institusi sekolah.
+/// 3. Kanan: Icon Lonceng Notifikasi mandiri dengan indikator badge aktif.
 class HomeTopBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
-  final VoidCallback? onAvatarTap;
-  final VoidCallback? onSchoolBadgeTap;
+  final VoidCallback? onSchoolTap;
+  final VoidCallback? onNotificationTap;
+  final List<AnnouncementModel>? announcements;
+  final bool hasUnreadNotifications;
 
   const HomeTopBar({
     super.key,
     required this.profile,
     required this.schoolColor,
-    this.onAvatarTap,
-    this.onSchoolBadgeTap,
+    this.onSchoolTap,
+    this.onNotificationTap,
+    this.announcements,
+    this.hasUnreadNotifications = true,
   });
 
   String get _firstName {
@@ -26,22 +35,37 @@ class HomeTopBar extends StatelessWidget {
     return full.split(' ').first;
   }
 
-  String get _initials => profile.user.initials;
-
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
+
+  void _handleSchoolTap(BuildContext context) {
+    HapticFeedback.selectionClick();
+    if (onSchoolTap != null) {
+      onSchoolTap!();
+      return;
+    }
+    _showSchoolInfoModal(context);
+  }
+
+  void _handleNotificationTap(BuildContext context) {
+    HapticFeedback.selectionClick();
+    if (onNotificationTap != null) {
+      onNotificationTap!();
+      return;
+    }
+    _showNotificationsModal(context);
+  }
 
   @override
   Widget build(BuildContext context) {
     final school = profile.activeSchool;
-    final schoolCode = school?.code ?? (_isStaffOrTeacher ? 'GURU' : 'SISWA');
     final schoolName = school?.name ?? 'Vintech School';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Avatar Pengguna dengan Inisial (Dapat di-tap untuk ke Profil)
+        // 1. Profile Sekolah (Emblem Avatar Institusi)
         GestureDetector(
-          onTap: onAvatarTap,
+          onTap: () => _handleSchoolTap(context),
           child: Container(
             width: 44,
             height: 44,
@@ -61,20 +85,17 @@ class HomeTopBar extends StatelessWidget {
               ],
             ),
             child: Center(
-              child: Text(
-                _initials,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: schoolColor,
-                ),
+              child: Icon(
+                Icons.school_rounded,
+                color: schoolColor,
+                size: 22,
               ),
             ),
           ),
         ),
         const SizedBox(width: 12),
 
-        // 2. Teks Sapaan Pengguna & Nama Institusi Sekolah
+        // 2. Teks Sapaan Pengguna & Nama Sekolah
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +104,7 @@ class HomeTopBar extends StatelessWidget {
               Text(
                 'Halo, $_firstName ${_isStaffOrTeacher ? "👨‍🏫" : "👋"}',
                 style: GoogleFonts.plusJakartaSans(
-                  fontSize: 17,
+                  fontSize: 16.5,
                   fontWeight: FontWeight.w800,
                   color: const Color(0xFF0F172A),
                   letterSpacing: -0.3,
@@ -107,14 +128,15 @@ class HomeTopBar extends StatelessWidget {
         ),
         const SizedBox(width: 8),
 
-        // 3. School Code Pill Badge (Dapat di-tap jika ada multi-sekolah)
+        // 3. Tombol Notifikasi Icon Lonceng (Clean & Minimalis)
         GestureDetector(
-          onTap: onSchoolBadgeTap,
+          onTap: () => _handleNotificationTap(context),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
               boxShadow: [
                 BoxShadow(
@@ -124,31 +146,337 @@ class HomeTopBar extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: schoolColor,
-                    shape: BoxShape.circle,
-                  ),
+                const Icon(
+                  Icons.notifications_none_rounded,
+                  size: 22,
+                  color: Color(0xFF1E293B),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  schoolCode,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF334155),
+                if (hasUnreadNotifications)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDC2626), // Merah aktif indikator notifikasi
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  /// Modal Informasi Profil Sekolah
+  void _showSchoolInfoModal(BuildContext context) {
+    final school = profile.activeSchool;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: schoolColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: schoolColor.withValues(alpha: 0.35), width: 1.5),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.school_rounded, color: schoolColor, size: 24),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        school?.name ?? 'Institusi Sekolah',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Kode: ${school?.code ?? "-"} • Jenjang: ${school?.level ?? "-"}',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                children: [
+                  _buildInfoRow('Wilayah / Kota', school?.city ?? 'Nasional'),
+                  const Divider(height: 18),
+                  _buildInfoRow('Status Keanggotaan', school?.roleDisplayLabel ?? 'Aktif'),
+                  const Divider(height: 18),
+                  _buildInfoRow('Sistem Cloud', 'Vintech Cloud Active ✓'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 12.5,
+            color: const Color(0xFF64748B),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Modal Daftar Notifikasi & Pengumuman Sekolah
+  void _showNotificationsModal(BuildContext context) {
+    final list = announcements ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.35,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (_, scrollController) => Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: schoolColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.notifications_active_rounded, color: schoolColor, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Pemberitahuan Sekolah',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: list.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.notifications_none_rounded, size: 44, color: const Color(0xFF94A3B8)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Belum Ada Notifikasi Baru',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF334155),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Pengumuman resmi dari sekolah akan muncul di sini.',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                color: const Color(0xFF64748B),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        itemCount: list.length,
+                        separatorBuilder: (ctx, idx) => const SizedBox(height: 12),
+                        itemBuilder: (ctx, index) {
+                          final item = list[index];
+                          return Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        if (item.isPinned)
+                                          Container(
+                                            margin: const EdgeInsets.only(right: 6),
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFEF3C7),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'PENTING',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w800,
+                                                color: const Color(0xFFB45309),
+                                              ),
+                                            ),
+                                          ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: schoolColor.withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            item.audienceDisplay.toUpperCase(),
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: schoolColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      item.createdAt.length >= 10 ? item.createdAt.substring(0, 10) : item.createdAt,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        color: const Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item.title,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item.content,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: const Color(0xFF475569),
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
