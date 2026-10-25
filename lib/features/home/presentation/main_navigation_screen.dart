@@ -177,6 +177,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     ];
 
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       extendBody: true,
       body: NotificationListener<ScrollNotification>(
         onNotification: _onScrollNotification,

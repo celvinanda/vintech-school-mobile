@@ -78,7 +78,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text(_isStudent ? 'Presensi & Kedisiplinan' : 'Presensi Harian'),
         actions: [

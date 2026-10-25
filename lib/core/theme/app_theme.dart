@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   static const Color defaultPrimary = Color(0xFF1E3A8A); // Classic Vintech Indigo / Navy
   static const Color secondaryColor = Color(0xFF0F766E); // Teal accent
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate-50
+  static const Color backgroundLight = Color(0xFFEEF2F6); // Cool Gray/Slate canvas untuk kontras tinggi
   static const Color surfaceLight = Colors.white;
   static const Color textMain = Color(0xFF0F172A); // Slate-900
   static const Color textMuted = Color(0xFF64748B); // Slate-500

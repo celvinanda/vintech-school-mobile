@@ -424,7 +424,7 @@ class ProfileScreen extends StatelessWidget {
     final school = profile.activeSchool;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

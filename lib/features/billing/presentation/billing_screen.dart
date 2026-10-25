@@ -264,7 +264,7 @@ class _BillingScreenState extends State<BillingScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: AppTheme.backgroundLight,
         appBar: AppBar(
           title: const Text('Tagihan SPP & Biaya'),
           actions: [

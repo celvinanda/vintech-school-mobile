@@ -339,34 +339,36 @@ class NotchBarPainter extends CustomPainter {
 
     path.close();
 
-    // 2. Gambar bayangan (Shadow)
+    // 2. Gambar bayangan elevasi (Ambient & Directional Drop Shadow)
     if (isFloating) {
       canvas.drawShadow(
         path,
-        const Color(0xFF0F172A).withValues(alpha: 0.16),
-        16.0,
+        const Color(0xFF0F172A).withValues(alpha: 0.22),
+        18.0,
         true,
       );
     } else {
       canvas.drawShadow(
         path,
-        const Color(0xFF0F172A).withValues(alpha: 0.05),
-        4.0,
+        const Color(0xFF0F172A).withValues(alpha: 0.10),
+        6.0,
         false,
       );
-      // Garis border halus di atas saat menempel
-      final borderPaint = Paint()
-        ..color = const Color(0xFFE2E8F0)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0;
-      canvas.drawPath(path, borderPaint);
     }
 
-    // 3. Gambar tubuh bar putih
+    // 3. Gambar tubuh bar putih (Fill Solid)
     final barPaint = Paint()
       ..color = barColor
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, barPaint);
+
+    // 4. Gambar garis kontur perimeter (Border Stroke) DI ATAS bar putih!
+    // Memastikan kontur lengkungan notch dan batas bar selalu kontras & terlihat tajam
+    final borderPaint = Paint()
+      ..color = const Color(0xFFCBD5E1) // Slate-300 garis tegas presisi
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawPath(path, borderPaint);
 
     // 4. Gambar Indikator Bulatan (Pearl Dot) di cekungan notch
     final dotCenter = Offset(notchCenter, 1.0);
