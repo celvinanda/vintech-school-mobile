@@ -6,6 +6,7 @@ import '../../auth/data/models/user_model.dart';
 import '../data/models/school_dashboard_model.dart';
 import '../logic/home_cubit.dart';
 import '../logic/home_state.dart';
+import 'widgets/home_top_bar.dart';
 
 class StudentDashboardView extends StatelessWidget {
   final UserProfileResponse profile;
@@ -19,8 +20,6 @@ class StudentDashboardView extends StatelessWidget {
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
-  String get _firstName => profile.user.firstName;
-  String get _initials => profile.user.initials;
   String get _cleanNis => profile.user.cleanIdentifier;
 
   @override
@@ -37,8 +36,12 @@ class StudentDashboardView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Header: User Profile Greeting & School Badge
-                _buildTopGreetingBar(context),
+                // Top Header: User Profile Greeting & School Badge (Modular)
+                HomeTopBar(
+                  profile: profile,
+                  schoolColor: _schoolColor,
+                  onAvatarTap: () => onNavigateTab(3),
+                ),
 
                 const SizedBox(height: 18),
 
@@ -68,103 +71,6 @@ class StudentDashboardView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTopGreetingBar(BuildContext context) {
-    return Row(
-      children: [
-        // Avatar with Initials
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: _schoolColor.withAlpha(25),
-            shape: BoxShape.circle,
-            border: Border.all(color: _schoolColor.withAlpha(60), width: 1.5),
-          ),
-          child: Center(
-            child: Text(
-              _initials,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: _schoolColor,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Greeting Text
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Halo, $_firstName 👋',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                profile.activeSchool?.name ?? 'Vintech School',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-
-        // School Code Pill Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(5),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: _schoolColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                profile.activeSchool?.code ?? 'SMAN1',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF334155),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
