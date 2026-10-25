@@ -593,11 +593,12 @@ class ProfileScreen extends StatelessWidget {
             // =================================================================
             // 2. UNIFIED CLEAN INFORMATION CARD
             // =================================================================
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
+            Material(
+              color: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
               ),
               child: Column(
                 children: [
