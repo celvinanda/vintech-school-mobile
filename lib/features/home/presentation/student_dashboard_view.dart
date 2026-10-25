@@ -27,48 +27,68 @@ class StudentDashboardView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       body: SafeArea(
-        child: RefreshIndicator(
-          color: _schoolColor,
-          onRefresh: () => context.read<HomeCubit>().loadDashboard(),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Header: User Profile Greeting & School Badge (Modular)
-                HomeTopBar(
-                  profile: profile,
-                  schoolColor: _schoolColor,
-                  onAvatarTap: () => onNavigateTab(3),
+        bottom: false,
+        child: Column(
+          children: [
+            // Sticky Pinned Top Bar (Tetap bertahan di atas, tidak ikut ter-scroll)
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundLight,
+                border: const Border(
+                  bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1),
                 ),
-
-                const SizedBox(height: 18),
-
-                // Digital Student Smart Card (Minimalist Luxury)
-                _buildStudentSmartCard(),
-
-                const SizedBox(height: 24),
-
-                // Quick Services Menu (Minimalist 4-Column Icons)
-                _buildSectionTitle('Layanan Siswa'),
-                const SizedBox(height: 12),
-                _buildQuickServicesGrid(context),
-
-                const SizedBox(height: 24),
-
-                // Attendance Summary & Status
-                _buildAttendanceSummarySection(),
-
-                const SizedBox(height: 24),
-
-                // School Announcements
-                _buildAnnouncementsSection(),
-
-                const SizedBox(height: 96),
-              ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: HomeTopBar(
+                profile: profile,
+                schoolColor: _schoolColor,
+                onAvatarTap: () => onNavigateTab(3),
+              ),
             ),
-          ),
+
+            // Scrollable Dashboard Body
+            Expanded(
+              child: RefreshIndicator(
+                color: _schoolColor,
+                onRefresh: () => context.read<HomeCubit>().loadDashboard(),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Digital Student Smart Card (Minimalist Luxury)
+                      _buildStudentSmartCard(),
+
+                      const SizedBox(height: 24),
+
+                      // Quick Services Menu (Minimalist 4-Column Icons)
+                      _buildSectionTitle('Layanan Siswa'),
+                      const SizedBox(height: 12),
+                      _buildQuickServicesGrid(context),
+
+                      const SizedBox(height: 24),
+
+                      // Attendance Summary & Status
+                      _buildAttendanceSummarySection(),
+
+                      const SizedBox(height: 24),
+
+                      // School Announcements
+                      _buildAnnouncementsSection(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
