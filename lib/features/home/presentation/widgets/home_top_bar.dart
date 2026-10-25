@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../data/models/school_dashboard_model.dart';
+import '../school_profile_screen.dart';
 
 /// Komponen Top Bar Beranda yang clean, minimalis, dan modern.
 /// Fitur:
@@ -43,7 +44,12 @@ class HomeTopBar extends StatelessWidget {
       onSchoolTap!();
       return;
     }
-    _showSchoolInfoModal(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SchoolProfileScreen(profile: profile),
+      ),
+    );
   }
 
   void _handleNotificationTap(BuildContext context) {
@@ -170,122 +176,6 @@ class HomeTopBar extends StatelessWidget {
                   ),
               ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Modal Informasi Profil Sekolah
-  void _showSchoolInfoModal(BuildContext context) {
-    final school = profile.activeSchool;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: schoolColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: schoolColor.withValues(alpha: 0.35), width: 1.5),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.school_rounded, color: schoolColor, size: 24),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        school?.name ?? 'Institusi Sekolah',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Kode: ${school?.code ?? "-"} • Jenjang: ${school?.level ?? "-"}',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Column(
-                children: [
-                  _buildInfoRow('Wilayah / Kota', school?.city ?? 'Nasional'),
-                  const Divider(height: 18),
-                  _buildInfoRow('Status Keanggotaan', school?.roleDisplayLabel ?? 'Aktif'),
-                  const Divider(height: 18),
-                  _buildInfoRow('Sistem Cloud', 'Vintech Cloud Active ✓'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 12.5,
-            color: const Color(0xFF64748B),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
           ),
         ),
       ],
