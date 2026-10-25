@@ -98,7 +98,6 @@ class AppBottomNavBar extends StatelessWidget {
                         _buildTabItem(
                           index: 0,
                           currentIndex: currentIndex,
-                          animatedIndex: animatedIndex,
                           icon: Icons.home_outlined,
                           selectedIcon: Icons.home_rounded,
                           label: 'Beranda',
@@ -106,7 +105,6 @@ class AppBottomNavBar extends StatelessWidget {
                         _buildTabItem(
                           index: 1,
                           currentIndex: currentIndex,
-                          animatedIndex: animatedIndex,
                           icon: Icons.checklist_outlined,
                           selectedIcon: Icons.checklist_rounded,
                           label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
@@ -116,7 +114,6 @@ class AppBottomNavBar extends StatelessWidget {
                         _buildTabItem(
                           index: 2,
                           currentIndex: currentIndex,
-                          animatedIndex: animatedIndex,
                           icon: Icons.account_balance_wallet_outlined,
                           selectedIcon: Icons.account_balance_wallet_rounded,
                           label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
@@ -126,7 +123,6 @@ class AppBottomNavBar extends StatelessWidget {
                         _buildTabItem(
                           index: 3,
                           currentIndex: currentIndex,
-                          animatedIndex: animatedIndex,
                           icon: Icons.person_outline_rounded,
                           selectedIcon: Icons.person_rounded,
                           label: 'Profil',
@@ -146,7 +142,6 @@ class AppBottomNavBar extends StatelessWidget {
   Widget _buildTabItem({
     required int index,
     required int currentIndex,
-    required double animatedIndex,
     required IconData icon,
     required IconData selectedIcon,
     required String label,
@@ -154,17 +149,11 @@ class AppBottomNavBar extends StatelessWidget {
     Color badgeColor = const Color(0xFFD97706),
   }) {
     final isSelected = index == currentIndex;
-    final activeFraction = (1.0 - (animatedIndex - index).abs()).clamp(0.0, 1.0);
-    final itemColor = Color.lerp(
-      const Color(0xFF64748B),
-      schoolColor,
-      activeFraction,
-    )!;
 
     Widget iconWidget = Icon(
       isSelected ? selectedIcon : icon,
-      color: itemColor,
-      size: 22,
+      color: isSelected ? schoolColor : const Color(0xFF64748B),
+      size: 23,
     );
 
     if (badgeCount > 0) {
@@ -189,32 +178,61 @@ class AppBottomNavBar extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
-          if (index != currentIndex) {
+          if (!isSelected) {
             HapticFeedback.selectionClick();
             onTap(index);
           }
         },
         child: SizedBox(
           height: 68.0,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
-              // Bergeser turun sedikit (~3px) saat aktif agar bersarang tepat di bawah lengkungan notch
-              Transform.translate(
-                offset: Offset(0, 3.0 * activeFraction),
-                child: iconWidget,
+              // 1. Posisi Ikon Presisi:
+              // Saat TIDAK dipilih / bukan fokus: offset Offset.zero -> Tepat di titik tengah matematis (center) vertikal 68px.
+              // Saat DIPILIH / fokus: meluncur naik secara halus (Offset(0, -0.28)) untuk memberi ruang teks di bawah.
+              AnimatedSlide(
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                offset: isSelected ? const Offset(0, -0.28) : Offset.zero,
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  scale: isSelected ? 1.05 : 1.0,
+                  child: iconWidget,
+                ),
               ),
-              const SizedBox(height: 3),
-              Transform.translate(
-                offset: Offset(0, 3.0 * activeFraction),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11.0,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: itemColor,
+
+              // 2. Teks Label Fokus:
+              // HANYA tampil untuk tab yang dipilih/fokus.
+              // Untuk tab yang tidak dipilih, teks disembunyikan total (opacity: 0).
+              Positioned(
+                top: 41.5,
+                left: 2,
+                right: 2,
+                child: AnimatedOpacity(
+                  duration: Duration(milliseconds: isSelected ? 240 : 140),
+                  curve: isSelected ? Curves.easeOutCubic : Curves.easeInCubic,
+                  opacity: isSelected ? 1.0 : 0.0,
+                  child: AnimatedSlide(
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeOutCubic,
+                    offset: isSelected ? Offset.zero : const Offset(0, 0.35),
+                    child: Center(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: schoolColor,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
