@@ -118,6 +118,7 @@ class HiveCacheService {
     await _outboxBox.delete(id);
   }
 
+  int get totalSessionEntries => _sessionBox.length;
   int get totalCachedEntries => _cacheBox.length;
   int get totalPendingOutbox => _outboxBox.length;
 

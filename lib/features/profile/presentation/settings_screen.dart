@@ -22,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _hapticEnabled = true;
+  bool _devModeEnabled = true;
   bool _isSyncing = false;
 
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
@@ -73,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 17),
         ),
         content: Text(
-          'Tindakan ini akan membersihkan cache data modul lokal tanpa mengeluarkan Anda dari akun. Data terbaru akan otomatis dimuat ulang dari server.',
+          'Tindakan ini akan membersihkan cache modul lokal tanpa mengeluarkan sesi login Anda. Data terbaru akan otomatis dimuat ulang dari server.',
           style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF475569)),
         ),
         actions: [
@@ -103,6 +104,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Ya, Segarkan'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showHiveInspectorModal() {
+    final storage = context.read<LocalStorage>();
+    final hive = storage.hive;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7C3AED).withAlpha(20),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.storage_rounded, color: Color(0xFF7C3AED), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Inspektur Database Hive',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildInspectorRow(
+              title: 'vintech_session_box',
+              subtitle: 'Token, kredensial sesi & lookup sekolah',
+              count: '${hive.totalSessionEntries} entri',
+              color: const Color(0xFF2563EB),
+            ),
+            const Divider(height: 16, color: Color(0xFFF1F5F9)),
+            _buildInspectorRow(
+              title: 'vintech_offline_cache_box',
+              subtitle: 'Cache kartu pelajar, riwayat presensi & tagihan',
+              count: '${hive.totalCachedEntries} entri',
+              color: const Color(0xFF7C3AED),
+            ),
+            const Divider(height: 16, color: Color(0xFFF1F5F9)),
+            _buildInspectorRow(
+              title: 'vintech_offline_outbox_box',
+              subtitle: 'Antrean transaksi presensi offline menunggu sinkron',
+              count: '${hive.totalPendingOutbox} antrean',
+              color: const Color(0xFFD97706),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tutup'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInspectorRow({
+    required String title,
+    required String subtitle,
+    required String count,
+    required Color color,
+  }) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withAlpha(20),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            count,
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _copyBearerToken() {
+    final storage = context.read<LocalStorage>();
+    final token = storage.getToken() ?? widget.profile.auth?.accessToken ?? '';
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Token autentikasi tidak tersedia.')),
+      );
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: 'Bearer $token'));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✓ Bearer Token berhasil disalin untuk pengujian API!'),
+        backgroundColor: Color(0xFF0F172A),
       ),
     );
   }
@@ -185,7 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? null
                         : () {
                             Navigator.pop(ctx);
-                            Navigator.pop(context); // back to main
+                            Navigator.pop(context);
                             context.read<AuthCubit>().switchSchool(m.schoolCode);
                           },
                   ),
@@ -212,7 +374,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         content: Text(
-          'Seluruh data sesi login, preferensi, dan database offline di perangkat ini akan dihapus secara total. Anda akan dialihkan ke halaman login awal.',
+          'Seluruh data sesi login, preferensi, dan database offline di HP ini akan dihapus secara total. Anda akan dialihkan ke halaman login awal.',
           style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF475569)),
         ),
         actions: [
@@ -376,17 +538,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w800,
-          color: const Color(0xFF64748B),
-          letterSpacing: 0.8,
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF64748B),
+              letterSpacing: 0.8,
+            ),
+          ),
+          ?trailing,
+        ],
       ),
     );
   }
@@ -440,23 +608,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // =================================================================
-            // 1. KONEKSI & CLOUD SERVER
+            // 1. PREFERENSI APLIKASI
             // =================================================================
-            _buildSectionHeader('Koneksi & Cloud Server'),
+            _buildSectionHeader('Preferensi Aplikasi'),
             _buildCardContainer(
               children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  leading: Container(
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  secondary: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB).withAlpha(20),
+                      color: const Color(0xFF3B82F6).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.cloud_done_rounded, color: Color(0xFF2563EB), size: 20),
+                    child: const Icon(Icons.notifications_active_rounded, color: Color(0xFF3B82F6), size: 20),
                   ),
                   title: Text(
-                    'Server Vintech Cloud API',
+                    'Notifikasi & Peringatan',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -464,36 +632,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    storage.getBaseUrl(),
-                    style: GoogleFonts.jetBrainsMono(
-                      fontSize: 11,
-                      color: const Color(0xFF64748B),
-                    ),
+                    'Pengingat presensi dan status tagihan sekolah',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
                   ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  value: _notificationsEnabled,
+                  activeTrackColor: _schoolColor,
+                  onChanged: (val) {
+                    setState(() => _notificationsEnabled = val);
+                  },
+                ),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  secondary: Container(
+                    padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xFF8B5CF6).withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Ubah',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF334155),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(Icons.chevron_right_rounded, size: 14, color: Color(0xFF64748B)),
-                      ],
+                    child: const Icon(Icons.vibration_rounded, color: Color(0xFF8B5CF6), size: 20),
+                  ),
+                  title: Text(
+                    'Umpan Balik Getar (Haptic)',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
                     ),
                   ),
-                  onTap: () async {
-                    ServerSettingsSheet.show(context);
+                  subtitle: Text(
+                    'Sensasi getar saat merekam absensi & navigasi',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                  ),
+                  value: _hapticEnabled,
+                  activeTrackColor: _schoolColor,
+                  onChanged: (val) {
+                    if (val) HapticFeedback.lightImpact();
+                    setState(() => _hapticEnabled = val);
                   },
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
@@ -502,13 +677,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F766E).withAlpha(20),
+                      color: const Color(0xFF059669).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.wifi_tethering_rounded, color: Color(0xFF0F766E), size: 20),
+                    child: const Icon(Icons.language_rounded, color: Color(0xFF059669), size: 20),
                   ),
                   title: Text(
-                    'Status Jaringan Cloud',
+                    'Bahasa Tampilan',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -516,39 +691,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'school.vintech.cloud • Terhubung',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      color: const Color(0xFF64748B),
-                    ),
+                    'Bahasa Indonesia (Default)',
+                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF16A34A),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          'ONLINE',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF15803D),
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'ID',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569),
+                      ),
                     ),
                   ),
                 ),
@@ -558,9 +716,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 22),
 
             // =================================================================
-            // 2. PENYIMPANAN OFFLINE & SINKRONISASI
+            // 2. DATA & PENYIMPANAN OFFLINE
             // =================================================================
-            _buildSectionHeader('Penyimpanan Offline Hive'),
+            _buildSectionHeader('Data & Penyimpanan Offline'),
             _buildCardContainer(
               children: [
                 ListTile(
@@ -574,7 +732,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: const Icon(Icons.storage_rounded, color: Color(0xFF7C3AED), size: 20),
                   ),
                   title: Text(
-                    'Database Lokal Hive (Offline-First)',
+                    'Penyimpanan Offline Hive',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -582,13 +740,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    '${hive.totalCachedEntries} Modul Tersimpan • Akses Tanpa Sinyal Aktif',
+                    '${hive.totalCachedEntries} Modul Tersimpan • Akses 0 ms Tanpa Sinyal',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  trailing: const Icon(Icons.bolt_rounded, color: Color(0xFF7C3AED), size: 20),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7C3AED).withAlpha(20),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'AKTIF',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF7C3AED),
+                      ),
+                    ),
+                  ),
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
@@ -612,7 +784,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(
                     hive.totalPendingOutbox > 0
                         ? '${hive.totalPendingOutbox} Data Menunggu Terhubung'
-                        : 'Semua Data Tersinkronisasi',
+                        : 'Semua Data Tersinkronisasi Sempurna',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: const Color(0xFF64748B),
@@ -663,7 +835,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'Bersihkan cache modul agar memuat data paling mutakhir',
+                    'Muat ulang data modul terbaru dari server',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: const Color(0xFF64748B),
@@ -678,9 +850,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 22),
 
             // =================================================================
-            // 3. KEAMANAN & AKUN
+            // 3. AKUN & KEAMANAN
             // =================================================================
-            _buildSectionHeader('Keamanan & Multi-Tenant'),
+            _buildSectionHeader('Akun & Keamanan'),
             _buildCardContainer(
               children: [
                 ListTile(
@@ -733,7 +905,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: const Icon(Icons.verified_user_rounded, color: Color(0xFF16A34A), size: 20),
                   ),
                   title: Text(
-                    'Partisi Sesi Terenkripsi',
+                    'Partisi Sesi Multi-Tenant',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -755,9 +927,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 22),
 
             // =================================================================
-            // 4. PREFERENSI APLIKASI
+            // 4. OPSI PENGEMBANG & DIAGNOSTIK (DEVELOPER OPTIONS)
             // =================================================================
-            _buildSectionHeader('Preferensi Aplikasi'),
+            _buildSectionHeader(
+              'Opsi Pengembang & Diagnostik',
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEA580C).withAlpha(20),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'DEV TOOLS',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFEA580C),
+                  ),
+                ),
+              ),
+            ),
             _buildCardContainer(
               children: [
                 SwitchListTile(
@@ -765,13 +954,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   secondary: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withAlpha(20),
+                      color: const Color(0xFFEA580C).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.notifications_active_rounded, color: Color(0xFF3B82F6), size: 20),
+                    child: const Icon(Icons.developer_mode_rounded, color: Color(0xFFEA580C), size: 20),
                   ),
                   title: Text(
-                    'Notifikasi & Peringatan',
+                    'Developer Mode',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -779,54 +968,153 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'Pengingat presensi dan update tagihan sekolah',
+                    'Menampilkan diagnostik endpoint & database',
                     style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
                   ),
-                  value: _notificationsEnabled,
-                  activeTrackColor: _schoolColor,
+                  value: _devModeEnabled,
+                  activeTrackColor: const Color(0xFFEA580C),
                   onChanged: (val) {
-                    setState(() => _notificationsEnabled = val);
+                    setState(() => _devModeEnabled = val);
                   },
                 ),
-                const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                  secondary: Container(
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
+                if (_devModeEnabled) ...[
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.dns_rounded, color: Color(0xFF2563EB), size: 20),
                     ),
-                    child: const Icon(Icons.vibration_rounded, color: Color(0xFF8B5CF6), size: 20),
+                    title: Text(
+                      'Endpoint Server API',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      storage.getBaseUrl(),
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        'Ubah',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                    onTap: () => ServerSettingsSheet.show(context),
                   ),
-                  title: Text(
-                    'Umpan Balik Getar (Haptic)',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF0F172A),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0891B2).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.analytics_outlined, color: Color(0xFF0891B2), size: 20),
+                    ),
+                    title: Text(
+                      'Inspeksi Database Hive',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Session: ${hive.totalSessionEntries} • Cache: ${hive.totalCachedEntries} • Outbox: ${hive.totalPendingOutbox}',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                    onTap: _showHiveInspectorModal,
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4F46E5).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.key_rounded, color: Color(0xFF4F46E5), size: 20),
+                    ),
+                    title: Text(
+                      'Salin Bearer Auth Token',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Gunakan untuk pengujian cURL / Postman',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFF4F46E5)),
+                      tooltip: 'Salin Token',
+                      onPressed: _copyBearerToken,
                     ),
                   ),
-                  subtitle: Text(
-                    'Sensasi sentuh saat merekam absensi & navigasi',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDC2626).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.delete_sweep_rounded, color: Color(0xFFDC2626), size: 20),
+                    ),
+                    title: Text(
+                      'Reset Database Lokal (Factory Reset)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFDC2626),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Bersihkan seluruh sesi & data offline di HP',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFFDC2626), size: 20),
+                    onTap: _confirmFactoryReset,
                   ),
-                  value: _hapticEnabled,
-                  activeTrackColor: _schoolColor,
-                  onChanged: (val) {
-                    if (val) HapticFeedback.lightImpact();
-                    setState(() => _hapticEnabled = val);
-                  },
-                ),
+                ],
               ],
             ),
 
             const SizedBox(height: 22),
 
             // =================================================================
-            // 5. TENTANG & SISTEM
+            // 5. TENTANG APLIKASI
             // =================================================================
-            _buildSectionHeader('Tentang & Diagnostik'),
+            _buildSectionHeader('Tentang Aplikasi'),
             _buildCardContainer(
               children: [
                 ListTile(
@@ -840,7 +1128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: const Icon(Icons.info_outline_rounded, color: Color(0xFF475569), size: 20),
                   ),
                   title: Text(
-                    'Tentang Vintech School Mobile',
+                    'Vintech School Mobile',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -870,36 +1158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     );
                   },
                 ),
-                const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  leading: Container(
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626).withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.delete_forever_rounded, color: Color(0xFFDC2626), size: 20),
-                  ),
-                  title: Text(
-                    'Reset Data Aplikasi Lokal',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFDC2626),
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Hapus seluruh sesi dan database offline di HP ini',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
-                  ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFFDC2626), size: 20),
-                  onTap: _confirmFactoryReset,
-                ),
               ],
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
 
             // =================================================================
             // 6. LOGOUT BUTTON
