@@ -335,7 +335,7 @@ class _BillingScreenState extends State<BillingScreen> {
                       color: _schoolColor,
                       onRefresh: () async => _fetchInvoices(),
                       child: ListView(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
                         children: [
                           // Top Financial Summary Banner
                           _buildSummaryBanner(

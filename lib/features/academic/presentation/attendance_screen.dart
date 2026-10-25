@@ -177,7 +177,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       color: _schoolColor,
       onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
         children: [
           // Motivational Student Header Banner
           _buildMotivationalCard(

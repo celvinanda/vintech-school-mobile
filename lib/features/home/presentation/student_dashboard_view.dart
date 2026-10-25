@@ -62,7 +62,7 @@ class StudentDashboardView extends StatelessWidget {
                 // School Announcements
                 _buildAnnouncementsSection(),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 96),
               ],
             ),
           ),

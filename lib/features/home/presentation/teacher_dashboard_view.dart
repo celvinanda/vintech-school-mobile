@@ -55,7 +55,7 @@ class TeacherDashboardView extends StatelessWidget {
                 // Real-time School Metrics
                 _buildSchoolStatisticsSection(),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 96),
               ],
             ),
           ),
