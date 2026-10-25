@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/background_sync_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/update/ota_update_service.dart';
 import '../../academic/data/academic_repository.dart';
 import '../../academic/logic/attendance_cubit.dart';
 import '../../academic/presentation/attendance_screen.dart';
@@ -41,6 +42,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       attendanceCubit: context.read<AttendanceCubit>(),
       billingCubit: context.read<BillingCubit>(),
       profile: widget.profile,
+      otaUpdateService: context.read<OtaUpdateService>(),
       onOutboxSynced: (count) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,6 +51,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               '✓ $count presensi offline dari Hive berhasil disinkronkan ke server!',
             ),
             backgroundColor: AppTheme.success,
+          ),
+        );
+      },
+      onOtaStatusChanged: (status) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              '✨ Pembaruan kode baru telah diunduh di latar belakang. Buka Pengaturan untuk menerapkan.',
+            ),
+            backgroundColor: const Color(0xFF7C3AED),
+            duration: const Duration(seconds: 4),
           ),
         );
       },

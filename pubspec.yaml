@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.3.3
   hive_ce: ^2.22.0
   hive_ce_flutter: ^2.5.0
+  shorebird_code_push: ^2.0.7
 
 dev_dependencies:
   flutter_test:

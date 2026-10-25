@@ -1,0 +1,5 @@
+# This file is used by Shorebird to configure code push.
+# Run `shorebird init` to associate this project with your Shorebird account.
+# https://docs.shorebird.dev
+app_id: 00000000-0000-0000-0000-000000000000
+auto_update: true

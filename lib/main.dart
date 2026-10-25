@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/local_storage.dart';
 import 'core/theme/app_theme.dart';
+import 'core/update/ota_update_service.dart';
 import 'features/academic/data/academic_repository.dart';
 import 'features/academic/logic/attendance_cubit.dart';
 import 'features/auth/data/auth_repository.dart';
@@ -16,8 +17,12 @@ import 'features/home/logic/home_cubit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Local Storage
+  // Initialize Local Storage (Hive Multi-Box & SharedPreferences)
   final storage = await LocalStorage.init();
+
+  // Initialize Shorebird OTA Code Push Engine
+  final otaUpdateService = OtaUpdateService();
+  await otaUpdateService.initialize();
 
   // Initialize Network & Repositories (Offline-First with Hive + Cloud API)
   final apiClient = ApiClient(storage);
@@ -29,6 +34,7 @@ void main() async {
   runApp(
     VintechSchoolApp(
       storage: storage,
+      otaUpdateService: otaUpdateService,
       authRepository: authRepository,
       homeRepository: homeRepository,
       academicRepository: academicRepository,
@@ -39,6 +45,7 @@ void main() async {
 
 class VintechSchoolApp extends StatelessWidget {
   final LocalStorage storage;
+  final OtaUpdateService otaUpdateService;
   final AuthRepository authRepository;
   final HomeRepository homeRepository;
   final AcademicRepository academicRepository;
@@ -47,6 +54,7 @@ class VintechSchoolApp extends StatelessWidget {
   const VintechSchoolApp({
     super.key,
     required this.storage,
+    required this.otaUpdateService,
     required this.authRepository,
     required this.homeRepository,
     required this.academicRepository,
@@ -58,6 +66,7 @@ class VintechSchoolApp extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<LocalStorage>.value(value: storage),
+        RepositoryProvider<OtaUpdateService>.value(value: otaUpdateService),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<HomeRepository>.value(value: homeRepository),
         RepositoryProvider<AcademicRepository>.value(value: academicRepository),

@@ -1,18 +1,21 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../features/academic/data/academic_repository.dart';
 import '../../features/academic/logic/attendance_cubit.dart';
 import '../../features/auth/data/models/user_model.dart';
 import '../../features/billing/logic/billing_cubit.dart';
 import '../../features/home/logic/home_cubit.dart';
 import '../storage/local_storage.dart';
+import '../update/ota_update_service.dart';
 
 /// Engine Sinkronisasi Latar Belakang & App Lifecycle (Offline-First Coordinator).
 /// Menangani:
 /// 1. Auto-Flush Outbox Hive saat sinyal kembali tersedia (Heartbeat 30 detik).
 /// 2. Silent Revalidation saat aplikasi kembali dari background (AppLifecycleState.resumed).
-/// 3. Concurrency Mutex Lock & Cooldown Throttling agar hemat baterai & kuota.
+/// 3. Non-Blocking Shorebird OTA Code Push background detection.
+/// 4. Concurrency Mutex Lock & Cooldown Throttling agar hemat baterai & kuota.
 class BackgroundSyncService with WidgetsBindingObserver {
   final LocalStorage storage;
   final AcademicRepository academicRepository;
@@ -20,7 +23,9 @@ class BackgroundSyncService with WidgetsBindingObserver {
   final AttendanceCubit attendanceCubit;
   final BillingCubit billingCubit;
   final UserProfileResponse profile;
+  final OtaUpdateService? otaUpdateService;
   final void Function(int syncedCount)? onOutboxSynced;
+  final void Function(UpdateStatus status)? onOtaStatusChanged;
 
   Timer? _heartbeatTimer;
   bool _isSyncing = false;
@@ -36,7 +41,9 @@ class BackgroundSyncService with WidgetsBindingObserver {
     required this.attendanceCubit,
     required this.billingCubit,
     required this.profile,
+    this.otaUpdateService,
     this.onOutboxSynced,
+    this.onOtaStatusChanged,
   });
 
   void start() {
@@ -130,6 +137,17 @@ class BackgroundSyncService with WidgetsBindingObserver {
         ),
       ]);
       _lastFullSyncTime = DateTime.now();
+
+      // Silent non-blocking check for Shorebird OTA Code Push
+      if (otaUpdateService != null && otaUpdateService!.isShorebirdAvailable) {
+        otaUpdateService!.checkForUpdate().then((status) {
+          if (status == UpdateStatus.outdated) {
+            otaUpdateService!.downloadPatch(storage: storage);
+          } else if (status == UpdateStatus.restartRequired) {
+            onOtaStatusChanged?.call(status);
+          }
+        }).catchError((_) {});
+      }
     } catch (_) {
       // Abaikan error jaringan saat background resume (data Hive tetap tampil)
     } finally {

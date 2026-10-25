@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/update/ota_update_service.dart';
 import '../../../core/widgets/server_settings_sheet.dart';
 import '../../academic/data/academic_repository.dart';
 import '../../auth/data/models/user_model.dart';
@@ -265,6 +267,193 @@ class _SettingsScreenState extends State<SettingsScreen> {
       const SnackBar(
         content: Text('✓ Bearer Token berhasil disalin untuk pengujian API!'),
         backgroundColor: Color(0xFF0F172A),
+      ),
+    );
+  }
+
+  void _showOtaUpdateModal(BuildContext context) {
+    final ota = context.read<OtaUpdateService>();
+    final storage = context.read<LocalStorage>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          final isRestartReady = ota.status == UpdateStatus.restartRequired;
+          final isOutdated = ota.status == UpdateStatus.outdated;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7C3AED).withAlpha(20),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF7C3AED), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Pembaruan Kode OTA',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Teknologi Shorebird OTA memungkinkan pembaruan fitur dan perbaikan kode instan tanpa mengunduh file APK baru dari luar.',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12.5,
+                    color: const Color(0xFF475569),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isRestartReady
+                        ? const Color(0xFFFFFBEB)
+                        : (isOutdated ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isRestartReady
+                          ? const Color(0xFFFDE68A)
+                          : (isOutdated ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0)),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'STATUS SHOREBIRD',
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: isRestartReady
+                                  ? const Color(0xFFD97706)
+                                  : (isOutdated ? const Color(0xFF2563EB) : const Color(0xFF16A34A)),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              isRestartReady
+                                  ? 'SIAP DITERAPKAN'
+                                  : (isOutdated ? 'PATCH TERSEDIA' : 'KODE TERBARU'),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Patch Aktif: #${ota.activePatchNumber ?? "Base Release"}',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                      if (ota.isDownloading) ...[
+                        const SizedBox(height: 10),
+                        const LinearProgressIndicator(),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Mengunduh patch bytecode (~300 KB)...',
+                          style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF64748B)),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Tutup'),
+              ),
+              if (isRestartReady)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD97706),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    await ota.prepareForRestart(storage);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('✓ Sesi tersimpan aman. Silakan muat ulang (restart) aplikasi.'),
+                          backgroundColor: Color(0xFF0F172A),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                  label: const Text('Muat Ulang Sekarang'),
+                )
+              else if (isOutdated)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: ota.isDownloading
+                      ? null
+                      : () async {
+                          setModalState(() {});
+                          await ota.downloadPatch(storage: storage);
+                          setModalState(() {});
+                          setState(() {});
+                        },
+                  icon: const Icon(Icons.download_rounded, size: 16),
+                  label: const Text('Unduh Patch'),
+                )
+              else
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F172A),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: ota.isChecking
+                      ? null
+                      : () async {
+                          setModalState(() {});
+                          await ota.checkForUpdate();
+                          setModalState(() {});
+                          setState(() {});
+                        },
+                  child: const Text('Periksa Ulang'),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -575,6 +764,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final storage = context.read<LocalStorage>();
+    final ota = context.read<OtaUpdateService>();
     final hive = storage.hive;
     final user = widget.profile.user;
     final school = widget.profile.activeSchool;
@@ -1085,6 +1275,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
+                        color: const Color(0xFF7C3AED).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.bolt_rounded, color: Color(0xFF7C3AED), size: 20),
+                    ),
+                    title: Text(
+                      'Diagnostik Engine Shorebird OTA',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Engine: ${ota.isShorebirdAvailable ? "Production Release" : "Standby (Debug/AVD)"} • Patch: #${ota.activePatchNumber ?? "Base"}',
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                    onTap: () => _showOtaUpdateModal(context),
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    secondary: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D9488).withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.science_rounded, color: Color(0xFF0D9488), size: 20),
+                    ),
+                    title: Text(
+                      'Simulasi OTA Patch (Dev Test)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Simulasikan patch baru di emulator untuk menguji alur',
+                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    ),
+                    value: ota.isDevSimulated,
+                    activeTrackColor: const Color(0xFF0D9488),
+                    onChanged: (val) {
+                      ota.toggleDevSimulation(val);
+                      setState(() {});
+                    },
+                  ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
                         color: const Color(0xFFDC2626).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1157,6 +1406,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     );
                   },
+                ),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7C3AED).withAlpha(20),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF7C3AED), size: 20),
+                  ),
+                  title: Text(
+                    'Pembaruan Kode OTA (Shorebird)',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  subtitle: Text(
+                    ota.status == UpdateStatus.restartRequired
+                        ? 'Patch #${ota.activePatchNumber} siap! Ketuk untuk menerapkan'
+                        : (ota.status == UpdateStatus.outdated
+                            ? 'Patch kode baru tersedia • Ketuk untuk mengunduh'
+                            : (ota.status == UpdateStatus.unavailable
+                                ? 'Engine Siap (Production Release Standby)'
+                                : 'Kode Mutakhir • Patch #${ota.activePatchNumber ?? "Base"}')),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: ota.status == UpdateStatus.restartRequired
+                          ? const Color(0xFFD97706)
+                          : (ota.status == UpdateStatus.outdated
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFF64748B)),
+                      fontWeight: ota.status == UpdateStatus.restartRequired ? FontWeight.w700 : FontWeight.normal,
+                    ),
+                  ),
+                  trailing: ota.isChecking || ota.isDownloading
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : (ota.status == UpdateStatus.restartRequired
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFFFDE68A)),
+                              ),
+                              child: Text(
+                                'Terapkan',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFFB45309),
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20)),
+                  onTap: () => _showOtaUpdateModal(context),
                 ),
               ],
             ),
