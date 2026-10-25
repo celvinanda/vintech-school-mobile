@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
-import '../../auth/presentation/login_screen.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -131,7 +129,6 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header Modal
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -164,8 +161,6 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // The Digital ID Card Body
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(22),
@@ -190,7 +185,6 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // School Name & Header
                     Row(
                       children: [
                         Container(
@@ -218,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                'NPSN/KODE: ${school?.code ?? '-'}',
+                                'KODE: ${school?.code ?? '-'} • ${school?.level ?? 'Sekolah'}',
                                 style: GoogleFonts.jetBrainsMono(
                                   color: Colors.white.withAlpha(200),
                                   fontSize: 10,
@@ -245,10 +239,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Avatar + Name + ID
                     Row(
                       children: [
                         Container(
@@ -287,7 +278,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${school?.roleDisplayLabel ?? 'Pengguna'} • NIS/NIP: ${user.cleanIdentifier}',
+                                '${school?.roleDisplayLabel ?? 'Pengguna'} • ID: ${user.cleanIdentifier}',
                                 style: GoogleFonts.plusJakartaSans(
                                   color: Colors.white.withAlpha(210),
                                   fontSize: 11.5,
@@ -299,12 +290,9 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
                     Container(height: 1, color: Colors.white.withAlpha(40)),
                     const SizedBox(height: 14),
-
-                    // Barcode Simulated Pattern
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -345,10 +333,9 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 18),
               Text(
-                'Kartu digital ini sah dan terverifikasi secara multi-tenant pada sistem Vintech School Cloud.',
+                'Kartu identitas ini sah dan terverifikasi secara multi-tenant pada sistem Vintech School Cloud.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11.5,
@@ -376,150 +363,17 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
-    final storage = context.read<LocalStorage>();
-    final pendingCount = storage.hive.totalPendingOutbox;
-    bool clearLocalCache = false;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Keluar dari Akun?',
-            style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w800,
-              fontSize: 18,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Sesi aktif Anda akan diakhiri dan Anda akan kembali ke halaman Login.',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13.5,
-                  color: const Color(0xFF475569),
-                ),
-              ),
-              if (pendingCount > 0) ...[
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cloud_upload_outlined, color: Color(0xFFD97706), size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Terdapat $pendingCount data presensi offline. Data ini aman di perangkat dan akan disinkronkan saat akun Anda login kembali.',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF92400E),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              InkWell(
-                onTap: () {
-                  setDialogState(() {
-                    clearLocalCache = !clearLocalCache;
-                  });
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: clearLocalCache,
-                          activeColor: AppTheme.danger,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          onChanged: (val) {
-                            setDialogState(() {
-                              clearLocalCache = val ?? false;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Hapus riwayat data offline dari HP ini (Gunakan bila memakai HP bersama)',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11.5,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.danger,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () async {
-                Navigator.pop(ctx);
-                await context.read<AuthCubit>().logout(clearLocalCache: clearLocalCache);
-                if (context.mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
-                }
-              },
-              child: const Text('Ya, Keluar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
+  Widget _buildTile({
     required IconData icon,
-    required String label,
-    required String value,
+    required String title,
+    required String subtitle,
     Widget? trailing,
     VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         child: Row(
           children: [
             Container(
@@ -536,16 +390,16 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    label,
+                    title,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF64748B),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    value,
+                    subtitle,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -619,43 +473,29 @@ class ProfileScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // =================================================================
-            // 1. CLEAN MODERN PROFILE HERO CARD
+            // 1. MINIMALIST EXECUTIVE PROFILE HEADER
             // =================================================================
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(6),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
+            Center(
+              child: Column(
                 children: [
-                  // Avatar with School Tint
+                  // Avatar with Online Badge
                   Stack(
                     children: [
                       Container(
-                        width: 68,
-                        height: 68,
+                        width: 82,
+                        height: 82,
                         decoration: BoxDecoration(
                           color: _schoolColor.withAlpha(20),
                           shape: BoxShape.circle,
-                          border: Border.all(color: _schoolColor.withAlpha(90), width: 2.2),
+                          border: Border.all(color: _schoolColor.withAlpha(90), width: 2.5),
                         ),
                         child: Center(
                           child: Text(
                             user.initials,
                             style: GoogleFonts.plusJakartaSans(
-                              fontSize: 24,
+                              fontSize: 28,
                               fontWeight: FontWeight.w800,
                               color: _schoolColor,
                             ),
@@ -666,259 +506,112 @@ class ProfileScreen extends StatelessWidget {
                         right: 2,
                         bottom: 2,
                         child: Container(
-                          width: 14,
-                          height: 14,
+                          width: 16,
+                          height: 16,
                           decoration: BoxDecoration(
                             color: const Color(0xFF22C55E),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2.5),
+                            border: Border.all(color: Colors.white, width: 3),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 12),
+
+                  // Full Name
+                  Text(
+                    user.fullName,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF0F172A),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Role & School Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _schoolColor.withAlpha(18),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _schoolColor.withAlpha(60), width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Role Pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                          width: 6,
+                          height: 6,
                           decoration: BoxDecoration(
-                            color: _schoolColor.withAlpha(18),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: _schoolColor.withAlpha(60), width: 0.8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 5,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: _schoolColor,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                school?.roleDisplayLabel ?? 'Pengguna Aktif',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: _schoolColor,
-                                ),
-                              ),
-                            ],
+                            color: _schoolColor,
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(height: 7),
+                        const SizedBox(width: 6),
                         Text(
-                          user.fullName,
+                          '${school?.roleDisplayLabel ?? 'Pengguna Aktif'} • ${school?.name ?? 'Vintech School'}',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 17.5,
+                            fontSize: 11,
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF0F172A),
+                            color: _schoolColor,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'ID: ${user.cleanIdentifier} • @${user.username}',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF64748B),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Digital ID Card Action Pill
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _schoolColor,
+                      side: BorderSide(color: _schoolColor.withAlpha(90), width: 1.2),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    onPressed: () => _showDigitalCardModal(context),
+                    icon: const Icon(Icons.badge_outlined, size: 16),
+                    label: Text(
+                      school?.cardBadgeTitle ?? 'Kartu Identitas Digital',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // =================================================================
-            // 2. SMART DIGITAL ID CARD PREVIEW
+            // 2. UNIFIED CLEAN INFORMATION CARD
             // =================================================================
-            GestureDetector(
-              onTap: () => _showDigitalCardModal(context),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      _schoolColor,
-                      Color.lerp(_schoolColor, const Color(0xFF0F172A), 0.5) ?? const Color(0xFF0F172A),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _schoolColor.withAlpha(80),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withAlpha(30),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.badge_rounded, color: Colors.white, size: 16),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              school?.cardBadgeTitle ?? 'KARTU IDENTITAS DIGITAL',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white.withAlpha(220),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(25),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Buka Kartu',
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: Colors.white,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              const SizedBox(width: 3),
-                              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 10),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      user.fullName,
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontSize: 16.5,
-                        fontWeight: FontWeight.w800,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'NIS/NIP: ${user.cleanIdentifier} • ${school?.name ?? 'Vintech School'}',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white.withAlpha(190),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            // =================================================================
-            // 3. INSTITUSI SEKOLAH AKTIF
-            // =================================================================
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(
-                'INSTITUSI SEKOLAH',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF64748B),
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: () => _showSwitchSchoolDialog(context),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: _schoolColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(Icons.school_rounded, color: Colors.white, size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                school?.name ?? 'Vintech School',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Kode: ${school?.code ?? '-'} • ${school?.level ?? 'Sekolah'} ${school?.city ?? ''}',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (profile.memberships.length > 1)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Column(
+                children: [
+                  // Institusi Sekolah
+                  _buildTile(
+                    icon: Icons.school_rounded,
+                    title: 'Institusi Sekolah',
+                    subtitle: '${school?.name ?? '-'} (${school?.code ?? '-'})',
+                    trailing: profile.memberships.length > 1
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: _schoolColor.withAlpha(20),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
                               'Ganti',
@@ -928,43 +621,17 @@ class ProfileScreen extends StatelessWidget {
                                 color: _schoolColor,
                               ),
                             ),
-                          ),
-                      ],
-                    ),
+                          )
+                        : null,
+                    onTap: profile.memberships.length > 1 ? () => _showSwitchSchoolDialog(context) : null,
                   ),
-                ),
-              ),
-            ),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
 
-            const SizedBox(height: 22),
-
-            // =================================================================
-            // 4. INFORMASI AKUN & PRIBADI
-            // =================================================================
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(
-                'INFORMASI PENGGUNA',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF64748B),
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Column(
-                children: [
-                  _buildInfoRow(
+                  // Nomor Identitas (NIS/NIP)
+                  _buildTile(
                     icon: Icons.badge_outlined,
-                    label: 'Nomor Identitas (NIS/NIP)',
-                    value: user.cleanIdentifier,
+                    title: school?.isStudent == true ? 'Nomor Induk Siswa (NIS)' : 'Nomor Induk Pegawai (NIP)',
+                    subtitle: user.cleanIdentifier,
                     trailing: IconButton(
                       icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF94A3B8)),
                       tooltip: 'Salin ID',
@@ -980,22 +647,28 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                  _buildInfoRow(
+
+                  // Username Sistem
+                  _buildTile(
                     icon: Icons.alternate_email_rounded,
-                    label: 'Username Sistem',
-                    value: '@${user.username}',
+                    title: 'Username Sistem',
+                    subtitle: '@${user.username}',
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                  _buildInfoRow(
+
+                  // Email Terdaftar
+                  _buildTile(
                     icon: Icons.mail_outline_rounded,
-                    label: 'Email Terdaftar',
-                    value: user.email.isNotEmpty ? user.email : 'Tidak terdaftar',
+                    title: 'Email Terdaftar',
+                    subtitle: user.email.isNotEmpty ? user.email : 'Tidak terdaftar',
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                  _buildInfoRow(
+
+                  // Status Autentikasi
+                  _buildTile(
                     icon: Icons.verified_user_outlined,
-                    label: 'Status Autentikasi',
-                    value: 'Terverifikasi (Aktif)',
+                    title: 'Status Autentikasi',
+                    subtitle: 'Terverifikasi Aktif • Multi-Tenant',
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -1016,84 +689,30 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
             // =================================================================
-            // 5. SHORTCUT PUSAT BANTUAN
+            // 3. SUBTLE FOOTER NOTE
             // =================================================================
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.help_outline_rounded, color: Color(0xFF475569), size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Butuh Bantuan Akun?',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                        Text(
-                          'Hubungi Tata Usaha ${school?.name ?? 'Sekolah'} untuk perubahan profil',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11,
-                            color: const Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
+                  const Icon(Icons.lock_outline_rounded, size: 13, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Data tersimpan aman pada sistem cloud sekolah',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: const Color(0xFF94A3B8),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 28),
-
-            // =================================================================
-            // 6. LOGOUT BUTTON
-            // =================================================================
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppTheme.danger,
-                  side: const BorderSide(color: Color(0xFFFECACA), width: 1.5),
-                  backgroundColor: const Color(0xFFFEF2F2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                onPressed: () => _showLogoutDialog(context),
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: Text(
-                  'Keluar Akun',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
           ],
         ),
       ),
