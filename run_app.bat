@@ -22,24 +22,24 @@ if "%USE_WT%"=="1" (
 :menu
 cls
 echo ===================================================
-echo     VINTECH SCHOOL - MOBILE APP (ANDROID ^& iOS)
+echo     VINTECH SCHOOL - MOBILE APP [ANDROID ^& iOS]
 echo ===================================================
 echo.
 echo Pilihan Perangkat / Aksi:
-echo [0] Jalankan Android Emulator Super Light (vintech_super_light - 1GB RAM)
-echo [1] Jalankan Aplikasi di Chrome Web (Clean Profile, Anti-Timeout)
-echo [2] Jalankan Aplikasi di Android Emulator (Tab Terminal Baru)
-echo [3] Jalankan Aplikasi di Windows Desktop (Instan, Hemat RAM ~100MB)
-echo [4] Buka Logcat Android Real-Time (Tab Baru + Waktu ^& ms)
-echo [5] Cek Perangkat Terhubung (flutter devices)
-echo [6] Jalankan Unit ^& Widget Test (flutter test)
+echo [0] Jalankan Android Emulator Super Light [1GB RAM]
+echo [1] Jalankan Aplikasi di Chrome Web [Clean Profile]
+echo [2] Jalankan Aplikasi di Android Emulator
+echo [3] Jalankan Aplikasi di Windows Desktop [Instan, Hemat RAM ~100MB]
+echo [4] Buka Logcat Android Real-Time [ms]
+echo [5] Cek Perangkat Terhubung [flutter devices]
+echo [6] Jalankan Unit ^& Widget Test [flutter test]
 echo [7] Keluar
 echo.
-set /p opt="Pilih opsi (0-7): "
+set /p opt="Pilih opsi [0-7]: "
 
 if "%opt%"=="0" (
     echo.
-    echo Menjalankan emulator Android super ringan (vintech_super_light)...
+    echo Menjalankan emulator Android super ringan vintech_super_light...
     set ANDROID_AVD_HOME=D:\Android\avd
     start "Vintech Super Light Emulator" "%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe" -avd vintech_super_light -netdelay none -netspeed full
     echo Emulator telah dibuka di jendela borderless!
@@ -51,9 +51,9 @@ if "%opt%"=="1" (
     echo.
     echo Membuka Flutter Web di tab terminal baru...
     if "%USE_WT%"=="1" (
-        wt.exe -w 0 nt --title "Vintech Web (Chrome)" -d "%CD%" cmd.exe /k run_web.bat
+        wt.exe -w 0 nt --title "Vintech Web Chrome" -d "%CD%" cmd.exe /k run_web.bat
     ) else (
-        start "Vintech Web (Chrome)" cmd.exe /k run_web.bat
+        start "Vintech Web Chrome" cmd.exe /k run_web.bat
     )
     echo Tab baru telah dibuat di Windows Terminal!
     pause
@@ -87,11 +87,11 @@ if "%opt%"=="3" (
 )
 if "%opt%"=="4" (
     echo.
-    echo Membuka Logcat Android real-time dengan waktu dan milidetik di tab baru...
+    echo Membuka Logcat Android real-time di tab baru...
     if "%USE_WT%"=="1" (
-        wt.exe -w 0 nt --title "Android Logcat (ms)" -d "%CD%" cmd.exe /k view_logcat.bat
+        wt.exe -w 0 nt --title "Android Logcat ms" -d "%CD%" cmd.exe /k view_logcat.bat
     ) else (
-        start "Android Logcat (ms)" cmd.exe /k view_logcat.bat
+        start "Android Logcat ms" cmd.exe /k view_logcat.bat
     )
     echo Tab Logcat telah dibuka di Windows Terminal yang sama!
     echo.
