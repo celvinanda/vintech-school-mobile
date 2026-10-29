@@ -26,22 +26,23 @@ echo     VINTECH SCHOOL - MOBILE APP (ANDROID ^& iOS)
 echo ===================================================
 echo.
 echo Pilihan Perangkat / Aksi:
-echo [0] Jalankan Android Emulator (vintech_pixel_light - Hemat RAM)
-echo [1] Jalankan Aplikasi di Chrome (Tab Terminal Baru)
+echo [0] Jalankan Android Emulator Super Light (vintech_super_light - 1GB RAM)
+echo [1] Jalankan Aplikasi di Chrome Web (Clean Profile, Anti-Timeout)
 echo [2] Jalankan Aplikasi di Android Emulator (Tab Terminal Baru)
-echo [3] Buka Logcat Android Real-Time (Tab Baru + Waktu ^& Milidetik ms)
-echo [4] Cek Perangkat Terhubung (flutter devices)
-echo [5] Jalankan Unit ^& Widget Test (flutter test)
-echo [6] Keluar
+echo [3] Jalankan Aplikasi di Windows Desktop (Instan, Hemat RAM ~100MB)
+echo [4] Buka Logcat Android Real-Time (Tab Baru + Waktu ^& ms)
+echo [5] Cek Perangkat Terhubung (flutter devices)
+echo [6] Jalankan Unit ^& Widget Test (flutter test)
+echo [7] Keluar
 echo.
-set /p opt="Pilih opsi (0-6): "
+set /p opt="Pilih opsi (0-7): "
 
 if "%opt%"=="0" (
     echo.
-    echo Menjalankan emulator Android hemat RAM...
+    echo Menjalankan emulator Android super ringan (vintech_super_light)...
     set ANDROID_AVD_HOME=D:\Android\avd
-    start "Vintech Android Emulator" "%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe" -avd vintech_pixel_light -netdelay none -netspeed full
-    echo Emulator telah dibuka di jendela emulator Android!
+    start "Vintech Super Light Emulator" "%LOCALAPPDATA%\Android\Sdk\emulator\emulator.exe" -avd vintech_super_light -netdelay none -netspeed full
+    echo Emulator telah dibuka di jendela borderless!
     echo.
     pause
     goto menu
@@ -73,6 +74,19 @@ if "%opt%"=="2" (
 )
 if "%opt%"=="3" (
     echo.
+    echo Membuka Flutter Windows Desktop di tab terminal baru...
+    if "%USE_WT%"=="1" (
+        wt.exe -w 0 nt --title "Vintech Windows App" -d "%CD%" cmd.exe /k run_windows.bat
+    ) else (
+        start "Vintech Windows App" cmd.exe /k run_windows.bat
+    )
+    echo Aplikasi desktop native sedang dijalankan!
+    echo.
+    pause
+    goto menu
+)
+if "%opt%"=="4" (
+    echo.
     echo Membuka Logcat Android real-time dengan waktu dan milidetik di tab baru...
     if "%USE_WT%"=="1" (
         wt.exe -w 0 nt --title "Android Logcat (ms)" -d "%CD%" cmd.exe /k view_logcat.bat
@@ -84,21 +98,21 @@ if "%opt%"=="3" (
     pause
     goto menu
 )
-if "%opt%"=="4" (
+if "%opt%"=="5" (
     echo.
     call flutter devices
     echo.
     pause
     goto menu
 )
-if "%opt%"=="5" (
+if "%opt%"=="6" (
     echo.
     call flutter test
     echo.
     pause
     goto menu
 )
-if "%opt%"=="6" (
+if "%opt%"=="7" (
     exit /b
 )
 
