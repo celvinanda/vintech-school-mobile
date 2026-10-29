@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../home/presentation/main_navigation_screen.dart';
@@ -101,10 +102,15 @@ class _SplashScreenState extends State<SplashScreen>
         // Tangani navigasi jika pengecekan async baru selesai setelah delay splash
         _handleNavigation(state);
       },
-      child: Scaffold(
-        backgroundColor: Colors.white, // Clean & Minimalist Pure White
-        body: SafeArea(
-          child: Stack(
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark, // Android: dark icons
+          statusBarBrightness: Brightness.light, // iOS: dark text/icons
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.white, // Clean & Minimalist Pure White
+          body: Stack(
             children: [
               // 1. Elemen Tengah: Logo & Tipografi
               Center(

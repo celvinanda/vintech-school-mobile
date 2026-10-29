@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -78,84 +79,90 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings_outlined),
-              tooltip: 'Server API',
-              onPressed: () => ServerSettingsSheet.show(context),
-            ),
-          ],
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
         ),
-        body: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+          body: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => FocusScope.of(context).unfocus(),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
 
-                    // Header Logo & Title
-                    Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF2563EB).withAlpha(60),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
+                      // Header Logo & Title (Clean Minimalist without AppBar)
+                      Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                            ],
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF2563EB).withAlpha(60),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.school_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.school_rounded,
-                            color: Colors.white,
-                            size: 28,
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Vintech School',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  'Sistem Informasi Akademik & Presensi',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: AppTheme.textMuted,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Vintech School',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0F172A),
-                              ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.settings_outlined,
+                              size: 21,
+                              color: Color(0xFF94A3B8),
                             ),
-                            Text(
-                              'Sistem Informasi Akademik & Presensi',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                color: AppTheme.textMuted,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            tooltip: 'Server API',
+                            onPressed: () => ServerSettingsSheet.show(context),
+                          ),
+                        ],
+                      ),
 
                     const SizedBox(height: 28),
 
@@ -292,8 +299,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDemoSection() {
     return Container(
