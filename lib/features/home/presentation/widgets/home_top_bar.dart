@@ -36,8 +36,6 @@ class HomeTopBar extends StatelessWidget {
     return full.split(' ').first;
   }
 
-  bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
-
   void _handleSchoolTap(BuildContext context) {
     HapticFeedback.selectionClick();
     if (onSchoolTap != null) {
@@ -69,106 +67,108 @@ class HomeTopBar extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Profile Sekolah (Emblem Avatar Institusi)
+        // 1. School Emblem (Stitch Design: rounded-lg bg-primary shadow-sm)
         GestureDetector(
           onTap: () => _handleSchoolTap(context),
           child: Container(
-            width: 44,
-            height: 44,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: schoolColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: schoolColor.withValues(alpha: 0.35),
-                width: 1.5,
-              ),
+              color: schoolColor,
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: schoolColor.withValues(alpha: 0.28),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.school_rounded,
-                color: schoolColor,
-                size: 22,
+                color: Colors.white,
+                size: 20,
               ),
             ),
           ),
         ),
         const SizedBox(width: 12),
 
-        // 2. Teks Sapaan Pengguna & Nama Sekolah
+        // 2. School Name & Academic Period / Semester
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Halo, $_firstName ${_isStaffOrTeacher ? "👨‍🏫" : "👋"}',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16.5,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
-                  letterSpacing: -0.3,
+          child: GestureDetector(
+            onTap: () => _handleSchoolTap(context),
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  schoolName.toUpperCase(),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF191C1E),
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                schoolName,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  color: const Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 2),
+                Text(
+                  'Semester Genap 2025/2026 • Halo, $_firstName',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: const Color(0xFF565E74),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 8),
 
-        // 3. Tombol Notifikasi Icon Lonceng (Clean & Minimalis)
+        // 3. Tombol Notifikasi Icon Lonceng (Stitch Design)
         GestureDetector(
           onTap: () => _handleNotificationTap(context),
           child: Container(
-            width: 42,
-            height: 42,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
+              border: Border.all(color: const Color(0xFFECEEF0), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Stack(
-              alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: [
-                const Icon(
-                  Icons.notifications_none_rounded,
-                  size: 22,
-                  color: Color(0xFF1E293B),
+                const Center(
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: Color(0xFF434655),
+                    size: 21,
+                  ),
                 ),
                 if (hasUnreadNotifications)
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 8,
+                    right: 8,
                     child: Container(
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDC2626), // Merah aktif indikator notifikasi
+                        color: const Color(0xFFBA1A1A),
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),
