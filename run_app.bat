@@ -28,14 +28,15 @@ echo.
 echo Pilihan Perangkat / Aksi:
 echo [0] Jalankan Android Emulator Super Light [1GB RAM]
 echo [1] Jalankan Aplikasi di Chrome Web [Clean Profile]
-echo [2] Jalankan Aplikasi di Android Emulator
-echo [3] Jalankan Aplikasi di Windows Desktop [Instan, Hemat RAM ~100MB]
-echo [4] Buka Logcat Android Real-Time [ms]
-echo [5] Cek Perangkat Terhubung [flutter devices]
-echo [6] Jalankan Unit ^& Widget Test [flutter test]
-echo [7] Keluar
+echo [2] Jalankan Web Server untuk Safari / iPhone [Wi-Fi Network]
+echo [3] Jalankan Aplikasi di Android Emulator
+echo [4] Jalankan Aplikasi di Windows Desktop [Instan, Hemat RAM ~100MB]
+echo [5] Buka Logcat Android Real-Time [ms]
+echo [6] Cek Perangkat Terhubung [flutter devices]
+echo [7] Jalankan Unit ^& Widget Test [flutter test]
+echo [8] Keluar
 echo.
-set /p opt="Pilih opsi [0-7]: "
+set /p opt="Pilih opsi [0-8]: "
 
 if "%opt%"=="0" (
     echo.
@@ -61,6 +62,18 @@ if "%opt%"=="1" (
 )
 if "%opt%"=="2" (
     echo.
+    echo Membuka Web Server untuk Safari / iPhone di tab baru...
+    if "%USE_WT%"=="1" (
+        wt.exe -w 0 nt --title "Vintech Web Safari" -d "%CD%" cmd.exe /k run_safari_network.bat
+    ) else (
+        start "Vintech Web Safari" cmd.exe /k run_safari_network.bat
+    )
+    echo Server Safari aktif! Buka link IP di browser Safari Anda.
+    pause
+    goto menu
+)
+if "%opt%"=="3" (
+    echo.
     echo Membuka Flutter App Runner di tab terminal baru...
     if "%USE_WT%"=="1" (
         wt.exe -w 0 nt --title "Vintech App Runner" -d "%CD%" cmd.exe /k run_android.bat
@@ -72,7 +85,7 @@ if "%opt%"=="2" (
     pause
     goto menu
 )
-if "%opt%"=="3" (
+if "%opt%"=="4" (
     echo.
     echo Membuka Flutter Windows Desktop di tab terminal baru...
     if "%USE_WT%"=="1" (
@@ -85,7 +98,7 @@ if "%opt%"=="3" (
     pause
     goto menu
 )
-if "%opt%"=="4" (
+if "%opt%"=="5" (
     echo.
     echo Membuka Logcat Android real-time di tab baru...
     if "%USE_WT%"=="1" (
@@ -98,21 +111,21 @@ if "%opt%"=="4" (
     pause
     goto menu
 )
-if "%opt%"=="5" (
+if "%opt%"=="6" (
     echo.
     call flutter devices
     echo.
     pause
     goto menu
 )
-if "%opt%"=="6" (
+if "%opt%"=="7" (
     echo.
     call flutter test
     echo.
     pause
     goto menu
 )
-if "%opt%"=="7" (
+if "%opt%"=="8" (
     exit /b
 )
 
