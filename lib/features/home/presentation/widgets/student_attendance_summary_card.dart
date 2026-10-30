@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../logic/home_cubit.dart';
-import '../logic/home_state.dart';
+import '../../logic/home_cubit.dart';
+import '../../logic/home_state.dart';
 
 /// Komponen Ringkasan Kehadiran Semester Ini (Stitch Attendance Bento Card)
 /// Dilengkapi 4 Stat Capsules & Live Status Banner Hari Ini

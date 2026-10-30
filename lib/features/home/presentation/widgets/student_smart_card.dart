@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../auth/data/models/user_model.dart';
+import '../../../auth/data/models/user_model.dart';
 
 /// Komponen Digital Student Smart Card (Hero Bento Section)
 /// Selaras 1:1 dengan Google Stitch "Vintech School Dashboard"

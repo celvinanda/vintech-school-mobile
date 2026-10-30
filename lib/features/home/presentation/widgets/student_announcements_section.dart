@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../data/models/school_dashboard_model.dart';
-import '../logic/home_cubit.dart';
-import '../logic/home_state.dart';
+import '../../data/models/school_dashboard_model.dart';
+import '../../logic/home_cubit.dart';
+import '../../logic/home_state.dart';
 
 /// Komponen Feed Pengumuman Sekolah (Stitch Announcements Feed)
 /// Menampilkan pengumuman resmi dengan badge kategori, snippet, dan lampiran
