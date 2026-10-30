@@ -28,41 +28,44 @@ echo =======================================================================
 echo.
 echo Pilih Mode Web Server:
 echo [1] Mode RELEASE KILAT (Sangat Direkomendasikan untuk Ponsel / Chrome / Safari)
-echo     -> Loading instan 1-2 detik, 1 file teroptimasi, hemat RAM, super mulus!
+echo     -^> Loading instan 1-2 detik, 1 file teroptimasi, hemat RAM, super mulus!
 echo [2] Mode DEBUG Developer (Untuk Hot-Restart / Coding)
-echo     -> Mendukung Hot-Restart (tombol R), namun loading di ponsel lebih lambat.
+echo     -^> Mendukung Hot-Restart (tombol R), namun loading di ponsel lebih lambat.
 echo [3] Build Ulang Web Release (Kompilasi kode terbaru sebelum dijalankan)
 echo.
 set /p mode="Pilih mode [1/2/3, default 1]: "
 if "%mode%"=="" set mode=1
 
-if "%mode%"=="1" (
-    echo.
-    if not exist "build\web\index.html" (
-        echo [INFO] Bundle Web Release belum ditemukan. Melakukan kompilasi pertama kali...
-        call flutter build web --release
-    )
-    echo [OK] Menjalankan High-Speed Web Server pada http://%MY_IP%:8080 ...
-    echo [TIPS] Di browser ponsel (Safari/Chrome), cukup buka http://%MY_IP%:8080
-    echo Tekan Ctrl+C untuk menghentikan server.
-    echo.
-    python -m http.server 8080 --bind 0.0.0.0 --directory build\web
-    goto end
-)
+if "%mode%"=="2" goto mode_debug
+if "%mode%"=="3" goto mode_rebuild
 
-if "%mode%"=="3" (
-    echo.
-    echo [INFO] Membangun ulang bundle Web Release dengan kode terbaru...
+:mode_release
+echo.
+if not exist "build\web\index.html" (
+    echo [INFO] Bundle Web Release belum ditemukan. Melakukan kompilasi pertama kali...
     call flutter build web --release
-    echo [OK] Kompilasi selesai! Menjalankan High-Speed Web Server...
-    python -m http.server 8080 --bind 0.0.0.0 --directory build\web
-    goto end
 )
+echo [OK] Menjalankan High-Speed Web Server pada http://%MY_IP%:8080 ...
+echo [TIPS] Di browser ponsel Chrome atau Safari, buka: http://%MY_IP%:8080
+echo Tekan Ctrl+C untuk menghentikan server.
+echo.
+python -m http.server 8080 --bind 0.0.0.0 --directory build\web
+goto end
 
+:mode_rebuild
+echo.
+echo [INFO] Membangun ulang bundle Web Release dengan kode terbaru...
+call flutter build web --release
+echo [OK] Kompilasi selesai! Menjalankan High-Speed Web Server...
+python -m http.server 8080 --bind 0.0.0.0 --directory build\web
+goto end
+
+:mode_debug
 echo.
 echo Menjalankan Flutter Web Server pada host 0.0.0.0:8080 (Mode Debug)...
 echo.
 call flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
+goto end
 
 :end
 pause
