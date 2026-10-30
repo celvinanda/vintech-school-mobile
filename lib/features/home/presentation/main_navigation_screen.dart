@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/background_sync_service.dart';
 import '../../../core/storage/local_storage.dart';
@@ -29,8 +27,6 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  bool _isFloating = false;
-  Timer? _scrollIdleTimer;
   BackgroundSyncService? _bgSyncService;
 
   @override
@@ -76,71 +72,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   void dispose() {
-    _scrollIdleTimer?.cancel();
     _bgSyncService?.dispose();
     super.dispose();
-  }
-
-  /// Menangani status scroll: saat pengguna menggulir layar, nav bar mengambang.
-  /// Saat berhenti scroll (idle) atau saat berada di posisi teratas, nav bar mendarat kembali.
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.vertical) return false;
-
-    if (notification is ScrollStartNotification) {
-      if (!_isFloating) {
-        setState(() => _isFloating = true);
-      }
-      _scrollIdleTimer?.cancel();
-    } else if (notification is ScrollUpdateNotification) {
-      if (notification.scrollDelta != null && notification.scrollDelta!.abs() > 0.6) {
-        if (!_isFloating) {
-          setState(() => _isFloating = true);
-        }
-        _scrollIdleTimer?.cancel();
-        // Mendarat kembali setelah jeda idle 1.3 detik tanpa aktivitas scroll
-        _scrollIdleTimer = Timer(const Duration(milliseconds: 1300), () {
-          if (mounted && _isFloating) {
-            setState(() => _isFloating = false);
-          }
-        });
-      }
-      // Jika scroll mencapai puncak teratas (posisi semula)
-      if (notification.metrics.pixels <= 2) {
-        _scrollIdleTimer?.cancel();
-        if (_isFloating) {
-          setState(() => _isFloating = false);
-        }
-      }
-    } else if (notification is ScrollEndNotification) {
-      _scrollIdleTimer?.cancel();
-      _scrollIdleTimer = Timer(const Duration(milliseconds: 900), () {
-        if (mounted && _isFloating) {
-          setState(() => _isFloating = false);
-        }
-      });
-      if (notification.metrics.pixels <= 2) {
-        _scrollIdleTimer?.cancel();
-        if (_isFloating) {
-          setState(() => _isFloating = false);
-        }
-      }
-    } else if (notification is UserScrollNotification) {
-      if (notification.direction == ScrollDirection.idle) {
-        _scrollIdleTimer?.cancel();
-        _scrollIdleTimer = Timer(const Duration(milliseconds: 900), () {
-          if (mounted && _isFloating) {
-            setState(() => _isFloating = false);
-          }
-        });
-      } else {
-        if (!_isFloating) {
-          setState(() => _isFloating = true);
-        }
-        _scrollIdleTimer?.cancel();
-      }
-    }
-
-    return false;
   }
 
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
@@ -154,21 +87,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ? TeacherDashboardView(
               profile: widget.profile,
               onNavigateTab: (index) {
-                _scrollIdleTimer?.cancel();
-                setState(() {
-                  _currentIndex = index;
-                  _isFloating = false;
-                });
+                setState(() => _currentIndex = index);
               },
             )
           : StudentDashboardView(
               profile: widget.profile,
               onNavigateTab: (index) {
-                _scrollIdleTimer?.cancel();
-                setState(() {
-                  _currentIndex = index;
-                  _isFloating = false;
-                });
+                setState(() => _currentIndex = index);
               },
             ),
       AttendanceScreen(profile: widget.profile),
@@ -179,26 +104,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       extendBody: true,
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _onScrollNotification,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: pages,
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pages,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
         onTap: (idx) {
-          _scrollIdleTimer?.cancel();
-          setState(() {
-            _currentIndex = idx;
-            _isFloating = false;
-          });
+          setState(() => _currentIndex = idx);
         },
         schoolColor: _schoolColor,
         isStaffOrTeacher: _isStaffOrTeacher,
         pendingOutboxCount: context.watch<LocalStorage>().hive.totalPendingOutbox,
-        isFloating: _isFloating,
+        isFloating: true,
       ),
     );
   }

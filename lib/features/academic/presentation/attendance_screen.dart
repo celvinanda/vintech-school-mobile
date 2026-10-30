@@ -312,7 +312,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       color: _schoolColor,
       onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
       child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

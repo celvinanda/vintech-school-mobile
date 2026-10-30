@@ -79,7 +79,7 @@ class StudentDashboardView extends StatelessWidget {
                 color: _schoolColor,
                 onRefresh: () => context.read<HomeCubit>().loadDashboard(),
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

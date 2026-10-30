@@ -25,7 +25,7 @@ class AppBottomNavBar extends StatelessWidget {
     this.isStaffOrTeacher = false,
     this.pendingOutboxCount = 0,
     this.unpaidInvoiceCount = 0,
-    this.isFloating = false,
+    this.isFloating = true,
   });
 
   @override
@@ -36,16 +36,14 @@ class AppBottomNavBar extends StatelessWidget {
     final effectiveBottomMargin = isFloating
         ? (bottomPadding > 0 ? bottomPadding + 6 : 16.0)
         : 0.0;
-    final effectiveHorizontalMargin = isFloating ? 18.0 : 0.0;
+    final effectiveHorizontalMargin = isFloating ? 16.0 : 0.0;
     final effectiveHeight = isFloating
         ? 68.0
         : 68.0 + (bottomPadding > 0 ? bottomPadding : 8.0);
     final topRadius = isFloating ? 34.0 : 22.0;
     final bottomRadius = isFloating ? 34.0 : 0.0;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
+    return Container(
       margin: EdgeInsets.fromLTRB(
         effectiveHorizontalMargin,
         0,

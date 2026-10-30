@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/network/api_client.dart';
@@ -91,9 +92,33 @@ class VintechSchoolApp extends StatelessWidget {
           title: 'Vintech School',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.getTheme(),
+          scrollBehavior: const AppScrollBehavior(),
           home: const SplashScreen(),
         ),
       ),
     );
   }
 }
+
+/// ScrollBehavior yang dioptimalkan untuk performa tinggi di Safari, iOS, dan Web:
+/// 1. Mengaktifkan drag gesture untuk semua input device (touch, mouse, trackpad, stylus)
+/// 2. Menggunakan BouncingScrollPhysics yang responsif tanpa lag
+class AppScrollBehavior extends MaterialScrollBehavior {
+  const AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(
+      parent: AlwaysScrollableScrollPhysics(),
+    );
+  }
+}
+
