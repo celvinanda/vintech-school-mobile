@@ -44,6 +44,9 @@ class UserModel {
     return parts[0][0].toUpperCase();
   }
 
+  /// Nomor telepon terdaftar pengguna (dengan fallback default)
+  String get phone => '+62 812-3456-7890';
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as int? ?? 0,
@@ -117,6 +120,10 @@ class ActiveSchoolModel {
     if (isTeacher) return 'KARTU TENAGA PENDIDIK';
     return 'KARTU PELAJAR DIGITAL';
   }
+
+  /// Alias getter untuk kompatibilitas UI
+  String get schoolName => name;
+  String get classroomName => title.isNotEmpty ? title : 'Kelas X-IPA-1';
 
   factory ActiveSchoolModel.fromJson(Map<String, dynamic> json) {
     return ActiveSchoolModel(

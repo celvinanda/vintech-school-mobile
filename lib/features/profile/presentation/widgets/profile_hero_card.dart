@@ -109,7 +109,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                         const Color(0xFF4EDEA3).withValues(alpha: 0.08),
                         Colors.transparent,
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
