@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/update/ota_update_service.dart';
 import '../../academic/data/academic_repository.dart';
 import '../../academic/logic/attendance_cubit.dart';
+import '../../academic/presentation/academic_screen.dart';
 import '../../academic/presentation/attendance_screen.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../billing/logic/billing_cubit.dart';
@@ -97,6 +98,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               },
             ),
       AttendanceScreen(profile: widget.profile),
+      AcademicScreen(profile: widget.profile),
       BillingScreen(profile: widget.profile),
       ProfileScreen(profile: widget.profile),
     ];

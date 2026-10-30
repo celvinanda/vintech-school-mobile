@@ -1,0 +1,345 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../auth/data/models/user_model.dart';
+
+/// Card 4: Registered Contact & Guardian Information (Stitch Design)
+/// Menampilkan Wali Kelas (Aksi WhatsApp), Kontak Orang Tua / Wali (Aksi Call), Email, Nomor Telepon & Alamat Domisili
+class ProfileRegisteredInfoSection extends StatelessWidget {
+  final UserProfileResponse profile;
+  final String homeroomTeacherName;
+  final String homeroomTeacherPhone;
+  final String parentName;
+  final String parentPhone;
+  final String address;
+
+  const ProfileRegisteredInfoSection({
+    super.key,
+    required this.profile,
+    this.homeroomTeacherName = 'Dra. Sri Wahyuni, M.Pd',
+    this.homeroomTeacherPhone = '6281200000000',
+    this.parentName = 'Hendra Gunawan (Ayah)',
+    this.parentPhone = '+62 811-9876-5432',
+    this.address = 'Jl. Budi Utomo No. 7, Sawah Besar, Jakarta Pusat',
+  });
+
+  String get _classroomName => profile.activeSchool?.classroomName ?? 'X-IPA-1';
+
+  Future<void> _launchWa(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final uri = Uri.parse('https://wa.me/$homeroomTeacherPhone?text=Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Membuka kontak WhatsApp Wali Kelas...')),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchParentCall(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final cleanPhone = parentPhone.replaceAll(RegExp(r'\D'), '');
+    final uri = Uri.parse('tel:$cleanPhone');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Menghubungi nomor telepon orang tua...')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Informasi Terdaftar',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFECEEF0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // 1. Wali Kelas Cardlet
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 19,
+                        backgroundColor: const Color(0xFFDBEAFE),
+                        child: Text(
+                          'SW',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF004AC6),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Wali Kelas ($_classroomName)',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              homeroomTeacherName,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _launchWa(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECFDF5),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.chat_rounded,
+                                size: 13,
+                                color: Color(0xFF007D55),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Chat',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF007D55),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // 2. Orang Tua / Wali Cardlet
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 19,
+                        backgroundColor: const Color(0xFFE2E8F0),
+                        child: Text(
+                          'HG',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Orang Tua / Wali Siswa',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              parentName,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              parentPhone,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => _launchParentCall(context),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.call_rounded,
+                                size: 13,
+                                color: Color(0xFF004AC6),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Hubungi',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF004AC6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 12),
+
+                // 3. Email Siswa
+                _buildInfoTile(
+                  icon: Icons.mail_outline_rounded,
+                  label: 'Email Siswa',
+                  value: profile.user.email.isNotEmpty
+                      ? profile.user.email
+                      : 'aditya.putra@student.sman1jkt.sch.id',
+                ),
+                const SizedBox(height: 10),
+
+                // 4. Nomor Telepon / WA Siswa
+                _buildInfoTile(
+                  icon: Icons.phone_android_rounded,
+                  label: 'Nomor Telepon / WhatsApp',
+                  value: profile.user.phone.isNotEmpty
+                      ? profile.user.phone
+                      : '+62 812-3456-7890',
+                ),
+                const SizedBox(height: 10),
+
+                // 5. Alamat Domisili
+                _buildInfoTile(
+                  icon: Icons.pin_drop_outlined,
+                  label: 'Alamat Domisili',
+                  value: address,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF64748B)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                value,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0F172A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -34,7 +34,7 @@ class StudentQuickServices extends StatelessWidget {
           bgColor: const Color(0xFF004AC6).withValues(alpha: 0.10),
           onTap: () {
             HapticFeedback.selectionClick();
-            onNavigateTab(2);
+            onNavigateTab(3);
           },
         ),
         const SizedBox(width: 10),
@@ -45,7 +45,7 @@ class StudentQuickServices extends StatelessWidget {
           bgColor: const Color(0xFF4F46E5).withValues(alpha: 0.10),
           onTap: () {
             HapticFeedback.selectionClick();
-            onNavigateTab(1);
+            onNavigateTab(2);
           },
         ),
         const SizedBox(width: 10),

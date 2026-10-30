@@ -40,8 +40,8 @@ class AppBottomNavBar extends StatelessWidget {
     final effectiveHeight = isFloating
         ? 68.0
         : 68.0 + (bottomPadding > 0 ? bottomPadding : 8.0);
-    final topRadius = isFloating ? 34.0 : 22.0;
-    final bottomRadius = isFloating ? 34.0 : 0.0;
+    final topRadius = isFloating ? 24.0 : 20.0;
+    final bottomRadius = isFloating ? 24.0 : 0.0;
 
     return Container(
       margin: EdgeInsets.fromLTRB(
@@ -62,7 +62,7 @@ class AppBottomNavBar extends StatelessWidget {
           return LayoutBuilder(
             builder: (context, constraints) {
               final barWidth = constraints.maxWidth;
-              final tabWidth = barWidth / 4;
+              final tabWidth = barWidth / 5;
               final activeX = (animatedIndex + 0.5) * tabWidth;
 
               return Stack(
@@ -73,14 +73,14 @@ class AppBottomNavBar extends StatelessWidget {
                     child: CustomPaint(
                       painter: NotchBarPainter(
                         activeX: activeX,
-                        notchWidth: 54.0,
-                        notchDepth: 14.0,
+                        notchWidth: 46.0,
+                        notchDepth: 12.0,
                         topRadius: topRadius,
                         bottomRadius: bottomRadius,
                         isFloating: isFloating,
                         barColor: Colors.white,
                         dotColor: schoolColor,
-                        dotRadius: 5.5,
+                        dotRadius: 4.8,
                       ),
                     ),
                   ),
@@ -112,6 +112,13 @@ class AppBottomNavBar extends StatelessWidget {
                         _buildTabItem(
                           index: 2,
                           currentIndex: currentIndex,
+                          icon: Icons.school_outlined,
+                          selectedIcon: Icons.school_rounded,
+                          label: 'Akademik',
+                        ),
+                        _buildTabItem(
+                          index: 3,
+                          currentIndex: currentIndex,
                           icon: Icons.account_balance_wallet_outlined,
                           selectedIcon: Icons.account_balance_wallet_rounded,
                           label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
@@ -119,7 +126,7 @@ class AppBottomNavBar extends StatelessWidget {
                           badgeColor: const Color(0xFFDC2626),
                         ),
                         _buildTabItem(
-                          index: 3,
+                          index: 4,
                           currentIndex: currentIndex,
                           icon: Icons.person_outline_rounded,
                           selectedIcon: Icons.person_rounded,
@@ -287,9 +294,11 @@ class NotchBarPainter extends CustomPainter {
       clockwise: true,
     );
 
-    // Garis lurus ke titik awal notch
+    // Garis lurus ke titik awal notch (disesuaikan agar pas di tengah pada 5 tab)
+    const minNotchStart = 8.0;
+    final maxNotchStart = math.max(minNotchStart, w - nw - 8.0);
     final notchStart = (activeX - nw / 2)
-        .clamp(rTop, math.max(rTop, w - rTop - nw))
+        .clamp(minNotchStart, maxNotchStart)
         .toDouble();
     final notchCenter = notchStart + nw / 2;
     final notchEnd = notchStart + nw;

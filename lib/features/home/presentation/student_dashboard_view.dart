@@ -79,6 +79,7 @@ class StudentDashboardView extends StatelessWidget {
                 color: _schoolColor,
                 onRefresh: () => context.read<HomeCubit>().loadDashboard(),
                 child: SingleChildScrollView(
+                  key: const PageStorageKey('student_dashboard_scroll_view'),
                   physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
                   child: Column(
