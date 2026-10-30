@@ -7,19 +7,28 @@ echo =======================================================================
 echo   VINTECH SCHOOL - WEB SERVER (UNTUK SAFARI / IPHONE / JARINGAN WI-FI)
 echo =======================================================================
 echo.
-echo Mencari IP Address komputer di jaringan Wi-Fi lokal...
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i /c:"IPv4 Address" /c:"Alamat IPv4"') do (
-    set "MY_IP=%%a"
-    goto :ip_found
+echo Mendeteksi IP Address Wi-Fi lokal komputer...
+
+for /f "usebackq tokens=*" %%i in (`powershell -NoProfile -Command "(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -eq 'Wi-Fi' -or $_.InterfaceAlias -like 'Ethernet*' } | Where-Object { $_.IPAddress -notlike '169.*' -and $_.IPAddress -notlike '172.*' } | Select-Object -First 1).IPAddress"`) do (
+    set "MY_IP=%%i"
 )
-:ip_found
-set "MY_IP=%MY_IP: =%"
+
+if "%MY_IP%"=="" (
+    set "MY_IP=192.168.1.9"
+)
 
 echo.
-echo -----------------------------------------------------------------------
-echo  LINK AKSES UNTUK SAFARI (iPhone / iPad / Mac di Wi-Fi yang sama):
-echo  http://%MY_IP%:8080
-echo -----------------------------------------------------------------------
+echo =======================================================================
+echo  LINK RESMI UNTUK SAFARI (iPhone / iPad / Mac di Wi-Fi yang sama):
+echo.
+echo  👉  http://%MY_IP%:8080
+echo.
+echo  (Jika membuka di browser laptop ini: http://localhost:8080)
+echo =======================================================================
+echo.
+echo [INFO] Abaikan peringatan DWDS WebSocket jika muncul di terminal saat
+echo        Safari terhubung. Itu hanya debugger Chrome yang tidak ada di Safari,
+echo        aplikasi tetap berjalan 100%% normal di layar Safari Anda.
 echo.
 echo Menjalankan Flutter Web Server pada host 0.0.0.0:8080...
 echo.
