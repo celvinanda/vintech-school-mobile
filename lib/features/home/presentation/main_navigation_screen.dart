@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +18,7 @@ import '../../profile/presentation/profile_screen.dart';
 import '../logic/home_cubit.dart';
 import 'student_dashboard_view.dart';
 import 'teacher_dashboard_view.dart';
+import 'widgets/app_base_top_bar.dart';
 import 'widgets/app_bottom_nav_bar.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -86,8 +87,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   /// Inisialisasi daftar halaman satu kali (Persistent Cached Pages):
-  /// Mencegah re-instantiation 5 halaman berat setiap kali user berpindah tab.
-  /// Setiap halaman diisolasi dengan RepaintBoundary agar GPU layer tetap tersimpan di memory.
+  /// Menggunakan strategi Deferred First-Mount: Hanya memuat Tab 0 pada startup.
+  /// Tab 1-4 hanya dimuat saat pertama kali dikunjungi dan di-cache permanen di GPU memory.
   void _buildPages() {
     _pages = [
       RepaintBoundary(
@@ -103,31 +104,79 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 onNavigateTab: _handleTabTap,
               ),
       ),
-      RepaintBoundary(
-        child: AttendanceScreen(
-          profile: widget.profile,
-          scrollController: _scrollControllers[1],
-        ),
-      ),
-      RepaintBoundary(
-        child: AcademicScreen(
-          profile: widget.profile,
-          scrollController: _scrollControllers[2],
-        ),
-      ),
-      RepaintBoundary(
-        child: BillingScreen(
-          profile: widget.profile,
-          scrollController: _scrollControllers[3],
-        ),
-      ),
-      RepaintBoundary(
-        child: ProfileScreen(
-          profile: widget.profile,
-          scrollController: _scrollControllers[4],
-        ),
-      ),
+      _activatedTabs.contains(1)
+          ? RepaintBoundary(
+              child: AttendanceScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[1],
+              ),
+            )
+          : const SizedBox.shrink(),
+      _activatedTabs.contains(2)
+          ? RepaintBoundary(
+              child: AcademicScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[2],
+              ),
+            )
+          : const SizedBox.shrink(),
+      _activatedTabs.contains(3)
+          ? RepaintBoundary(
+              child: BillingScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[3],
+              ),
+            )
+          : const SizedBox.shrink(),
+      _activatedTabs.contains(4)
+          ? RepaintBoundary(
+              child: ProfileScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[4],
+              ),
+            )
+          : const SizedBox.shrink(),
     ];
+  }
+
+  void _activateTab(int index) {
+    if (!_activatedTabs.contains(index)) {
+      _activatedTabs.add(index);
+      switch (index) {
+        case 1:
+          _pages[1] = RepaintBoundary(
+            child: AttendanceScreen(
+              profile: widget.profile,
+              scrollController: _scrollControllers[1],
+            ),
+          );
+          break;
+        case 2:
+          _pages[2] = RepaintBoundary(
+            child: AcademicScreen(
+              profile: widget.profile,
+              scrollController: _scrollControllers[2],
+            ),
+          );
+          break;
+        case 3:
+          _pages[3] = RepaintBoundary(
+            child: BillingScreen(
+              profile: widget.profile,
+              scrollController: _scrollControllers[3],
+            ),
+          );
+          break;
+        case 4:
+          _pages[4] = RepaintBoundary(
+            child: ProfileScreen(
+              profile: widget.profile,
+              scrollController: _scrollControllers[4],
+            ),
+          );
+          break;
+      }
+    }
   }
 
   @override
@@ -159,16 +208,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (index == _currentIndex) {
       _scrollToTop(index);
     } else {
-      if (!_activatedTabs.contains(index)) {
-        setState(() {
-          _activatedTabs.add(index);
-          _currentIndex = index;
-        });
-      } else {
-        setState(() {
-          _currentIndex = index;
-        });
-      }
+      _activateTab(index);
+      setState(() {
+        _currentIndex = index;
+      });
       _isNavBarVisible.value = true;
     }
   }
@@ -286,13 +329,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       child: Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         extendBody: true,
-        body: NotificationListener<ScrollNotification>(
-          onNotification: _onScrollNotification,
-          child: FadeIndexedStack(
-            index: _currentIndex,
-            duration: const Duration(milliseconds: 200),
-            children: _pages,
-          ),
+        body: Column(
+          children: [
+            // 1. BASE TOP BAR TERPADU (Wadah Statis Permanen - Bebas Kedip/Flicker)
+            AppBaseTopBar(
+              currentIndex: _currentIndex,
+              profile: widget.profile,
+              schoolColor: _schoolColor,
+              isStaffOrTeacher: _isStaffOrTeacher,
+            ),
+
+            // 2. Transisi Konten Halus Bebas Rebuild
+            Expanded(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onScrollNotification,
+                child: FadeIndexedStack(
+                  index: _currentIndex,
+                  duration: const Duration(milliseconds: 200),
+                  children: _pages,
+                ),
+              ),
+            ),
+          ],
         ),
         // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
         // Perubahan status hide/show atau update badge tagihan/outbox HANYA

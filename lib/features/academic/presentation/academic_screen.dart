@@ -9,7 +9,6 @@ import 'widgets/academic/academic_schedule_section.dart';
 import 'widgets/academic/academic_subjects_grid.dart';
 import 'widgets/academic/academic_tab_chips.dart';
 import 'widgets/academic/academic_tasks_section.dart';
-import 'widgets/academic_top_bar.dart';
 
 /// Halaman Akademik Siswa selaras 1:1 dengan Google Stitch Design ("Akademik Siswa").
 /// Mengimplementasikan arsitektur modular Bento Grid:
@@ -56,51 +55,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        body: Column(
-          children: [
-            // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
-            RepaintBoundary(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: const Border(
-                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: AcademicTopBar(
-                      profile: widget.profile,
-                      schoolColor: _schoolColor,
-                      onReportTap: () => _showReportModal(context),
-                      gpa: 88.6,
-                      academicPeriod: 'Semester Genap 2025/2026',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _handleRefresh,
-                color: _schoolColor,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: _schoolColor,
                 child: SingleChildScrollView(
                   controller: widget.scrollController,
                   key: const PageStorageKey('academic_scroll_view'),
@@ -171,11 +130,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
             ),
           ),
         ),
-      ),
-    ],
-  ),
-),
-);
+      );
   }
 
   void _showReportModal(BuildContext context) {

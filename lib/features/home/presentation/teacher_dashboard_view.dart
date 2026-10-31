@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,7 +6,6 @@ import '../../academic/presentation/attendance_entry_sheet.dart';
 import '../../auth/data/models/user_model.dart';
 import '../logic/home_cubit.dart';
 import '../logic/home_state.dart';
-import 'widgets/home_top_bar.dart';
 
 class TeacherDashboardView extends StatelessWidget {
   final UserProfileResponse profile;
@@ -27,80 +25,33 @@ class TeacherDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F9FB),
-        body: Column(
-          children: [
-            // Sticky Pinned Top Bar (Menyatu tanpa jeda dengan Bar Notifikasi)
-            RepaintBoundary(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: const Border(
-                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: BlocBuilder<HomeCubit, HomeState>(
-                      builder: (context, state) {
-                        return HomeTopBar(
-                          profile: profile,
-                          schoolColor: _schoolColor,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FB),
+      body: RefreshIndicator(
+        color: _schoolColor,
+        onRefresh: () => context.read<HomeCubit>().loadDashboard(),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          key: const PageStorageKey('teacher_dashboard_scroll_view'),
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Teacher Smart Digital Card
+              _buildTeacherSmartCard(),
 
-            // Scrollable Dashboard Body
-            Expanded(
-              child: RefreshIndicator(
-                color: _schoolColor,
-                onRefresh: () => context.read<HomeCubit>().loadDashboard(),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  key: const PageStorageKey('teacher_dashboard_scroll_view'),
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Teacher Smart Digital Card
-                      _buildTeacherSmartCard(),
+              const SizedBox(height: 20),
 
-                      const SizedBox(height: 20),
+              // Action Banner: Input Presensi Siswa Cepat
+              _buildQuickAttendanceAction(context),
 
-                      // Action Banner: Input Presensi Siswa Cepat
-                      _buildQuickAttendanceAction(context),
+              const SizedBox(height: 24),
 
-                      const SizedBox(height: 24),
-
-                      // Real-time School Metrics
-                      _buildSchoolStatisticsSection(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+              // Real-time School Metrics
+              _buildSchoolStatisticsSection(),
+            ],
+          ),
         ),
       ),
     );

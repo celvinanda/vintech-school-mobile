@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -14,7 +13,6 @@ import 'widgets/attendance_live_clock_card.dart';
 import 'widgets/attendance_metrics_card.dart';
 import 'widgets/attendance_recent_log.dart';
 import 'widgets/attendance_teacher_roster_view.dart';
-import 'widgets/attendance_top_bar.dart';
 import 'widgets/attendance_weekly_calendar.dart';
 
 /// Halaman Presensi Siswa selaras 1:1 dengan Google Stitch Design ("Presensi Siswa").
@@ -106,115 +104,70 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     final schoolName = widget.profile.activeSchool?.name ?? 'Vintech School';
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-        body: Column(
-          children: [
-            // 1. Sticky Pinned Top Bar (Stitch Header for Presensi) - Menyatu mulus dengan Bar Notifikasi
-            RepaintBoundary(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: const Border(
-                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: AttendanceTopBar(
-                      profile: widget.profile,
-                      schoolColor: _schoolColor,
-                      isStudent: _isStudent,
-                      onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+      body: BlocBuilder<AttendanceCubit, AttendanceState>(
+        builder: (context, state) {
+          if (state is AttendanceLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is AttendanceError) {
+            return EmptyOrErrorView(
+              icon: Icons.error_outline_rounded,
+              iconColor: AppTheme.danger,
+              title: 'Gagal Memuat Data Presensi',
+              subtitle: state.message,
+              actionLabel: 'Coba Lagi',
+              onAction: () => _fetchAttendances(forceRefreshMeta: true),
+            );
+          }
+          if (state is AttendanceLoaded) {
+            final filtered = _applyFilters(state.attendances);
 
-            // 2. Main Content View
-            Expanded(
-              child: BlocBuilder<AttendanceCubit, AttendanceState>(
-                builder: (context, state) {
-                  if (state is AttendanceLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (state is AttendanceError) {
-                    return EmptyOrErrorView(
-                      icon: Icons.error_outline_rounded,
-                      iconColor: AppTheme.danger,
-                      title: 'Gagal Memuat Data Presensi',
-                      subtitle: state.message,
-                      actionLabel: 'Coba Lagi',
-                      onAction: () => _fetchAttendances(forceRefreshMeta: true),
-                    );
-                  }
-                  if (state is AttendanceLoaded) {
-                    final filtered = _applyFilters(state.attendances);
-
-                    return _isStudent
-                        ? _buildStudentStitchView(context, state, filtered, schoolName)
-                        : AttendanceTeacherRosterView(
-                            allRecords: state.attendances,
-                            filteredRecords: filtered,
-                            searchController: _searchController,
-                            statusFilter: _statusFilter,
-                            schoolColor: _schoolColor,
-                            scrollController: widget.scrollController,
-                            onFilterChanged: (filter) {
-                              setState(() => _statusFilter = filter);
-                            },
-                            onSearchChanged: () {
-                              setState(() {});
-                            },
-                          );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
-          ],
-        ),
-        floatingActionButton: _canRecordAttendance
-            ? FloatingActionButton.extended(
-                backgroundColor: _schoolColor,
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                    ),
-                    builder: (_) => const AttendanceEntrySheet(),
+            return _isStudent
+                ? _buildStudentStitchView(context, state, filtered, schoolName)
+                : AttendanceTeacherRosterView(
+                    allRecords: state.attendances,
+                    filteredRecords: filtered,
+                    searchController: _searchController,
+                    statusFilter: _statusFilter,
+                    schoolColor: _schoolColor,
+                    scrollController: widget.scrollController,
+                    onFilterChanged: (filter) {
+                      setState(() => _statusFilter = filter);
+                    },
+                    onSearchChanged: () {
+                      setState(() {});
+                    },
                   );
-                },
-                icon: const Icon(Icons.add_task_rounded, color: Colors.white),
-                label: Text(
-                  'Input Presensi',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              )
-            : null,
+          }
+          return const SizedBox.shrink();
+        },
       ),
+      floatingActionButton: _canRecordAttendance
+          ? FloatingActionButton.extended(
+              backgroundColor: _schoolColor,
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  builder: (_) => const AttendanceEntrySheet(),
+                );
+              },
+              icon: const Icon(Icons.add_task_rounded, color: Colors.white),
+              label: Text(
+                'Input Presensi',
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          : null,
     );
   }
 

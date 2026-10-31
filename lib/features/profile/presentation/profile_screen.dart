@@ -7,13 +7,11 @@ import '../../academic/data/academic_repository.dart';
 import '../../academic/data/models/student_model.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
-import 'settings_screen.dart';
 import 'widgets/profile_academic_metrics_capsules.dart';
 import 'widgets/profile_academic_services_section.dart';
 import 'widgets/profile_digital_card_modal.dart';
 import 'widgets/profile_hero_card.dart';
 import 'widgets/profile_registered_info_section.dart';
-import 'widgets/profile_top_bar.dart';
 
 /// Halaman Profil & Akun Siswa selaras 1:1 dengan Google Stitch Design ("Profil Siswa").
 /// Mengimplementasikan arsitektur modular Bento Grid:
@@ -298,59 +296,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-        body: Column(
-          children: [
-            // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
-            RepaintBoundary(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: const Border(
-                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: ProfileTopBar(
-                      profile: profile,
-                      schoolColor: _schoolColor,
-                      onDigitalCardTap: () => _showDigitalCard(context),
-                      onSettingsTap: () {
-                        HapticFeedback.selectionClick();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => SettingsScreen(profile: profile),
-                          ),
-                        );
-                      },
-                      onShareQrTap: () => _showShareQrModal(context),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _handleRefresh,
-                color: _schoolColor,
-                child: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: _schoolColor,
+        child: SingleChildScrollView(
                   controller: widget.scrollController,
                   key: const PageStorageKey('profile_scroll_view'),
                   physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
@@ -454,10 +405,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    ),
-    ],
-  ),
-),
-);
+    );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +14,6 @@ import 'widgets/billing_filter_tabs.dart';
 import 'widgets/billing_hero_card.dart';
 import 'widgets/billing_invoice_card.dart';
 import 'widgets/billing_payment_channels_grid.dart';
-import 'widgets/billing_top_bar.dart';
 import 'widgets/billing_tuition_support_card.dart';
 import 'widgets/billing_virtual_account_card.dart';
 
@@ -115,56 +113,9 @@ class _BillingScreenState extends State<BillingScreen> {
           _fetchInvoices();
         }
       },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.light,
-        ),
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-          body: Column(
-            children: [
-              // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
-              RepaintBoundary(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: const Border(
-                      bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.025),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                      child: BlocBuilder<BillingCubit, BillingState>(
-                        builder: (context, state) {
-                          int unpaidCount = 0;
-                          if (state is BillingLoaded) {
-                            unpaidCount = state.invoices.where((i) => !i.isPaid).length;
-                          }
-                          return BillingTopBar(
-                            profile: widget.profile,
-                            schoolColor: _schoolColor,
-                            unpaidCount: unpaidCount,
-                            onRefresh: () => _fetchInvoices(),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: RefreshIndicator(
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+        body: RefreshIndicator(
                   color: _schoolColor,
                   onRefresh: () async => _fetchInvoices(),
                   child: BlocBuilder<BillingCubit, BillingState>(
@@ -289,11 +240,7 @@ class _BillingScreenState extends State<BillingScreen> {
             ),
           ),
         ),
-      ],
-    ),
-  ),
-),
-);
+      );
   }
 
   Widget _buildEmptyState() {
