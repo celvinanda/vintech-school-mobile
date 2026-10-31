@@ -254,32 +254,60 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          key: const PageStorageKey('profile_scroll_view'),
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Top Header App Bar
-              ProfileHeaderBar(
-                profile: profile,
-                schoolColor: _schoolColor,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+        body: Column(
+          children: [
+            // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
+            RepaintBoundary(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: const Border(
+                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                    child: ProfileHeaderBar(
+                      profile: profile,
+                      schoolColor: _schoolColor,
+                    ),
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-
-              // 2. Profile Hero Bento Card
-              ProfileHeroCard(
-                profile: profile,
-                schoolColor: _schoolColor,
-                onOpenDigitalCard: () => _showDigitalCard(context),
-                onShareProfile: () => _showShareQrModal(context),
-              ),
-              const SizedBox(height: 16),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                key: const PageStorageKey('profile_scroll_view'),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Profile Hero Bento Card
+                    ProfileHeroCard(
+                      profile: profile,
+                      schoolColor: _schoolColor,
+                      onOpenDigitalCard: () => _showDigitalCard(context),
+                      onShareProfile: () => _showShareQrModal(context),
+                    ),
+                    const SizedBox(height: 16),
 
               // 3. Quick Academic Capsules
               const ProfileAcademicMetricsCapsules(),
@@ -364,6 +392,9 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ],
+  ),
+),
+);
   }
 }

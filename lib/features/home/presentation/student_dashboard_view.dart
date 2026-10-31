@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
@@ -37,18 +38,21 @@ class StudentDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-      body: SafeArea(
-        bottom: false,
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+        body: Column(
           children: [
-            // 1. Sticky Pinned Top Bar (Stitch Header)
+            // 1. Sticky Pinned Top Bar (Stitch Header) - Mengalir mulus menyatu dengan Bar Notifikasi
             RepaintBoundary(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.96),
+                  color: Colors.white,
                   border: const Border(
                     bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
                   ),
@@ -60,15 +64,21 @@ class StudentDashboardView extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: BlocBuilder<HomeCubit, HomeState>(
-                  builder: (context, state) {
-                    final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
-                    return HomeTopBar(
-                      profile: profile,
-                      schoolColor: _schoolColor,
-                      announcements: announcements,
-                    );
-                  },
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                    child: BlocBuilder<HomeCubit, HomeState>(
+                      builder: (context, state) {
+                        final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
+                        return HomeTopBar(
+                          profile: profile,
+                          schoolColor: _schoolColor,
+                          announcements: announcements,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),

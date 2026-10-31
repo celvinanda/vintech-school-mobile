@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -24,35 +25,46 @@ class TeacherDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB),
+        body: Column(
           children: [
-            // Sticky Pinned Top Bar (Tetap bertahan di atas, tidak ikut ter-scroll)
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
-              decoration: BoxDecoration(
-                color: AppTheme.backgroundLight,
-                border: const Border(
-                  bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+            // Sticky Pinned Top Bar (Menyatu tanpa jeda dengan Bar Notifikasi)
+            RepaintBoundary(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: const Border(
+                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
                   ),
-                ],
-              ),
-              child: BlocBuilder<HomeCubit, HomeState>(
-                builder: (context, state) {
-                  return HomeTopBar(
-                    profile: profile,
-                    schoolColor: _schoolColor,
-                  );
-                },
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                    child: BlocBuilder<HomeCubit, HomeState>(
+                      builder: (context, state) {
+                        return HomeTopBar(
+                          profile: profile,
+                          schoolColor: _schoolColor,
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
             ),
 

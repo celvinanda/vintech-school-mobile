@@ -245,17 +245,20 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
     final filtered = _filteredItems;
     final sections = ['Hari Ini', 'Kemarin', 'Minggu Ini'];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface
-      body: SafeArea(
-        bottom: false,
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface
+        body: Column(
           children: [
-            // 1. Top App Bar (Stitch Header)
+            // 1. Top App Bar (Stitch Header) - Mengalir mulus menyatu dengan Bar Notifikasi
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
+                color: Colors.white,
                 border: const Border(
                   bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
                 ),
@@ -267,54 +270,60 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF191C1E)),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF191C1E)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 14),
+                          Text(
+                            'Notifikasi',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF191C1E),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Text(
-                        'Notifikasi',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF191C1E),
-                        ),
+                      Row(
+                        children: [
+                          TextButton.icon(
+                            onPressed: _unreadCount > 0 ? _markAllAsRead : null,
+                            style: TextButton.styleFrom(
+                              foregroundColor: widget.schoolColor,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            icon: const Icon(Icons.done_all_rounded, size: 18),
+                            label: Text(
+                              'Tandai Dibaca',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: _unreadCount > 0 ? _markAllAsRead : null,
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF004AC6),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        icon: const Icon(Icons.done_all_rounded, size: 18),
-                        label: Text(
-                          'Tandai Dibaca',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
 
@@ -344,7 +353,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                               decoration: BoxDecoration(
                                 color: _unreadCount > 0
-                                    ? const Color(0xFF004AC6)
+                                    ? widget.schoolColor
                                     : const Color(0xFFECEEF0),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -536,7 +545,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
     final isSelected = _selectedCategory == category;
 
     return Material(
-      color: isSelected ? const Color(0xFF004AC6) : const Color(0xFFECEEF0),
+      color: isSelected ? widget.schoolColor : const Color(0xFFECEEF0),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: () {
@@ -654,8 +663,8 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                             Container(
                               width: 6.5,
                               height: 6.5,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF004AC6),
+                              decoration: BoxDecoration(
+                                color: widget.schoolColor,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -750,7 +759,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF004AC6),
+                            color: widget.schoolColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(

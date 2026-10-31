@@ -100,18 +100,21 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     final schoolName = widget.profile.activeSchool?.name ?? 'Vintech School';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-      body: SafeArea(
-        bottom: false,
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+        body: Column(
           children: [
-            // 1. Sticky Pinned Top Bar (Stitch Header for Presensi)
+            // 1. Sticky Pinned Top Bar (Stitch Header for Presensi) - Menyatu mulus dengan Bar Notifikasi
             RepaintBoundary(
               child: Container(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.96),
+                  color: Colors.white,
                   border: const Border(
                     bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
                   ),
@@ -123,11 +126,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        Row(
+                          children: [
                         Container(
                           width: 38,
                           height: 38,
@@ -189,6 +196,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
               ),
             ),
+          ),
+        ),
 
             // 2. Main Content View
             Expanded(
@@ -232,31 +241,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: _canRecordAttendance
-          ? FloatingActionButton.extended(
-              backgroundColor: _schoolColor,
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        floatingActionButton: _canRecordAttendance
+            ? FloatingActionButton.extended(
+                backgroundColor: _schoolColor,
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    builder: (_) => const AttendanceEntrySheet(),
+                  );
+                },
+                icon: const Icon(Icons.add_task_rounded, color: Colors.white),
+                label: Text(
+                  'Input Presensi',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
-                  builder: (_) => const AttendanceEntrySheet(),
-                );
-              },
-              icon: const Icon(Icons.add_task_rounded, color: Colors.white),
-              label: Text(
-                'Input Presensi',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
                 ),
-              ),
-            )
-          : null,
+              )
+            : null,
+      ),
     );
   }
 

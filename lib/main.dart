@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/local_storage.dart';
@@ -17,6 +18,18 @@ import 'features/home/logic/home_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Sinkronisasi warna Bar Notifikasi (Status Bar) dengan Top Bar Aplikasi
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarDividerColor: Color(0xFFECEEF0),
+    ),
+  );
 
   // Initialize Local Storage (Hive Multi-Box & SharedPreferences)
   final storage = await LocalStorage.init();

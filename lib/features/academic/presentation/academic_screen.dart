@@ -54,25 +54,53 @@ class _AcademicScreenState extends State<AcademicScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          color: _schoolColor,
-          child: SingleChildScrollView(
-            key: const PageStorageKey('academic_scroll_view'),
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. Top Header App Bar
-                _buildHeader(context),
-                const SizedBox(height: 16),
-
-                // 2. Academic Hero Bento Card (IPK 88.6 & Rapor)
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: Column(
+          children: [
+            // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
+            RepaintBoundary(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: const Border(
+                    bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                    child: _buildHeader(context),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: _schoolColor,
+                child: SingleChildScrollView(
+                  key: const PageStorageKey('academic_scroll_view'),
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Academic Hero Bento Card (IPK 88.6 & Rapor)
                 AcademicHeroCard(
                   classroomName: 'Kelas X-IPA-1',
                   academicPeriod: 'Semester Genap 2025/2026',
@@ -135,7 +163,10 @@ class _AcademicScreenState extends State<AcademicScreen> {
           ),
         ),
       ),
-    );
+    ],
+  ),
+),
+);
   }
 
   Widget _buildHeader(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -108,69 +109,157 @@ class _BillingScreenState extends State<BillingScreen> {
           _fetchInvoices();
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
-        body: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            color: _schoolColor,
-            onRefresh: () async => _fetchInvoices(),
-            child: BlocBuilder<BillingCubit, BillingState>(
-              builder: (context, state) {
-                if (state is BillingLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                if (state is BillingError) {
-                  return EmptyOrErrorView(
-                    icon: Icons.receipt_long_outlined,
-                    iconColor: AppTheme.danger,
-                    title: 'Gagal Memuat Tagihan',
-                    subtitle: state.message,
-                    actionLabel: 'Coba Lagi',
-                    onAction: _fetchInvoices,
-                  );
-                }
-
-                List<InvoiceModel> allInvoices = [];
-                if (state is BillingLoaded) {
-                  allInvoices = state.invoices;
-                }
-
-                // If empty from backend/hive, create realistic fallback bills for Stitch design compliance
-                if (allInvoices.isEmpty) {
-                  allInvoices = _getSampleInvoices();
-                }
-
-                final unpaidList = allInvoices.where((i) => !i.isPaid).toList();
-                final paidList = allInvoices.where((i) => i.isPaid).toList();
-                final totalUnpaidAmount = unpaidList.fold<int>(0, (sum, item) => sum + item.amount);
-
-                // Filter items to display based on selected tab
-                List<InvoiceModel> displayInvoices;
-                if (_selectedFilter == 'UNPAID') {
-                  displayInvoices = unpaidList;
-                } else if (_selectedFilter == 'PAID') {
-                  displayInvoices = paidList;
-                } else {
-                  displayInvoices = allInvoices;
-                }
-
-                return SingleChildScrollView(
-                  key: const PageStorageKey('billing_scroll_view'),
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. Context Header & Student Profile Pill
-                      BillingContextHeader(
-                        profile: widget.profile,
-                        schoolColor: _schoolColor,
-                        onRefresh: _fetchInvoices,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+          body: Column(
+            children: [
+              // Sticky Pinned Top Bar - Menyatu mulus dengan Bar Notifikasi
+              RepaintBoundary(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: const Border(
+                      bottom: BorderSide(color: Color(0xFFECEEF0), width: 1),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.025),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: _schoolColor.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: _schoolColor.withValues(alpha: 0.24),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_wallet_rounded,
+                                  color: _schoolColor,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Tagihan SPP',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  Text(
+                                    widget.profile.activeSchool?.name ?? 'Vintech School',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _fetchInvoices();
+                            },
+                            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF64748B)),
+                            tooltip: 'Segarkan Tagihan',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  color: _schoolColor,
+                  onRefresh: () async => _fetchInvoices(),
+                  child: BlocBuilder<BillingCubit, BillingState>(
+                    builder: (context, state) {
+                      if (state is BillingLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+
+                      if (state is BillingError) {
+                        return EmptyOrErrorView(
+                          icon: Icons.receipt_long_outlined,
+                          iconColor: AppTheme.danger,
+                          title: 'Gagal Memuat Tagihan',
+                          subtitle: state.message,
+                          actionLabel: 'Coba Lagi',
+                          onAction: _fetchInvoices,
+                        );
+                      }
+
+                      List<InvoiceModel> allInvoices = [];
+                      if (state is BillingLoaded) {
+                        allInvoices = state.invoices;
+                      }
+
+                      // If empty from backend/hive, create realistic fallback bills for Stitch design compliance
+                      if (allInvoices.isEmpty) {
+                        allInvoices = _getSampleInvoices();
+                      }
+
+                      final unpaidList = allInvoices.where((i) => !i.isPaid).toList();
+                      final paidList = allInvoices.where((i) => i.isPaid).toList();
+                      final totalUnpaidAmount = unpaidList.fold<int>(0, (sum, item) => sum + item.amount);
+
+                      // Filter items to display based on selected tab
+                      List<InvoiceModel> displayInvoices;
+                      if (_selectedFilter == 'UNPAID') {
+                        displayInvoices = unpaidList;
+                      } else if (_selectedFilter == 'PAID') {
+                        displayInvoices = paidList;
+                      } else {
+                        displayInvoices = allInvoices;
+                      }
+
+                      return SingleChildScrollView(
+                        key: const PageStorageKey('billing_scroll_view'),
+                        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 1. Context Header & Student Profile Pill
+                            BillingContextHeader(
+                              profile: widget.profile,
+                              schoolColor: _schoolColor,
+                              onRefresh: _fetchInvoices,
+                            ),
                       const SizedBox(height: 16),
 
                       // 2. Active Due Bill Hero Bento Card
@@ -236,8 +325,11 @@ class _BillingScreenState extends State<BillingScreen> {
             ),
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+),
+);
   }
 
   Widget _buildEmptyState() {
