@@ -5,12 +5,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
+import 'settings_screen.dart';
 import 'widgets/profile_academic_metrics_capsules.dart';
 import 'widgets/profile_academic_services_section.dart';
 import 'widgets/profile_digital_card_modal.dart';
-import 'widgets/profile_header_bar.dart';
 import 'widgets/profile_hero_card.dart';
 import 'widgets/profile_registered_info_section.dart';
+import 'widgets/profile_top_bar.dart';
 
 /// Halaman Profil & Akun Siswa selaras 1:1 dengan Google Stitch Design ("Profil Siswa").
 /// Mengimplementasikan arsitektur modular Bento Grid:
@@ -22,8 +23,13 @@ import 'widgets/profile_registered_info_section.dart';
 /// 6. Ganti Institusi Multi-Tenant & Logout
 class ProfileScreen extends StatelessWidget {
   final UserProfileResponse profile;
+  final ScrollController? scrollController;
 
-  const ProfileScreen({super.key, required this.profile});
+  const ProfileScreen({
+    super.key,
+    required this.profile,
+    this.scrollController,
+  });
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
@@ -284,9 +290,19 @@ class ProfileScreen extends StatelessWidget {
                   bottom: false,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: ProfileHeaderBar(
+                    child: ProfileTopBar(
                       profile: profile,
                       schoolColor: _schoolColor,
+                      onDigitalCardTap: () => _showDigitalCard(context),
+                      onSettingsTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => SettingsScreen(profile: profile),
+                          ),
+                        );
+                      },
+                      onShareQrTap: () => _showShareQrModal(context),
                     ),
                   ),
                 ),
@@ -294,6 +310,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
+                controller: scrollController,
                 key: const PageStorageKey('profile_scroll_view'),
                 physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),

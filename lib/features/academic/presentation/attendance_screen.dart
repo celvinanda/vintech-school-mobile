@@ -14,6 +14,7 @@ import 'widgets/attendance_live_clock_card.dart';
 import 'widgets/attendance_metrics_card.dart';
 import 'widgets/attendance_recent_log.dart';
 import 'widgets/attendance_teacher_roster_view.dart';
+import 'widgets/attendance_top_bar.dart';
 import 'widgets/attendance_weekly_calendar.dart';
 
 /// Halaman Presensi Siswa selaras 1:1 dengan Google Stitch Design ("Presensi Siswa").
@@ -27,8 +28,13 @@ import 'widgets/attendance_weekly_calendar.dart';
 /// 7. Rekap Presensi Guru & Staf ([AttendanceTeacherRosterView])
 class AttendanceScreen extends StatefulWidget {
   final UserProfileResponse profile;
+  final ScrollController? scrollController;
 
-  const AttendanceScreen({super.key, required this.profile});
+  const AttendanceScreen({
+    super.key,
+    required this.profile,
+    this.scrollController,
+  });
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -130,74 +136,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   bottom: false,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: _schoolColor,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _schoolColor.withValues(alpha: 0.28),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.shield_rounded,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              schoolName.toUpperCase(),
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF191C1E),
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _isStudent ? 'Presensi Siswa' : 'Presensi Guru & Staff',
-                              style: GoogleFonts.inter(
-                                fontSize: 11.5,
-                                color: const Color(0xFF565E74),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                    child: AttendanceTopBar(
+                      profile: widget.profile,
+                      schoolColor: _schoolColor,
+                      isStudent: _isStudent,
+                      onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh_rounded, color: Color(0xFF434655)),
-                      tooltip: 'Muat Ulang',
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        _fetchAttendances(forceRefreshMeta: true);
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
 
             // 2. Main Content View
             Expanded(
@@ -227,6 +175,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             searchController: _searchController,
                             statusFilter: _statusFilter,
                             schoolColor: _schoolColor,
+                            scrollController: widget.scrollController,
                             onFilterChanged: (filter) {
                               setState(() => _statusFilter = filter);
                             },
@@ -302,6 +251,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       color: _schoolColor,
       onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
       child: SingleChildScrollView(
+        controller: widget.scrollController,
         key: const PageStorageKey('attendance_student_scroll_view'),
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),

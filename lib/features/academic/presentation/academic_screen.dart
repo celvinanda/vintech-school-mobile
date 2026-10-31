@@ -9,6 +9,7 @@ import 'widgets/academic/academic_schedule_section.dart';
 import 'widgets/academic/academic_subjects_grid.dart';
 import 'widgets/academic/academic_tab_chips.dart';
 import 'widgets/academic/academic_tasks_section.dart';
+import 'widgets/academic_top_bar.dart';
 
 /// Halaman Akademik Siswa selaras 1:1 dengan Google Stitch Design ("Akademik Siswa").
 /// Mengimplementasikan arsitektur modular Bento Grid:
@@ -21,8 +22,13 @@ import 'widgets/academic/academic_tasks_section.dart';
 /// 7. Bimbingan Konseling Banner ([AcademicCounselingCard] - Janji temu guru BK)
 class AcademicScreen extends StatefulWidget {
   final UserProfileResponse profile;
+  final ScrollController? scrollController;
 
-  const AcademicScreen({super.key, required this.profile});
+  const AcademicScreen({
+    super.key,
+    required this.profile,
+    this.scrollController,
+  });
 
   @override
   State<AcademicScreen> createState() => _AcademicScreenState();
@@ -37,10 +43,6 @@ class _AcademicScreenState extends State<AcademicScreen> {
       return AppTheme.parseHexColor(hex);
     }
     return const Color(0xFF003366);
-  }
-
-  String get _schoolName {
-    return widget.profile.activeSchool?.schoolName ?? 'VINTECH ACADEMY';
   }
 
   Future<void> _handleRefresh() async {
@@ -84,7 +86,13 @@ class _AcademicScreenState extends State<AcademicScreen> {
                   bottom: false,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                    child: _buildHeader(context),
+                    child: AcademicTopBar(
+                      profile: widget.profile,
+                      schoolColor: _schoolColor,
+                      onReportTap: () => _showReportModal(context),
+                      gpa: 88.6,
+                      academicPeriod: 'Semester Genap 2025/2026',
+                    ),
                   ),
                 ),
               ),
@@ -94,6 +102,7 @@ class _AcademicScreenState extends State<AcademicScreen> {
                 onRefresh: _handleRefresh,
                 color: _schoolColor,
                 child: SingleChildScrollView(
+                  controller: widget.scrollController,
                   key: const PageStorageKey('academic_scroll_view'),
                   physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
@@ -167,98 +176,6 @@ class _AcademicScreenState extends State<AcademicScreen> {
   ),
 ),
 );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return RepaintBoundary(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: _schoolColor.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _schoolColor.withValues(alpha: 0.20),
-                    width: 1,
-                  ),
-                ),
-                child: Icon(
-                  Icons.school_rounded,
-                  color: _schoolColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Akademik Siswa',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF0F172A),
-                    ),
-                  ),
-                  Text(
-                    _schoolName,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Period badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Genap 25/26',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showReportModal(BuildContext context) {

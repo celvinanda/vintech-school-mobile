@@ -21,11 +21,13 @@ import 'widgets/student_smart_card.dart';
 class StudentDashboardView extends StatelessWidget {
   final UserProfileResponse profile;
   final Function(int tabIndex) onNavigateTab;
+  final ScrollController? scrollController;
 
   const StudentDashboardView({
     super.key,
     required this.profile,
     required this.onNavigateTab,
+    this.scrollController,
   });
 
   Color get _schoolColor {
@@ -89,6 +91,7 @@ class StudentDashboardView extends StatelessWidget {
                 color: _schoolColor,
                 onRefresh: () => context.read<HomeCubit>().loadDashboard(),
                 child: SingleChildScrollView(
+                  controller: scrollController,
                   key: const PageStorageKey('student_dashboard_scroll_view'),
                   physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),

@@ -15,6 +15,7 @@ import 'widgets/billing_filter_tabs.dart';
 import 'widgets/billing_hero_card.dart';
 import 'widgets/billing_invoice_card.dart';
 import 'widgets/billing_payment_channels_grid.dart';
+import 'widgets/billing_top_bar.dart';
 import 'widgets/billing_tuition_support_card.dart';
 import 'widgets/billing_virtual_account_card.dart';
 
@@ -29,8 +30,13 @@ import 'widgets/billing_virtual_account_card.dart';
 /// 7. Administration & Tuition Relief Support ([BillingTuitionSupportCard])
 class BillingScreen extends StatefulWidget {
   final UserProfileResponse profile;
+  final ScrollController? scrollController;
 
-  const BillingScreen({super.key, required this.profile});
+  const BillingScreen({
+    super.key,
+    required this.profile,
+    this.scrollController,
+  });
 
   @override
   State<BillingScreen> createState() => _BillingScreenState();
@@ -139,62 +145,19 @@ class _BillingScreenState extends State<BillingScreen> {
                     bottom: false,
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: _schoolColor.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: _schoolColor.withValues(alpha: 0.24),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.account_balance_wallet_rounded,
-                                  color: _schoolColor,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'Tagihan SPP',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  Text(
-                                    widget.profile.activeSchool?.name ?? 'Vintech School',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF64748B),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              _fetchInvoices();
-                            },
-                            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF64748B)),
-                            tooltip: 'Segarkan Tagihan',
-                          ),
-                        ],
+                      child: BlocBuilder<BillingCubit, BillingState>(
+                        builder: (context, state) {
+                          int unpaidCount = 0;
+                          if (state is BillingLoaded) {
+                            unpaidCount = state.invoices.where((i) => !i.isPaid).length;
+                          }
+                          return BillingTopBar(
+                            profile: widget.profile,
+                            schoolColor: _schoolColor,
+                            unpaidCount: unpaidCount,
+                            onRefresh: () => _fetchInvoices(),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -248,6 +211,7 @@ class _BillingScreenState extends State<BillingScreen> {
                       }
 
                       return SingleChildScrollView(
+                        controller: widget.scrollController,
                         key: const PageStorageKey('billing_scroll_view'),
                         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),

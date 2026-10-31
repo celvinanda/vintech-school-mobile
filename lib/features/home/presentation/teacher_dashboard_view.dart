@@ -12,11 +12,13 @@ import 'widgets/home_top_bar.dart';
 class TeacherDashboardView extends StatelessWidget {
   final UserProfileResponse profile;
   final Function(int tabIndex) onNavigateTab;
+  final ScrollController? scrollController;
 
   const TeacherDashboardView({
     super.key,
     required this.profile,
     required this.onNavigateTab,
+    this.scrollController,
   });
 
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
@@ -74,7 +76,9 @@ class TeacherDashboardView extends StatelessWidget {
                 color: _schoolColor,
                 onRefresh: () => context.read<HomeCubit>().loadDashboard(),
                 child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: scrollController,
+                  key: const PageStorageKey('teacher_dashboard_scroll_view'),
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

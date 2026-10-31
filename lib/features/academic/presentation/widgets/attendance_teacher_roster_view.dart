@@ -14,6 +14,7 @@ class AttendanceTeacherRosterView extends StatelessWidget {
   final Color schoolColor;
   final ValueChanged<String> onFilterChanged;
   final VoidCallback onSearchChanged;
+  final ScrollController? scrollController;
 
   const AttendanceTeacherRosterView({
     super.key,
@@ -24,6 +25,7 @@ class AttendanceTeacherRosterView extends StatelessWidget {
     required this.schoolColor,
     required this.onFilterChanged,
     required this.onSearchChanged,
+    this.scrollController,
   });
 
   @override
@@ -96,6 +98,7 @@ class AttendanceTeacherRosterView extends StatelessWidget {
                   subtitle: 'Tidak ditemukan rekaman presensi dengan kriteria pencarian ini.',
                 )
               : ListView.builder(
+                  controller: scrollController,
                   padding: const EdgeInsets.all(16),
                   itemCount: filteredRecords.length,
                   itemBuilder: (context, index) {

@@ -57,13 +57,13 @@ class BillingContextHeader extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: const Color(0xFFDAE2FD),
+                    backgroundColor: schoolColor.withValues(alpha: 0.12),
                     child: Text(
                       _initials,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF004AC6),
+                        color: schoolColor,
                       ),
                     ),
                   ),

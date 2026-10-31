@@ -65,77 +65,79 @@ class AppBottomNavBar extends StatelessWidget {
               final tabWidth = barWidth / 5;
               final activeX = (animatedIndex + 0.5) * tabWidth;
 
-              return Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 1. Custom Painted Notch & Floating Pearl Dot
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: NotchBarPainter(
-                        activeX: activeX,
-                        notchWidth: 46.0,
-                        notchDepth: 12.0,
-                        topRadius: topRadius,
-                        bottomRadius: bottomRadius,
-                        isFloating: isFloating,
-                        barColor: Colors.white,
-                        dotColor: schoolColor,
-                        dotRadius: 4.8,
+              return RepaintBoundary(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // 1. Custom Painted Notch & Floating Pearl Dot
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: NotchBarPainter(
+                          activeX: activeX,
+                          notchWidth: 46.0,
+                          notchDepth: 12.0,
+                          topRadius: topRadius,
+                          bottomRadius: bottomRadius,
+                          isFloating: isFloating,
+                          barColor: Colors.white,
+                          dotColor: schoolColor,
+                          dotRadius: 4.8,
+                        ),
                       ),
                     ),
-                  ),
 
-                  // 2. Tab Items Row
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 68.0,
-                    child: Row(
-                      children: [
-                        _buildTabItem(
-                          index: 0,
-                          currentIndex: currentIndex,
-                          icon: Icons.home_outlined,
-                          selectedIcon: Icons.home_rounded,
-                          label: 'Beranda',
-                        ),
-                        _buildTabItem(
-                          index: 1,
-                          currentIndex: currentIndex,
-                          icon: Icons.checklist_outlined,
-                          selectedIcon: Icons.checklist_rounded,
-                          label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
-                          badgeCount: pendingOutboxCount,
-                          badgeColor: const Color(0xFFD97706),
-                        ),
-                        _buildTabItem(
-                          index: 2,
-                          currentIndex: currentIndex,
-                          icon: Icons.school_outlined,
-                          selectedIcon: Icons.school_rounded,
-                          label: 'Akademik',
-                        ),
-                        _buildTabItem(
-                          index: 3,
-                          currentIndex: currentIndex,
-                          icon: Icons.account_balance_wallet_outlined,
-                          selectedIcon: Icons.account_balance_wallet_rounded,
-                          label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
-                          badgeCount: unpaidInvoiceCount,
-                          badgeColor: const Color(0xFFDC2626),
-                        ),
-                        _buildTabItem(
-                          index: 4,
-                          currentIndex: currentIndex,
-                          icon: Icons.person_outline_rounded,
-                          selectedIcon: Icons.person_rounded,
-                          label: 'Profil',
-                        ),
-                      ],
+                    // 2. Tab Items Row
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 68.0,
+                      child: Row(
+                        children: [
+                          _buildTabItem(
+                            index: 0,
+                            currentIndex: currentIndex,
+                            icon: Icons.home_outlined,
+                            selectedIcon: Icons.home_rounded,
+                            label: 'Beranda',
+                          ),
+                          _buildTabItem(
+                            index: 1,
+                            currentIndex: currentIndex,
+                            icon: Icons.checklist_outlined,
+                            selectedIcon: Icons.checklist_rounded,
+                            label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
+                            badgeCount: pendingOutboxCount,
+                            badgeColor: const Color(0xFFD97706),
+                          ),
+                          _buildTabItem(
+                            index: 2,
+                            currentIndex: currentIndex,
+                            icon: Icons.school_outlined,
+                            selectedIcon: Icons.school_rounded,
+                            label: 'Akademik',
+                          ),
+                          _buildTabItem(
+                            index: 3,
+                            currentIndex: currentIndex,
+                            icon: Icons.account_balance_wallet_outlined,
+                            selectedIcon: Icons.account_balance_wallet_rounded,
+                            label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
+                            badgeCount: unpaidInvoiceCount,
+                            badgeColor: const Color(0xFFDC2626),
+                          ),
+                          _buildTabItem(
+                            index: 4,
+                            currentIndex: currentIndex,
+                            icon: Icons.person_outline_rounded,
+                            selectedIcon: Icons.person_rounded,
+                            label: 'Profil',
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           );
@@ -185,6 +187,10 @@ class AppBottomNavBar extends StatelessWidget {
         onTap: () {
           if (!isSelected) {
             HapticFeedback.selectionClick();
+            onTap(index);
+          } else {
+            // Smart Reselect: Pemicu Scroll-to-Top halus saat tab aktif ditekan kembali
+            HapticFeedback.lightImpact();
             onTap(index);
           }
         },
