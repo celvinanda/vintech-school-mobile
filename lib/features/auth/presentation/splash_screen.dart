@@ -31,21 +31,27 @@ class _SplashScreenState extends State<SplashScreen>
   bool _isEntranceComplete = false;
   AuthState? _pendingState;
   Timer? _watchdogTimer;
+  late final DateTime _initTime;
 
   late AnimationController _entranceController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+
+  late AnimationController _exitController;
+  late Animation<double> _exitFadeAnimation;
+  late Animation<double> _exitScaleAnimation;
 
   late AnimationController _waveController;
 
   @override
   void initState() {
     super.initState();
+    _initTime = DateTime.now();
 
-    // 1. Inisialisasi Entrance Animation (650ms, easeOutCubic)
+    // 1. Inisialisasi Entrance Animation (600ms, easeOutCubic)
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 600),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -53,37 +59,51 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOut,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
       CurvedAnimation(
         parent: _entranceController,
         curve: Curves.easeOutCubic,
       ),
     );
 
-    // Saat animasi entrance tuntas, cek apakah auth state sudah siap
+    // 2. Inisialisasi Exit Dissolve Animation (350ms)
+    // Menghadirkan efek emblem mekar dan memudar lembut saat layar berpindah
+    _exitController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    _exitFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _exitController,
+        curve: Curves.easeInCubic,
+      ),
+    );
+
+    _exitScaleAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(
+        parent: _exitController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    // Saat animasi entrance tuntas, jadwalkan navigasi dengan pacing yang matang
     _entranceController.forward().then((_) {
       if (!mounted) return;
       _isEntranceComplete = true;
-      final currentState = context.read<AuthCubit>().state;
-      if (_pendingState != null) {
-        _navigateToRoute(_pendingState!);
-      } else if (currentState is Authenticated ||
-          currentState is Unauthenticated ||
-          currentState is AuthError) {
-        _navigateToRoute(currentState);
-      }
+      _triggerScheduledNavigation();
     });
 
-    // 2. Inisialisasi Harmonic 3-Dot Wave Animation (1200ms)
+    // 3. Inisialisasi Harmonic 3-Dot Wave Animation (1200ms)
     _waveController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat();
 
-    // 3. Pengecekan sesi lokal Hive (0ms) & Sinkronisasi Cloud
+    // 4. Pengecekan sesi lokal Hive (0ms) & Sinkronisasi Cloud
     context.read<AuthCubit>().checkSession();
 
-    // 4. Post-Frame Synchronous Evaluation:
+    // 5. Post-Frame Synchronous Evaluation:
     // Menangkap state jika Hive mengembalikan state secara instan sebelum BlocListener mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _hasNavigated) return;
@@ -93,14 +113,13 @@ class _SplashScreenState extends State<SplashScreen>
           currentState is AuthError) {
         _pendingState = currentState;
         if (_isEntranceComplete) {
-          _navigateToRoute(currentState);
+          _triggerScheduledNavigation();
         }
       }
     });
 
-    // 5. Fail-Safe Watchdog Timer Anti-Stuck (Maksimal 2.2 detik)
-    // Menjamin 100% aplikasi tidak akan pernah stuck pada Splash Screen dalam kondisi apapun
-    _watchdogTimer = Timer(const Duration(milliseconds: 2200), () {
+    // 6. Fail-Safe Watchdog Timer Anti-Stuck (Maksimal 2.5 detik)
+    _watchdogTimer = Timer(const Duration(milliseconds: 2500), () {
       if (!mounted || _hasNavigated) return;
       final currentState = context.read<AuthCubit>().state;
       if (currentState is Authenticated) {
@@ -111,20 +130,47 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
+  /// Menjadwalkan transisi dengan Dwell Time yang ideal (1150ms).
+  /// Pacing ini menjamin pengguna sempat membaca status sapaan dan merasakan kehadiran visual
+  /// tanpa merasa buru-buru atau lompat secara tiba-tiba.
+  void _triggerScheduledNavigation() {
+    if (_hasNavigated || !mounted) return;
+
+    final currentState = context.read<AuthCubit>().state;
+    final stateToUse = _pendingState ?? currentState;
+
+    if (stateToUse is Authenticated ||
+        stateToUse is Unauthenticated ||
+        stateToUse is AuthError) {
+      final elapsed = DateTime.now().difference(_initTime).inMilliseconds;
+      final remainingDwell = math.max(0, 1150 - elapsed);
+
+      Future.delayed(Duration(milliseconds: remainingDwell), () {
+        if (!mounted || _hasNavigated) return;
+        _navigateToRoute(stateToUse);
+      });
+    }
+  }
+
   @override
   void dispose() {
     _watchdogTimer?.cancel();
     _entranceController.dispose();
+    _exitController.dispose();
     _waveController.dispose();
     super.dispose();
   }
 
-  /// Navigasi sinkron dan elegan dengan transisi easeOutCubic
+  /// Navigasi sinkron dan elegan dengan transisi Welcoming Bloom & Exit Dissolve
   void _navigateToRoute(AuthState state) {
     if (_hasNavigated || !mounted) return;
     _hasNavigated = true;
     _watchdogTimer?.cancel();
     _waveController.stop();
+
+    // Jalankan efek dissolve pada emblem splash
+    _exitController.forward();
+    HapticFeedback.lightImpact();
 
     Widget targetScreen;
     if (state is Authenticated) {
@@ -134,7 +180,6 @@ class _SplashScreenState extends State<SplashScreen>
       targetScreen = const LoginScreen();
     }
 
-    HapticFeedback.lightImpact();
     Navigator.of(context).pushReplacement(
       SmoothWelcomePageRoute(child: targetScreen),
     );
@@ -148,7 +193,7 @@ class _SplashScreenState extends State<SplashScreen>
           _pendingState = state;
           // Hanya berpindah jika animasi entrance sudah selesai agar visual tetap sempurna
           if (_isEntranceComplete) {
-            _navigateToRoute(state);
+            _triggerScheduledNavigation();
           }
         }
       },
@@ -187,107 +232,123 @@ class _SplashScreenState extends State<SplashScreen>
                         // Center Emblem & Typography (Presisi di Tengah Layar Penuh)
                         Center(
                           child: FadeTransition(
-                            opacity: _fadeAnimation,
+                            opacity: _exitFadeAnimation,
                             child: ScaleTransition(
-                              scale: _scaleAnimation,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // Stitch Center Emblem (96x96 rounded-3xl with subtle border & shadow)
-                                  RepaintBoundary(
-                                    child: Container(
-                                      width: 96,
-                                      height: 96,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(24),
-                                        border: Border.all(
-                                          color: const Color(0xFFE6E8EA),
-                                          width: 1,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF191C1E).withValues(alpha: 0.05),
-                                            blurRadius: 18,
-                                            offset: const Offset(0, 6),
+                              scale: _exitScaleAnimation,
+                              child: FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: ScaleTransition(
+                                  scale: _scaleAnimation,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      // Stitch Center Emblem (96x96 rounded-3xl with subtle border & shadow)
+                                      RepaintBoundary(
+                                        child: Container(
+                                          width: 96,
+                                          height: 96,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(
+                                              color: const Color(0xFFE6E8EA),
+                                              width: 1,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFF191C1E).withValues(alpha: 0.05),
+                                                blurRadius: 18,
+                                                offset: const Offset(0, 6),
+                                              ),
+                                              BoxShadow(
+                                                color: const Color(0xFF004AC6).withValues(alpha: 0.04),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
                                           ),
-                                          BoxShadow(
-                                            color: const Color(0xFF004AC6).withValues(alpha: 0.04),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                          child: Center(
+                                            child: CustomPaint(
+                                              size: const Size(48, 48),
+                                              painter: _StitchGraduationCapPainter(),
+                                            ),
                                           ),
-                                        ],
-                                      ),
-                                      child: Center(
-                                        child: CustomPaint(
-                                          size: const Size(48, 48),
-                                          painter: _StitchGraduationCapPainter(),
                                         ),
                                       ),
-                                    ),
-                                  ),
 
-                                  const SizedBox(height: 24),
+                                      const SizedBox(height: 24),
 
-                                  // Typography: Vintech School (100% Plus Jakarta Sans)
-                                  Text(
-                                    'Vintech School',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: const Color(0xFF191C1E), // text-on-surface
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.6,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 6),
-
-                                  // Typography: Subtitle
-                                  Text(
-                                    'Sistem Akademik & Portal Siswa',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: const Color(0xFF565E74), // text-secondary
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w500,
-                                      letterSpacing: 0.1,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 36),
-
-                                  // Stitch Harmonic 3-Dot Wave Loading Animation
-                                  _buildWaveLoadingIndicator(),
-
-                                  const SizedBox(height: 14),
-
-                                  // Dynamic Live Status Indicator
-                                  BlocBuilder<AuthCubit, AuthState>(
-                                    builder: (context, state) {
-                                      String statusText = 'Memeriksa sesi akun...';
-                                      if (state is AuthLoading && state.message != null) {
-                                        statusText = state.message!;
-                                      } else if (state is Authenticated) {
-                                        statusText = 'Menyiapkan portal siswa...';
-                                      } else if (state is AuthError) {
-                                        statusText = 'Mengarahkan ke login...';
-                                      }
-
-                                      return Text(
-                                        statusText,
+                                      // Typography: Vintech School (100% Plus Jakarta Sans)
+                                      Text(
+                                        'Vintech School',
                                         textAlign: TextAlign.center,
                                         style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 12,
+                                          color: const Color(0xFF191C1E), // text-on-surface
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: -0.6,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      // Typography: Subtitle
+                                      Text(
+                                        'Sistem Akademik & Portal Siswa',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          color: const Color(0xFF565E74), // text-secondary
+                                          fontSize: 13.5,
                                           fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF737686),
                                           letterSpacing: 0.1,
                                         ),
-                                      );
-                                    },
+                                      ),
+
+                                      const SizedBox(height: 36),
+
+                                      // Stitch Harmonic 3-Dot Wave Loading Animation
+                                      _buildWaveLoadingIndicator(),
+
+                                      const SizedBox(height: 14),
+
+                                      // Dynamic Live Status Indicator (Sapaan Hangat Personal)
+                                      BlocBuilder<AuthCubit, AuthState>(
+                                        builder: (context, state) {
+                                          String statusText = 'Memeriksa sesi akun...';
+                                          Color statusColor = const Color(0xFF737686);
+                                          if (state is AuthLoading && state.message != null) {
+                                            statusText = state.message!;
+                                          } else if (state is Authenticated) {
+                                            final name = state.profile.user.firstName;
+                                            statusText = '✨ Sesi aktif • Selamat datang, $name';
+                                            statusColor = const Color(0xFF004AC6);
+                                          } else if (state is Unauthenticated) {
+                                            statusText = '✨ Menyiapkan portal siswa...';
+                                            statusColor = const Color(0xFF004AC6);
+                                          } else if (state is AuthError) {
+                                            statusText = 'Mengarahkan ke login...';
+                                          }
+
+                                          return AnimatedSwitcher(
+                                            duration: const Duration(milliseconds: 300),
+                                            child: Text(
+                                              statusText,
+                                              key: ValueKey(statusText),
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w600,
+                                                color: statusColor,
+                                                letterSpacing: 0.1,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -298,10 +359,12 @@ class _SplashScreenState extends State<SplashScreen>
                         // 3. Discreet Minimalist Footer (Presisi di Tengah Bawah)
                         Center(
                           child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              child: Column(
+                            opacity: _exitFadeAnimation,
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -331,6 +394,7 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                         ),
+                      ),
                       ],
                     ),
                   ),
