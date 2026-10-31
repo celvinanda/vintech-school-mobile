@@ -108,6 +108,28 @@ class AcademicRepository {
     }
   }
 
+  Future<StudentModel?> getStudentByNis(String nis) async {
+    final cleanNis = nis.trim();
+    if (cleanNis.isEmpty) return null;
+
+    final allCached = getCachedStudents();
+    if (allCached != null) {
+      for (final s in allCached) {
+        if (s.nis == cleanNis) return s;
+      }
+    }
+
+    try {
+      final list = await getStudents(search: cleanNis);
+      for (final s in list) {
+        if (s.nis == cleanNis) return s;
+      }
+      return list.isNotEmpty ? list.first : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<List<AttendanceModel>> getAttendances({
     String? classroomId,
     String? studentNis,

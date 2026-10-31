@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 
 /// Card 4: Registered Contact & Guardian Information (Stitch Design)
-/// Menampilkan Wali Kelas (Aksi WhatsApp), Kontak Orang Tua / Wali (Aksi Call), Email, Nomor Telepon & Alamat Domisili
+/// Menampilkan Wali Kelas / Pimpinan, Kontak Orang Tua / TU, Email, dan Alamat Institusi
 class ProfileRegisteredInfoSection extends StatelessWidget {
   final UserProfileResponse profile;
+  final StudentModel? student;
   final String homeroomTeacherName;
   final String homeroomTeacherPhone;
   final String parentName;
@@ -17,14 +19,18 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   const ProfileRegisteredInfoSection({
     super.key,
     required this.profile,
+    this.student,
     this.homeroomTeacherName = 'Dra. Sri Wahyuni, M.Pd',
     this.homeroomTeacherPhone = '6281200000000',
-    this.parentName = 'Hendra Gunawan (Ayah)',
-    this.parentPhone = '+62 811-9876-5432',
+    this.parentName = 'Bpk. Pratama',
+    this.parentPhone = '0811992201',
     this.address = 'Jl. Budi Utomo No. 7, Sawah Besar, Jakarta Pusat',
   });
 
-  String get _classroomName => profile.activeSchool?.classroomName ?? 'X-IPA-1';
+  bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
+  String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? 'X-IPA-1';
+  String get _effectiveParentName => student?.parentName ?? parentName;
+  String get _effectiveParentPhone => student?.parentPhone ?? parentPhone;
 
   Future<void> _launchWa(BuildContext context) async {
     HapticFeedback.lightImpact();
@@ -105,7 +111,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         radius: 19,
                         backgroundColor: const Color(0xFFDBEAFE),
                         child: Text(
-                          'SW',
+                          _isStaffOrTeacher ? 'HW' : 'SW',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -119,7 +125,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Wali Kelas ($_classroomName)',
+                              _isStaffOrTeacher ? 'Kepala Sekolah / Pimpinan' : 'Wali Kelas ($_classroomName)',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w500,
@@ -128,7 +134,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              homeroomTeacherName,
+                              _isStaffOrTeacher ? 'Dr. H. Hendra Wijaya, M.Pd.' : homeroomTeacherName,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -176,7 +182,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // 2. Orang Tua / Wali Cardlet
+                // 2. Orang Tua / TU Cardlet
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -190,7 +196,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         radius: 19,
                         backgroundColor: const Color(0xFFE2E8F0),
                         child: Text(
-                          'HG',
+                          _isStaffOrTeacher ? 'TU' : 'OT',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -204,7 +210,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Orang Tua / Wali Siswa',
+                              _isStaffOrTeacher ? 'Layanan Tata Usaha & SDM' : 'Orang Tua / Wali Siswa',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w500,
@@ -213,7 +219,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              parentName,
+                              _isStaffOrTeacher ? 'Kantor Tata Usaha SMAN 1' : _effectiveParentName,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -223,7 +229,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              parentPhone,
+                              _isStaffOrTeacher ? '021-3456789' : _effectiveParentPhone,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 color: const Color(0xFF64748B),

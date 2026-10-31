@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 
 /// Card 2: Profile Hero Bento Card (Stitch Design)
-/// Menampilkan Foto Profil Siswa, Status Aktif, NIS/NISN, serta Akses Kartu Pelajar Digital & QR
+/// Menampilkan Foto Profil Siswa/Guru, Status Aktif, NIS/NIP, serta Akses Kartu Digital & QR
 class ProfileHeroCard extends StatefulWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
   final VoidCallback onOpenDigitalCard;
   final VoidCallback onShareProfile;
+  final StudentModel? student;
 
   const ProfileHeroCard({
     super.key,
@@ -17,6 +19,7 @@ class ProfileHeroCard extends StatefulWidget {
     required this.schoolColor,
     required this.onOpenDigitalCard,
     required this.onShareProfile,
+    this.student,
   });
 
   @override
@@ -26,10 +29,12 @@ class ProfileHeroCard extends StatefulWidget {
 class _ProfileHeroCardState extends State<ProfileHeroCard> {
   bool _isNisCopied = false;
 
+  bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
   String get _nis => widget.profile.user.cleanIdentifier;
-  String get _nisn => '0082914820'; // NISN Nasional Siswa
-  String get _classroomName => widget.profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
-  String get _schoolName => widget.profile.activeSchool?.schoolName ?? 'SMAN 1 Jakarta';
+  String get _nisn => widget.student?.nisn ?? (widget.profile.activeSchool?.isStudent == true ? '0081234501' : '-');
+  String get _classroomName => widget.student?.classroomName ?? widget.profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
+  String get _schoolName => widget.profile.activeSchool?.schoolName ?? 'SMA Negeri 1 Nusantara Jakarta';
+  String get _roleLabel => widget.profile.activeSchool?.roleDisplayLabel ?? 'Siswa Aktif';
 
   String get _initials {
     final name = widget.profile.user.fullName.trim();
@@ -196,7 +201,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                'Siswa Aktif',
+                                _roleLabel,
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -215,7 +220,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Text(
-                            'TP 2025/2026 Genap',
+                            'TP 2026/2027 Ganjil',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -227,7 +232,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                     ),
                     const SizedBox(height: 10),
 
-                    // Student Name & Class
+                    // Student/Staff Name & Title
                     Text(
                       widget.profile.user.fullName,
                       style: GoogleFonts.plusJakartaSans(
@@ -241,7 +246,9 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$_classroomName • $_schoolName',
+                      _isStaffOrTeacher
+                          ? '${widget.profile.activeSchool?.title.isNotEmpty == true ? widget.profile.activeSchool!.title : _roleLabel} • $_schoolName'
+                          : '$_classroomName • $_schoolName',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -268,7 +275,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'NIS / Induk',
+                                  _isStaffOrTeacher ? 'NIP / ID Pegawai' : 'NIS / Induk',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w500,
@@ -315,7 +322,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'NISN Nasional',
+                                  _isStaffOrTeacher ? 'Status Jabatan' : 'NISN Nasional',
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w500,
@@ -324,7 +331,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  _nisn,
+                                  _isStaffOrTeacher ? _roleLabel : _nisn,
                                   style: GoogleFonts.jetBrainsMono(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w800,
@@ -350,7 +357,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                             },
                             icon: const Icon(Icons.badge_rounded, size: 17),
                             label: Text(
-                              'Kartu Pelajar Digital',
+                              _isStaffOrTeacher ? 'Kartu ID Pegawai Digital' : 'Kartu Pelajar Digital',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,

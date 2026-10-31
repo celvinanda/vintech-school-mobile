@@ -29,14 +29,18 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  bool _isNavBarVisible = true;
+  // Zero-rebuild ValueNotifier: Mengisolasi transisi hide/show Bottom Nav Bar
+  // agar TIDAK memicu setState() ataupun me-rebuild widget tree utama saat user scrolling.
+  final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
   BackgroundSyncService? _bgSyncService;
   late final List<ScrollController> _scrollControllers;
+  late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
     _scrollControllers = List.generate(5, (_) => ScrollController());
+    _buildPages();
 
     // Load home dashboard (0ms Hive + Background Cloud Sync)
     context.read<HomeCubit>().loadDashboard();
@@ -76,8 +80,62 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     )..start();
   }
 
+  /// Inisialisasi daftar halaman satu kali (Persistent Cached Pages):
+  /// Mencegah re-instantiation 5 halaman berat setiap kali user berpindah tab.
+  /// Setiap halaman diisolasi dengan RepaintBoundary agar GPU layer tetap tersimpan di memory.
+  void _buildPages() {
+    _pages = [
+      RepaintBoundary(
+        child: _isStaffOrTeacher
+            ? TeacherDashboardView(
+                profile: widget.profile,
+                scrollController: _scrollControllers[0],
+                onNavigateTab: _handleTabTap,
+              )
+            : StudentDashboardView(
+                profile: widget.profile,
+                scrollController: _scrollControllers[0],
+                onNavigateTab: _handleTabTap,
+              ),
+      ),
+      RepaintBoundary(
+        child: AttendanceScreen(
+          profile: widget.profile,
+          scrollController: _scrollControllers[1],
+        ),
+      ),
+      RepaintBoundary(
+        child: AcademicScreen(
+          profile: widget.profile,
+          scrollController: _scrollControllers[2],
+        ),
+      ),
+      RepaintBoundary(
+        child: BillingScreen(
+          profile: widget.profile,
+          scrollController: _scrollControllers[3],
+        ),
+      ),
+      RepaintBoundary(
+        child: ProfileScreen(
+          profile: widget.profile,
+          scrollController: _scrollControllers[4],
+        ),
+      ),
+    ];
+  }
+
+  @override
+  void didUpdateWidget(MainNavigationScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.profile != oldWidget.profile) {
+      _buildPages();
+    }
+  }
+
   @override
   void dispose() {
+    _isNavBarVisible.dispose();
     for (final controller in _scrollControllers) {
       controller.dispose();
     }
@@ -98,15 +156,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     } else {
       setState(() {
         _currentIndex = index;
-        _isNavBarVisible = true;
       });
+      _isNavBarVisible.value = true;
     }
   }
 
   void _scrollToTop(int index) {
-    if (!_isNavBarVisible) {
-      setState(() => _isNavBarVisible = true);
-    }
+    _isNavBarVisible.value = true;
     if (index >= 0 && index < _scrollControllers.length) {
       final controller = _scrollControllers[index];
       if (controller.hasClients) {
@@ -119,30 +175,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
-  /// Smart Scroll-Aware Behavior:
-  /// - Auto-Hide saat scroll ke bawah (>60px & delta > 6px) untuk membaca immersive.
-  /// - Snap-Up saat scroll ke atas (delta < -6px) atau kembali ke atas (<30px).
-  /// - Memastikan bar selalu muncul saat mencapai tepi halaman (top/bottom).
+  /// High-Performance Scroll Notification Listener:
+  /// Menggunakan ValueNotifier langsung (tanpa setState) sehingga 0 frame drop / lag saat scrolling.
   bool _onScrollNotification(ScrollNotification notification) {
     if (notification.depth == 0) {
       if (notification is ScrollUpdateNotification) {
         final pixels = notification.metrics.pixels;
         final delta = notification.scrollDelta ?? 0.0;
 
+        // 1. Jika dekat posisi teratas (< 30px), selalu tampilkan bar
         if (pixels <= 30.0) {
-          if (!_isNavBarVisible) {
-            setState(() => _isNavBarVisible = true);
+          if (!_isNavBarVisible.value) {
+            _isNavBarVisible.value = true;
           }
-        } else if (delta > 6.0 && _isNavBarVisible && pixels > 60.0) {
-          setState(() => _isNavBarVisible = false);
-        } else if (delta < -6.0 && !_isNavBarVisible) {
-          setState(() => _isNavBarVisible = true);
+        }
+        // 2. Scroll ke bawah terukur (> 8px) dan sudah melewati batas atas (> 80px) -> Sembunyikan bar
+        else if (delta > 8.0 && _isNavBarVisible.value && pixels > 80.0) {
+          _isNavBarVisible.value = false;
+        }
+        // 3. Scroll ke atas terukur (< -8px) -> Munculkan kembali bar seketika
+        else if (delta < -8.0 && !_isNavBarVisible.value) {
+          _isNavBarVisible.value = true;
         }
       } else if (notification is ScrollEndNotification) {
+        // Jika berhenti di ujung atas atau ujung bawah layar, pastikan bar muncul
         if (notification.metrics.pixels <= 30.0 ||
             notification.metrics.pixels >= notification.metrics.maxScrollExtent - 24.0) {
-          if (!_isNavBarVisible) {
-            setState(() => _isNavBarVisible = true);
+          if (!_isNavBarVisible.value) {
+            _isNavBarVisible.value = true;
           }
         }
       }
@@ -152,75 +212,134 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final billingState = context.watch<BillingCubit>().state;
-    final unpaidInvoiceCount = billingState is BillingLoaded
-        ? billingState.invoices.where((inv) => !inv.isPaid).length
-        : 0;
-
-    final List<Widget> pages = [
-      _isStaffOrTeacher
-          ? TeacherDashboardView(
-              profile: widget.profile,
-              scrollController: _scrollControllers[0],
-              onNavigateTab: (index) {
-                setState(() => _currentIndex = index);
-              },
-            )
-          : StudentDashboardView(
-              profile: widget.profile,
-              scrollController: _scrollControllers[0],
-              onNavigateTab: (index) {
-                setState(() => _currentIndex = index);
-              },
-            ),
-      AttendanceScreen(
-        profile: widget.profile,
-        scrollController: _scrollControllers[1],
-      ),
-      AcademicScreen(
-        profile: widget.profile,
-        scrollController: _scrollControllers[2],
-      ),
-      BillingScreen(
-        profile: widget.profile,
-        scrollController: _scrollControllers[3],
-      ),
-      ProfileScreen(
-        profile: widget.profile,
-        scrollController: _scrollControllers[4],
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       extendBody: true,
       body: NotificationListener<ScrollNotification>(
         onNotification: _onScrollNotification,
-        child: IndexedStack(
+        child: FadeIndexedStack(
           index: _currentIndex,
-          children: pages,
+          duration: const Duration(milliseconds: 200),
+          children: _pages,
         ),
       ),
-      bottomNavigationBar: AnimatedSlide(
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-        offset: _isNavBarVisible ? Offset.zero : const Offset(0, 1.3),
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          opacity: _isNavBarVisible ? 1.0 : 0.0,
-          child: IgnorePointer(
-            ignoring: !_isNavBarVisible,
-            child: AppBottomNavBar(
+      // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
+      // Perubahan status hide/show atau update badge tagihan/outbox HANYA
+      // merender ulang bilah navigasi tanpa menyentuh IndexedStack atau halaman aktif.
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: _isNavBarVisible,
+        builder: (context, isVisible, child) {
+          final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+          final isKeyboardVisible = bottomInset > 0;
+          final isEffectiveVisible = isVisible && !isKeyboardVisible;
+
+          return AnimatedSlide(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            offset: isEffectiveVisible ? Offset.zero : const Offset(0, 1.35),
+            child: IgnorePointer(
+              ignoring: !isEffectiveVisible,
+              child: child,
+            ),
+          );
+        },
+        child: Builder(
+          builder: (context) {
+            final billingState = context.watch<BillingCubit>().state;
+            final unpaidInvoiceCount = billingState is BillingLoaded
+                ? billingState.invoices.where((inv) => !inv.isPaid).length
+                : 0;
+            final pendingOutbox = context.watch<LocalStorage>().hive.totalPendingOutbox;
+
+            return AppBottomNavBar(
               currentIndex: _currentIndex,
               onTap: _handleTabTap,
               schoolColor: _schoolColor,
               isStaffOrTeacher: _isStaffOrTeacher,
-              pendingOutboxCount: context.watch<LocalStorage>().hive.totalPendingOutbox,
+              pendingOutboxCount: pendingOutbox,
               unpaidInvoiceCount: unpaidInvoiceCount,
               isFloating: true,
-            ),
-          ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Transisi Halus (Smooth Crossfade & Micro-Scale) untuk perpindahan tab:
+/// - Mencegah hentakan / frame drop yang terjadi pada IndexedStack standar
+/// - Menginterpolasikan fade 200ms dengan kurva easeOutCubic
+class FadeIndexedStack extends StatefulWidget {
+  final int index;
+  final List<Widget> children;
+  final Duration duration;
+
+  const FadeIndexedStack({
+    super.key,
+    required this.index,
+    required this.children,
+    this.duration = const Duration(milliseconds: 200),
+  });
+
+  @override
+  State<FadeIndexedStack> createState() => _FadeIndexedStackState();
+}
+
+class _FadeIndexedStackState extends State<FadeIndexedStack>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.index;
+    _animController = AnimationController(
+      vsync: this,
+      duration: widget.duration,
+      value: 1.0, // Langsung tampil penuh di frame pertama tanpa delay
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.988, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(FadeIndexedStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.index != _currentIndex) {
+      _currentIndex = widget.index;
+      _animController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: widget.children,
         ),
       ),
     );

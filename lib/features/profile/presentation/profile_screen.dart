@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../academic/data/academic_repository.dart';
+import '../../academic/data/models/student_model.dart';
 import '../../auth/data/models/user_model.dart';
 import '../../auth/logic/auth_cubit.dart';
 import 'settings_screen.dart';
@@ -21,7 +23,7 @@ import 'widgets/profile_top_bar.dart';
 /// 4. Kontak & Data Terdaftar ([ProfileRegisteredInfoSection] - Wali Kelas WA, Orang Tua Call, Domisili)
 /// 5. Berkas & Layanan Akademik ([ProfileAcademicServicesSection] - E-Rapor PDF, Surat Aktif, Dapodik)
 /// 6. Ganti Institusi Multi-Tenant & Logout
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final UserProfileResponse profile;
   final ScrollController? scrollController;
 
@@ -31,7 +33,42 @@ class ProfileScreen extends StatelessWidget {
     this.scrollController,
   });
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  StudentModel? _student;
+
+  UserProfileResponse get profile => widget.profile;
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadLiveStudentData();
+    });
+  }
+
+  Future<void> _loadLiveStudentData() async {
+    if (profile.activeSchool?.isStudent != true) return;
+    try {
+      final repo = context.read<AcademicRepository>();
+      final st = await repo.getStudentByNis(profile.user.cleanIdentifier);
+      if (mounted && st != null) {
+        setState(() => _student = st);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _handleRefresh() async {
+    HapticFeedback.lightImpact();
+    await Future.wait([
+      context.read<AuthCubit>().checkSession(),
+      _loadLiveStudentData(),
+    ]);
+  }
 
   void _showDigitalCard(BuildContext context) {
     showDialog(
@@ -39,6 +76,7 @@ class ProfileScreen extends StatelessWidget {
       builder: (_) => ProfileDigitalCardModal(
         profile: profile,
         schoolColor: _schoolColor,
+        student: _student,
       ),
     );
   }
@@ -309,32 +347,39 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                controller: scrollController,
-                key: const PageStorageKey('profile_scroll_view'),
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Profile Hero Bento Card
-                    ProfileHeroCard(
-                      profile: profile,
-                      schoolColor: _schoolColor,
-                      onOpenDigitalCard: () => _showDigitalCard(context),
-                      onShareProfile: () => _showShareQrModal(context),
-                    ),
-                    const SizedBox(height: 16),
+              child: RefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: _schoolColor,
+                child: SingleChildScrollView(
+                  controller: widget.scrollController,
+                  key: const PageStorageKey('profile_scroll_view'),
+                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Profile Hero Bento Card
+                      ProfileHeroCard(
+                        profile: profile,
+                        schoolColor: _schoolColor,
+                        student: _student,
+                        onOpenDigitalCard: () => _showDigitalCard(context),
+                        onShareProfile: () => _showShareQrModal(context),
+                      ),
+                      const SizedBox(height: 16),
 
-              // 3. Quick Academic Capsules
-              const ProfileAcademicMetricsCapsules(),
-              const SizedBox(height: 16),
+                      // 3. Quick Academic Capsules
+                      ProfileAcademicMetricsCapsules(
+                        profile: profile,
+                      ),
+                      const SizedBox(height: 16),
 
-              // 4. Registered Contact & Guardian Information
-              ProfileRegisteredInfoSection(
-                profile: profile,
-              ),
-              const SizedBox(height: 16),
+                      // 4. Registered Contact & Guardian Information
+                      ProfileRegisteredInfoSection(
+                        profile: profile,
+                        student: _student,
+                      ),
+                      const SizedBox(height: 16),
 
               // 5. Academic Files & Documents
               const ProfileAcademicServicesSection(),
@@ -409,6 +454,7 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     ],
   ),
 ),

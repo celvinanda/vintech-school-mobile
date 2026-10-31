@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 
-/// Modal Card: Digital Student ID Card (Stitch Design)
-/// Menampilkan Kartu Tanda Pelajar Elektronik dengan QR Code & Opsi Simpan ke Galeri Foto
+/// Modal Card: Digital Student/Teacher ID Card (Stitch Design)
+/// Menampilkan Kartu Tanda Pelajar / Pegawai Elektronik dengan QR Code & Opsi Simpan ke Galeri Foto
 class ProfileDigitalCardModal extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
+  final StudentModel? student;
 
   const ProfileDigitalCardModal({
     super.key,
     required this.profile,
     required this.schoolColor,
+    this.student,
   });
 
+  bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   String get _schoolName => (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA').toUpperCase();
   String get _nis => profile.user.cleanIdentifier;
-  String get _nisn => '0082914820';
-  String get _classroomName => profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
+  String get _nisn => student?.nisn ?? (profile.activeSchool?.isStudent == true ? '0081234501' : '-');
+  String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
+  String get _cardTitle => profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL';
 
   String get _initials {
     final name = profile.user.fullName.trim();
@@ -110,7 +115,7 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'KARTU TANDA PELAJAR ELEKTRONIK',
+                      _cardTitle,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -160,7 +165,9 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'NISN: $_nisn | NIS: $_nis',
+                      _isStaffOrTeacher
+                          ? 'NIP: $_nis | ROLE: ${profile.activeSchool?.roleDisplayLabel ?? "Staff"}'
+                          : 'NISN: $_nisn | NIS: $_nis',
                       style: GoogleFonts.jetBrainsMono(
                         fontSize: 11,
                         color: const Color(0xFF64748B),
@@ -169,7 +176,9 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$_classroomName • Angkatan 2025/2026',
+                      _isStaffOrTeacher
+                          ? '${profile.activeSchool?.title.isNotEmpty == true ? profile.activeSchool!.title : "Tenaga Pendidik"} • Aktif'
+                          : '$_classroomName • TP 2026/2027 Ganjil',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,

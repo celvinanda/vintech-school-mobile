@@ -54,8 +54,8 @@ class SchoolLookupModel {
       address: json['address'] as String?,
       phone: json['phone'] as String?,
       email: json['email'] as String?,
-      primaryColor: branding?['primary_color'] as String?,
-      logoUrl: branding?['logo_url'] as String?,
+      primaryColor: branding?['primary_color'] as String? ?? json['primary_color'] as String?,
+      logoUrl: branding?['logo_url'] as String? ?? json['logo_url'] as String?,
       vintechPaymentConfigured: json['vintech_payment_configured'] == true,
     );
   }

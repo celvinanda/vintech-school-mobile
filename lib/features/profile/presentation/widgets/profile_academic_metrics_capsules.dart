@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Card 3: 3 Quick Metric Capsules for Student Academic Overview (Stitch Design)
-/// Menampilkan Nilai Rata-rata (88.5 / A), Persentase Kehadiran (96% / Top 5), dan Status Bebas SPP (Lunas)
+import '../../../auth/data/models/user_model.dart';
+
+/// Card 3: 3 Quick Metric Capsules for Academic Overview (Stitch Design)
+/// Menampilkan indikator performa yang cerdas dan adaptif sesuai peran (Siswa / Guru)
 class ProfileAcademicMetricsCapsules extends StatelessWidget {
+  final UserProfileResponse? profile;
   final double gpa;
   final String gradeLetter;
   final int attendanceRate;
@@ -13,13 +16,16 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
 
   const ProfileAcademicMetricsCapsules({
     super.key,
+    this.profile,
     this.gpa = 88.5,
     this.gradeLetter = 'A',
     this.attendanceRate = 96,
     this.attendanceRank = 'Top 5',
     this.tuitionStatus = 'Lunas',
-    this.tuitionMonth = 'Maret',
+    this.tuitionMonth = 'November',
   });
+
+  bool get _isStaffOrTeacher => profile?.activeSchool?.isStaffOrTeacher == true;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +37,7 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Ikhtisar Performa Akademik',
+                _isStaffOrTeacher ? 'Ikhtisar Tugas & Jam Kerja' : 'Ikhtisar Performa Akademik',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -39,7 +45,7 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                 ),
               ),
               Text(
-                'Semester 2',
+                'TP 2026/2027',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -53,47 +59,47 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
           // 3 Columns Row
           Row(
             children: [
-              // Capsule 1: Nilai Rata-rata
+              // Capsule 1
               Expanded(
                 child: _buildCapsule(
-                  icon: Icons.auto_stories_rounded,
+                  icon: _isStaffOrTeacher ? Icons.schedule_rounded : Icons.auto_stories_rounded,
                   iconColor: const Color(0xFF004AC6),
                   iconBg: const Color(0xFFEFF6FF),
-                  badgeLabel: gradeLetter,
+                  badgeLabel: _isStaffOrTeacher ? 'Normal' : gradeLetter,
                   badgeColor: const Color(0xFF004AC6),
                   badgeBg: const Color(0xFFDBEAFE),
-                  value: '$gpa',
-                  subtitle: 'Rata-rata Nilai',
+                  value: _isStaffOrTeacher ? '24 JP' : '$gpa',
+                  subtitle: _isStaffOrTeacher ? 'Jam Mengajar' : 'Rata-rata Nilai',
                 ),
               ),
               const SizedBox(width: 8),
 
-              // Capsule 2: Kehadiran
+              // Capsule 2
               Expanded(
                 child: _buildCapsule(
                   icon: Icons.checklist_rounded,
                   iconColor: const Color(0xFF007D55),
                   iconBg: const Color(0xFFECFDF5),
-                  badgeLabel: attendanceRank,
+                  badgeLabel: _isStaffOrTeacher ? 'Tepat Waktu' : attendanceRank,
                   badgeColor: const Color(0xFF007D55),
                   badgeBg: const Color(0xFFA7F3D0),
-                  value: '$attendanceRate%',
-                  subtitle: 'Kehadiran',
+                  value: _isStaffOrTeacher ? '98%' : '$attendanceRate%',
+                  subtitle: _isStaffOrTeacher ? 'Presensi Guru' : 'Kehadiran',
                 ),
               ),
               const SizedBox(width: 8),
 
-              // Capsule 3: Status SPP
+              // Capsule 3
               Expanded(
                 child: _buildCapsule(
-                  icon: Icons.verified_rounded,
+                  icon: _isStaffOrTeacher ? Icons.meeting_room_rounded : Icons.verified_rounded,
                   iconColor: const Color(0xFF0F766E),
                   iconBg: const Color(0xFFF0FDFA),
-                  badgeLabel: tuitionStatus,
+                  badgeLabel: _isStaffOrTeacher ? 'Binaan' : tuitionStatus,
                   badgeColor: const Color(0xFF0F766E),
                   badgeBg: const Color(0xFFCCFBF1),
-                  value: tuitionMonth,
-                  subtitle: 'Bebas SPP',
+                  value: _isStaffOrTeacher ? (profile?.activeSchool?.classroomName ?? 'X-IPA-1') : tuitionMonth,
+                  subtitle: _isStaffOrTeacher ? 'Wali Kelas' : 'Status SPP',
                 ),
               ),
             ],
