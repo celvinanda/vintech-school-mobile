@@ -17,6 +17,11 @@ if "%MY_IP%"=="" (
     set "MY_IP=192.168.1.9"
 )
 
+:: Membersihkan proses zombie di port 8080 jika ada
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8080 ^| findstr LISTENING') do (
+    taskkill /F /PID %%a >nul 2>&1
+)
+
 echo.
 echo =======================================================================
 echo  LINK RESMI AKSES DARI PONSEL (iPhone / Android / Mac di Wi-Fi):
@@ -27,19 +32,25 @@ echo  (Jika dibuka di browser laptop ini: http://localhost:8080)
 echo =======================================================================
 echo.
 echo Pilih Mode Web Server:
-echo [1] Mode RELEASE KILAT (PILIHAN UTAMA - Sangat Cepat, Mulus, Anti-Blank)
-echo     -^> Membuka langsung dalam 1-2 detik di Edge, Chrome, Safari, dan Ponsel.
-echo [2] Mode DEBUG Developer (Khusus Developer dengan Chrome Dart Debugger)
-echo     -^> PERHATIAN: Membutuhkan Chrome Debugger. Jangan gunakan di Edge/Safari/HP
-echo         karena akan tertahan (stuck blank putih) menunggu debugger.
-echo [3] Build Ulang Web Release (Kompilasi kode terbaru sebelum dijalankan)
+echo [1] Mode RELEASE KILAT (PILIHAN UTAMA - Cukup TEKAN ENTER)
+echo     -^> Buka langsung dalam 1-2 detik di Ponsel (Safari/Chrome) & Laptop (Edge/Chrome).
+echo     -^> Sangat cepat, hemat RAM, anti-blank putih, 1 file teroptimasi.
+echo.
+echo [2] Mode DEBUG Laptop (Microsoft Edge dengan Hot-Restart)
+echo     -^> Otomatis membuka Edge laptop dengan debugger aktif (tidak akan blank putih).
+echo.
+echo [3] Mode DEBUG Laptop (Google Chrome dengan Hot-Restart)
+echo     -^> Otomatis membuka Chrome laptop dengan debugger aktif.
+echo.
+echo [4] Build Ulang Web Release (Kompilasi kode terbaru lalu jalankan)
 echo.
 set "mode=1"
-set /p mode="Pilih mode [1/2/3, default 1 (TEKAN ENTER LANGSUNG)]: "
+set /p mode="Pilih mode [1/2/3/4, default 1 (LANGSUNG TEKAN ENTER)]: "
 if "%mode%"=="" set mode=1
 
-if "%mode%"=="2" goto mode_debug
-if "%mode%"=="3" goto mode_rebuild
+if "%mode%"=="2" goto mode_debug_edge
+if "%mode%"=="3" goto mode_debug_chrome
+if "%mode%"=="4" goto mode_rebuild
 
 :mode_release
 echo.
@@ -62,19 +73,16 @@ echo [OK] Kompilasi selesai! Menjalankan High-Speed Web Server...
 python -m http.server 8080 --bind 0.0.0.0 --directory build\web
 goto end
 
-:mode_debug
+:mode_debug_edge
 echo.
-echo =======================================================================
-echo [PERHATIAN MODE DEBUG]
-echo Mode ini menjalankan Dart Web Debug Service (DWDS).
-echo Jika dibuka di Microsoft Edge atau Safari tanpa ekstensi debugger Chrome,
-echo halaman akan berhenti pada status 'Loading...' / blank putih.
-echo Jika ingin melihat tampilan aplikasi secara normal, gunakan MODE 1.
-echo =======================================================================
+echo [INFO] Menjalankan Flutter Web pada Microsoft Edge (Mode Debug)...
+call flutter run -d edge --web-hostname 0.0.0.0 --web-port 8080
+goto end
+
+:mode_debug_chrome
 echo.
-echo Menjalankan Flutter Web Server pada host 0.0.0.0:8080 (Mode Debug)...
-echo.
-call flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
+echo [INFO] Menjalankan Flutter Web pada Google Chrome (Mode Debug)...
+call flutter run -d chrome --web-hostname 0.0.0.0 --web-port 8080
 goto end
 
 :end

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/storage/local_storage.dart';
-import '../../../auth/data/models/user_model.dart';
+import 'package:vintech_school_mobile/core/storage/local_storage.dart';
+import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 import '../../data/models/school_dashboard_model.dart';
 import '../school_profile_screen.dart';
 import '../student_notifications_screen.dart';
