@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -366,6 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
             behavior: HitTestBehavior.opaque,
             onTap: () => FocusScope.of(context).unfocus(),
             child: Stack(
+              fit: StackFit.expand,
               children: [
                 // 1. Subtle Ambient Glows (Stitch Design Specification)
                 Positioned(
@@ -406,42 +407,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                // 2. Server Settings Action (Discreet Top Bar Button)
-                SafeArea(
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 12),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.dns_outlined,
-                          size: 21,
-                          color: Color(0xFF737686),
-                        ),
-                        tooltip: 'Pengaturan Server API',
-                        onPressed: () => ServerSettingsSheet.show(context),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 3. Scrollable Login Content
-                SafeArea(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 420),
-                      child: SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
+                // 2. Scrollable Login Content (Presisi Full Viewport Centering)
+                Positioned.fill(
+                  child: SafeArea(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
                               const SizedBox(height: 10),
 
                               // Stitch Header: Emblem Logo
@@ -901,6 +884,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+                // 3. Server Settings Action (Discreet Top Bar Button - Top Right)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, right: 12),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.dns_outlined,
+                          size: 21,
+                          color: Color(0xFF737686),
+                        ),
+                        tooltip: 'Pengaturan Server API',
+                        onPressed: () => ServerSettingsSheet.show(context),
                       ),
                     ),
                   ),

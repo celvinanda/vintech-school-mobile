@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,8 @@ import 'login_screen.dart';
 /// 2. Zero-Memory Allocation CustomPainter dengan RepaintBoundary caching
 /// 3. Harmonic 3-Dot Wave Loading Animation
 /// 4. 100% Tipografi Terpadu Plus Jakarta Sans
-/// 5. Bulletproof Fallback Anti-Stuck (Penanganan AuthError & Timeout)
+/// 5. Bulletproof Fallback Anti-Stuck (Penanganan AuthError, Synchronous Hive & Timeout)
+/// 6. Precision Responsive Screen Bounds (Positioned.fill, StackFit.expand & Full Centering)
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -27,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen>
   bool _hasNavigated = false;
   bool _isEntranceComplete = false;
   AuthState? _pendingState;
+  Timer? _watchdogTimer;
 
   late AnimationController _entranceController;
   late Animation<double> _fadeAnimation;
@@ -60,8 +63,13 @@ class _SplashScreenState extends State<SplashScreen>
     _entranceController.forward().then((_) {
       if (!mounted) return;
       _isEntranceComplete = true;
+      final currentState = context.read<AuthCubit>().state;
       if (_pendingState != null) {
         _navigateToRoute(_pendingState!);
+      } else if (currentState is Authenticated ||
+          currentState is Unauthenticated ||
+          currentState is AuthError) {
+        _navigateToRoute(currentState);
       }
     });
 
@@ -73,10 +81,38 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 3. Pengecekan sesi lokal Hive (0ms) & Sinkronisasi Cloud
     context.read<AuthCubit>().checkSession();
+
+    // 4. Post-Frame Synchronous Evaluation:
+    // Menangkap state jika Hive mengembalikan state secara instan sebelum BlocListener mount
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _hasNavigated) return;
+      final currentState = context.read<AuthCubit>().state;
+      if (currentState is Authenticated ||
+          currentState is Unauthenticated ||
+          currentState is AuthError) {
+        _pendingState = currentState;
+        if (_isEntranceComplete) {
+          _navigateToRoute(currentState);
+        }
+      }
+    });
+
+    // 5. Fail-Safe Watchdog Timer Anti-Stuck (Maksimal 2.2 detik)
+    // Menjamin 100% aplikasi tidak akan pernah stuck pada Splash Screen dalam kondisi apapun
+    _watchdogTimer = Timer(const Duration(milliseconds: 2200), () {
+      if (!mounted || _hasNavigated) return;
+      final currentState = context.read<AuthCubit>().state;
+      if (currentState is Authenticated) {
+        _navigateToRoute(currentState);
+      } else {
+        _navigateToRoute(Unauthenticated());
+      }
+    });
   }
 
   @override
   void dispose() {
+    _watchdogTimer?.cancel();
     _entranceController.dispose();
     _waveController.dispose();
     super.dispose();
@@ -86,6 +122,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToRoute(AuthState state) {
     if (_hasNavigated || !mounted) return;
     _hasNavigated = true;
+    _watchdogTimer?.cancel();
     _waveController.stop();
 
     Widget targetScreen;
@@ -136,153 +173,176 @@ class _SplashScreenState extends State<SplashScreen>
         child: Scaffold(
           backgroundColor: const Color(0xFFF7F9FB), // Google Stitch: bg-surface
           body: Stack(
+            fit: StackFit.expand,
+            alignment: Alignment.center,
             children: [
               // 1. Ambient Glow Orbs (Di-cache permanen di GPU)
-              _buildAmbientGlow(),
+              Positioned.fill(
+                child: _buildAmbientGlow(),
+              ),
 
               // 2. Modul Konten Utama (Center Branding)
-              SafeArea(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 3),
+              Positioned.fill(
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Spacer(flex: 3),
 
-                    // Center Emblem & Typography
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: ScaleTransition(
-                        scale: _scaleAnimation,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Stitch Center Emblem (96x96 rounded-3xl with subtle border & shadow)
-                            RepaintBoundary(
-                              child: Container(
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: const Color(0xFFE6E8EA),
-                                    width: 1,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF191C1E).withValues(alpha: 0.05),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 6),
+                        // Center Emblem & Typography (Presisi di Tengah Layar Penuh)
+                        Center(
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: ScaleTransition(
+                              scale: _scaleAnimation,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  // Stitch Center Emblem (96x96 rounded-3xl with subtle border & shadow)
+                                  RepaintBoundary(
+                                    child: Container(
+                                      width: 96,
+                                      height: 96,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(
+                                          color: const Color(0xFFE6E8EA),
+                                          width: 1,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF191C1E).withValues(alpha: 0.05),
+                                            blurRadius: 18,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                          BoxShadow(
+                                            color: const Color(0xFF004AC6).withValues(alpha: 0.04),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: CustomPaint(
+                                          size: const Size(48, 48),
+                                          painter: _StitchGraduationCapPainter(),
+                                        ),
+                                      ),
                                     ),
-                                    BoxShadow(
-                                      color: const Color(0xFF004AC6).withValues(alpha: 0.04),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                  ),
+
+                                  const SizedBox(height: 24),
+
+                                  // Typography: Vintech School (100% Plus Jakarta Sans)
+                                  Text(
+                                    'Vintech School',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF191C1E), // text-on-surface
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.6,
                                     ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: CustomPaint(
-                                    size: const Size(48, 48),
-                                    painter: _StitchGraduationCapPainter(),
                                   ),
-                                ),
-                              ),
-                            ),
 
-                            const SizedBox(height: 24),
+                                  const SizedBox(height: 6),
 
-                            // Typography: Vintech School (100% Plus Jakarta Sans)
-                            Text(
-                              'Vintech School',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF191C1E), // text-on-surface
-                                fontSize: 26,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.6,
-                              ),
-                            ),
-
-                            const SizedBox(height: 6),
-
-                            // Typography: Subtitle
-                            Text(
-                              'Sistem Akademik & Portal Siswa',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF565E74), // text-secondary
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.1,
-                              ),
-                            ),
-
-                            const SizedBox(height: 36),
-
-                            // Stitch Harmonic 3-Dot Wave Loading Animation
-                            _buildWaveLoadingIndicator(),
-
-                            const SizedBox(height: 14),
-
-                            // Dynamic Live Status Indicator
-                            BlocBuilder<AuthCubit, AuthState>(
-                              builder: (context, state) {
-                                String statusText = 'Memeriksa sesi akun...';
-                                if (state is AuthLoading && state.message != null) {
-                                  statusText = state.message!;
-                                } else if (state is Authenticated) {
-                                  statusText = 'Menyiapkan portal siswa...';
-                                } else if (state is AuthError) {
-                                  statusText = 'Mengarahkan ke login...';
-                                }
-
-                                return Text(
-                                  statusText,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF737686),
-                                    letterSpacing: 0.1,
+                                  // Typography: Subtitle
+                                  Text(
+                                    'Sistem Akademik & Portal Siswa',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF565E74), // text-secondary
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.1,
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
 
-                    const Spacer(flex: 4),
+                                  const SizedBox(height: 36),
 
-                    // 3. Discreet Minimalist Footer
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Vintech Nusantara Edukasi',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF565E74),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.4,
+                                  // Stitch Harmonic 3-Dot Wave Loading Animation
+                                  _buildWaveLoadingIndicator(),
+
+                                  const SizedBox(height: 14),
+
+                                  // Dynamic Live Status Indicator
+                                  BlocBuilder<AuthCubit, AuthState>(
+                                    builder: (context, state) {
+                                      String statusText = 'Memeriksa sesi akun...';
+                                      if (state is AuthLoading && state.message != null) {
+                                        statusText = state.message!;
+                                      } else if (state is Authenticated) {
+                                        statusText = 'Menyiapkan portal siswa...';
+                                      } else if (state is AuthError) {
+                                        statusText = 'Mengarahkan ke login...';
+                                      }
+
+                                      return Text(
+                                        statusText,
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF737686),
+                                          letterSpacing: 0.1,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'v2.4.0 • Enterprise Edition',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF94A3B8),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 0.2,
+                          ),
+                        ),
+
+                        const Spacer(flex: 4),
+
+                        // 3. Discreet Minimalist Footer (Presisi di Tengah Bawah)
+                        Center(
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Vintech Nusantara Edukasi',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF565E74),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'v2.4.0 • Enterprise Edition',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: const Color(0xFF94A3B8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -297,6 +357,7 @@ class _SplashScreenState extends State<SplashScreen>
     return RepaintBoundary(
       child: IgnorePointer(
         child: Stack(
+          fit: StackFit.expand,
           children: [
             Positioned(
               top: -100,
