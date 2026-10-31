@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Card 3: Weekly Strip Mini-Calendar (Google Stitch Design)
@@ -44,7 +44,7 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
                 ),
                 Text(
                   'Minggu ke-2 • Maret',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11.5,
                     color: const Color(0xFF565E74),
                   ),
@@ -93,7 +93,7 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
                         children: [
                           Text(
                             dayLabels[index],
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 10.5,
                               fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
                               color: isToday ? const Color(0xFF00174B) : const Color(0xFF565E74),

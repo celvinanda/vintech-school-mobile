@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -44,7 +44,7 @@ class StudentAnnouncementsSection extends StatelessWidget {
                       children: [
                         Text(
                           'Lihat Semua',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF004AC6),
@@ -161,7 +161,7 @@ class AnnouncementCardItem extends StatelessWidget {
                 ),
                 child: Text(
                   categoryBadge,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
                     color: isImportant ? const Color(0xFF93000A) : const Color(0xFF00174B),
@@ -171,7 +171,7 @@ class AnnouncementCardItem extends StatelessWidget {
               ),
               Text(
                 '$timestamp • $author',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   color: const Color(0xFF565E74),
                 ),
@@ -191,7 +191,7 @@ class AnnouncementCardItem extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             snippet,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: const Color(0xFF434655),
               height: 1.45,
@@ -213,7 +213,7 @@ class AnnouncementCardItem extends StatelessWidget {
                   const SizedBox(width: 4),
                   Text(
                     attachmentLabel,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       color: const Color(0xFF565E74),
                     ),

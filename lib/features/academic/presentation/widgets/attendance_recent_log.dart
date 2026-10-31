@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../data/models/attendance_model.dart';
 
@@ -31,7 +31,7 @@ class AttendanceRecentLog extends StatelessWidget {
               ),
               Text(
                 '4 Hari Terakhir',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF004AC6),
@@ -183,7 +183,7 @@ class _RecentItemTile extends StatelessWidget {
                       ),
                       child: Text(
                         statusBadge,
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           color: statusColor,
@@ -195,7 +195,7 @@ class _RecentItemTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   details,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11,
                     color: const Color(0xFF565E74),
                   ),

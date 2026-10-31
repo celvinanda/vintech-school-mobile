@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -42,7 +42,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                 ),
                 Text(
                   'Semester Genap',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 11.5,
                     color: const Color(0xFF565E74),
                   ),
@@ -71,7 +71,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                           children: [
                             Text(
                               'Masuk',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11.5,
                                 color: const Color(0xFF565E74),
                               ),
@@ -84,7 +84,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                               ),
                               child: Text(
                                 'Tepat Waktu',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF007D55),
@@ -115,7 +115,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                             const SizedBox(width: 3),
                             Text(
                               'WIB',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 color: const Color(0xFF565E74),
                               ),
@@ -125,7 +125,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Face ID Terverifikasi',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 10.5,
                             color: const Color(0xFF565E74),
                           ),
@@ -152,7 +152,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                           children: [
                             Text(
                               'Pulang',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11.5,
                                 color: const Color(0xFF565E74),
                               ),
@@ -165,7 +165,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                               ),
                               child: Text(
                                 'Belum Waktunya',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w600,
                                   color: const Color(0xFF565E74),
@@ -196,7 +196,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                             const SizedBox(width: 3),
                             Text(
                               'WIB',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 color: const Color(0xFF565E74),
                               ),
@@ -206,7 +206,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Selesai KBM',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 10.5,
                             color: const Color(0xFF565E74),
                           ),
@@ -237,7 +237,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                 icon: const Icon(Icons.qr_code_scanner_rounded, size: 20),
                 label: Text(
                   'Pindai QR / Tap Presensi',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -260,7 +260,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                 icon: const Icon(Icons.note_alt_rounded, size: 18, color: Color(0xFF565E74)),
                 label: Text(
                   'Ajukan Izin atau Sakit',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -314,7 +314,7 @@ class AttendanceCheckInCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'Kehadiran Anda berhasil diverifikasi pada pukul $timeStr WIB.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12.5,
                   color: const Color(0xFF565E74),
                 ),
@@ -377,7 +377,7 @@ class AttendanceCheckInCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Pengajuan izin akan diteruskan kepada wali kelas dan guru piket.',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: const Color(0xFF565E74),
               ),
@@ -397,7 +397,7 @@ class AttendanceCheckInCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Pastikan melampirkan surat dokter atau surat permohonan orang tua resmi.',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         color: const Color(0xFF434655),
                       ),

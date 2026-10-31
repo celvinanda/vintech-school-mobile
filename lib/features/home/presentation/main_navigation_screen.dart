@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -433,12 +433,14 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
       value: 1.0, // Langsung tampil penuh di frame pertama tanpa delay
     );
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
+    _fadeAnimation = Tween<double>(begin: 0.20, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animController,
+        curve: Curves.easeOutCubic,
+      ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.988, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.992, end: 1.0).animate(
       CurvedAnimation(
         parent: _animController,
         curve: Curves.easeOutCubic,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Card 4: Attendance Metrics & Ringkasan Kehadiran Bulanan (Google Stitch Design)
@@ -56,7 +56,7 @@ class AttendanceMetricsCard extends StatelessWidget {
                     ),
                     Text(
                       'Periode: Semester Genap 2026',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         color: const Color(0xFF565E74),
                       ),
@@ -73,7 +73,7 @@ class AttendanceMetricsCard extends StatelessWidget {
                     children: [
                       Text(
                         'Maret',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF191C1E),
@@ -146,7 +146,7 @@ class AttendanceMetricsCard extends StatelessWidget {
               children: [
                 Text(
                   'Tingkat Kedisiplinan Semester',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF191C1E),
@@ -210,7 +210,7 @@ class _MetricTile extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 11.5,
                   color: const Color(0xFF565E74),
                 ),
@@ -223,7 +223,7 @@ class _MetricTile extends StatelessWidget {
                 ),
                 child: Text(
                   badgeText,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     color: badgeColor,

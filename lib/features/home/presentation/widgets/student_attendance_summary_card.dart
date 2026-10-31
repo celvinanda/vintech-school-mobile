@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -85,7 +85,7 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                       ),
                       child: Text(
                         '${rate.toStringAsFixed(0)}% Disiplin',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF007D55),
@@ -144,7 +144,7 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                               children: [
                                 Text(
                                   'Presensi Hari Ini: Tepat Waktu',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF191C1E),
@@ -152,7 +152,7 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                                 ),
                                 Text(
                                   'Tercatat pukul 07:15 WIB di Gerbang Utama',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11.5,
                                     color: const Color(0xFF434655),
                                   ),
@@ -212,7 +212,7 @@ class _StatCapsule extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF565E74),

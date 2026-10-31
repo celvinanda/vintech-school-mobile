@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -88,7 +88,7 @@ class AcademicHeroCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             academicPeriod,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF434655),
@@ -104,7 +104,7 @@ class AcademicHeroCard extends StatelessWidget {
                         ),
                         child: Text(
                           classroomName,
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF004AC6),
@@ -126,7 +126,7 @@ class AcademicHeroCard extends StatelessWidget {
                         children: [
                           Text(
                             'Rata-rata Nilai (IPK)',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 11.5,
                               color: const Color(0xFF565E74),
                             ),
@@ -154,7 +154,7 @@ class AcademicHeroCard extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'A • Sangat Baik',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF007D55),
@@ -183,7 +183,7 @@ class AcademicHeroCard extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text(
                               '12 Mapel',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF565E74),
@@ -235,14 +235,14 @@ class AcademicHeroCard extends StatelessWidget {
                               children: [
                                 Text(
                                   'Peringkat Kelas',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 10.5,
                                     color: const Color(0xFF565E74),
                                   ),
                                 ),
                                 Text(
                                   rankText,
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
                                     color: const Color(0xFF191C1E),
@@ -256,7 +256,7 @@ class AcademicHeroCard extends StatelessWidget {
                           children: [
                             Text(
                               'Top 10%',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF004AC6),
@@ -299,7 +299,7 @@ class AcademicHeroCard extends StatelessWidget {
                         children: [
                           Text(
                             'Lihat Rapor Digital',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),

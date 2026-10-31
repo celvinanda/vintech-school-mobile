@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -110,7 +110,7 @@ class TopBarTitleContext extends StatelessWidget {
                 Flexible(
                   child: Text(
                     _subtitle,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: const Color(0xFF64748B),
                       fontWeight: FontWeight.w500,

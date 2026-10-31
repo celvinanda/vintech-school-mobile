@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../auth/data/models/user_model.dart';
@@ -89,7 +89,7 @@ class StudentSmartCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             'KARTU PELAJAR DIGITAL',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFFCBD5E1),
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
@@ -122,7 +122,7 @@ class StudentSmartCard extends StatelessWidget {
                             const SizedBox(width: 5),
                             Text(
                               'AKTIF',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 color: const Color(0xFF6FFBBE),
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
@@ -161,7 +161,7 @@ class StudentSmartCard extends StatelessWidget {
                               profile.activeSchool?.title.isNotEmpty == true
                                   ? profile.activeSchool!.title
                                   : 'Kelas ${profile.activeSchool?.level ?? "X"} • Jurusan MIPA',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 color: const Color(0xFFB4C5FF),
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w500,
@@ -192,7 +192,7 @@ class StudentSmartCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               'NFC ACTIVE',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFFB4C5FF),
@@ -228,7 +228,7 @@ class StudentSmartCard extends StatelessWidget {
                               children: [
                                 Text(
                                   'NIS: ',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: const Color(0xFFCBD5E1),
                                     fontSize: 11,
                                   ),
@@ -248,7 +248,7 @@ class StudentSmartCard extends StatelessWidget {
                               children: [
                                 Text(
                                   'NISN: ',
-                                  style: GoogleFonts.inter(
+                                  style: GoogleFonts.plusJakartaSans(
                                     color: const Color(0xFFCBD5E1),
                                     fontSize: 11,
                                   ),
@@ -298,7 +298,7 @@ class StudentSmartCard extends StatelessWidget {
                                   const SizedBox(width: 5),
                                   Text(
                                     'Scan ID',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: const Color(0xFF004AC6),
@@ -369,7 +369,7 @@ class StudentSmartCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Gunakan untuk presensi gerbang & peminjaman perpustakaan.',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   color: const Color(0xFF565E74),
                 ),
@@ -417,7 +417,7 @@ class StudentSmartCard extends StatelessWidget {
                   ),
                   child: Text(
                     'Tutup',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                     ),

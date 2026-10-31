@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/data/models/user_model.dart';
@@ -313,7 +313,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                             icon: const Icon(Icons.done_all_rounded, size: 18),
                             label: Text(
                               'Tandai Dibaca',
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -359,7 +359,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                               ),
                               child: Text(
                                 '$_unreadCount Baru',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: _unreadCount > 0
@@ -380,7 +380,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                             const SizedBox(width: 4),
                             Text(
                               schoolName,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11.5,
                                 color: const Color(0xFF565E74),
                                 fontWeight: FontWeight.w500,
@@ -466,7 +466,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                                         ),
                                       Text(
                                         sec.toUpperCase(),
-                                        style: GoogleFonts.inter(
+                                        style: GoogleFonts.plusJakartaSans(
                                           fontSize: 11.5,
                                           fontWeight: FontWeight.w700,
                                           color: const Color(0xFF434655),
@@ -477,7 +477,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                                   ),
                                   Text(
                                     '${sectionItems.length} Pemberitahuan',
-                                    style: GoogleFonts.inter(
+                                    style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       color: const Color(0xFF565E74),
                                     ),
@@ -507,7 +507,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                               const SizedBox(width: 5),
                               Text(
                                 'Menampilkan notifikasi 30 hari terakhir',
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   color: const Color(0xFF565E74),
                                   fontWeight: FontWeight.w500,
@@ -518,7 +518,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                           const SizedBox(height: 4),
                           Text(
                             'Sistem Informasi Akademik Terpadu • Vintech School',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               color: const Color(0xFF737686),
                             ),
@@ -570,7 +570,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
               ],
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isSelected ? Colors.white : const Color(0xFF434655),
@@ -586,7 +586,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                   ),
                   child: Text(
                     '$count',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: isSelected ? Colors.white : const Color(0xFF191C1E),
@@ -703,7 +703,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                 // Description
                 Text(
                   item.description,
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     color: const Color(0xFF434655),
                     height: 1.45,
@@ -727,7 +727,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                           ),
                           child: Text(
                             item.badgeText,
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.plusJakartaSans(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w700,
                               color: item.badgeTextColor,
@@ -741,7 +741,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                             const SizedBox(width: 3),
                             Text(
                               item.time,
-                              style: GoogleFonts.inter(
+                              style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 color: const Color(0xFF565E74),
                               ),
@@ -766,7 +766,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
                             children: [
                               Text(
                                 item.actionButtonText!,
-                                style: GoogleFonts.inter(
+                                style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -820,7 +820,7 @@ class _StudentNotificationsScreenState extends State<StudentNotificationsScreen>
           const SizedBox(height: 6),
           Text(
             'Belum ada pemberitahuan baru pada kategori ini. Tetap periksa secara berkala untuk update sekolah.',
-            style: GoogleFonts.inter(
+            style: GoogleFonts.plusJakartaSans(
               fontSize: 12,
               color: const Color(0xFF565E74),
               height: 1.4,

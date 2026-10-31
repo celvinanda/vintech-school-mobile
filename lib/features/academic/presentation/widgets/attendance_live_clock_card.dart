@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -101,7 +101,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                     const SizedBox(width: 6),
                     Text(
                       _formatLiveDate(_currentTime),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF565E74),
@@ -129,7 +129,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                       const SizedBox(width: 5),
                       Text(
                         'Terkoneksi GPS',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF007D55),
@@ -167,7 +167,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                         const SizedBox(width: 5),
                         Text(
                           'WIB',
-                          style: GoogleFonts.inter(
+                          style: GoogleFonts.plusJakartaSans(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF565E74),
@@ -178,7 +178,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                     const SizedBox(height: 2),
                     Text(
                       'Batas jam masuk: 07:30 WIB',
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         color: const Color(0xFF565E74),
                       ),
@@ -223,7 +223,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 11.5,
                           color: const Color(0xFF434655),
                         ),

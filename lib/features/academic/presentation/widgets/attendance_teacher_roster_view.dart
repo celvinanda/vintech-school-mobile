@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/widgets/empty_or_error_view.dart';
@@ -126,7 +126,7 @@ class AttendanceTeacherRosterView extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             color: isSelected ? Colors.white : color,
@@ -186,7 +186,7 @@ class _TeacherAttendanceCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 'NIS: ${item.studentNis} • ${item.classroomName ?? "Kelas"}',
-                style: GoogleFonts.inter(
+                style: GoogleFonts.plusJakartaSans(
                   fontSize: 11,
                   color: const Color(0xFF565E74),
                 ),
@@ -201,7 +201,7 @@ class _TeacherAttendanceCard extends StatelessWidget {
             ),
             child: Text(
               item.statusDisplay,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 color: statusColor,
