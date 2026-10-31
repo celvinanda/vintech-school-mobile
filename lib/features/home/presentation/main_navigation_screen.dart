@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/network/background_sync_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
@@ -29,6 +31,9 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
+  // Deferred / Lazy Tab First-Mount: Hanya memuat Tab 0 pada startup.
+  // Tab 1-4 hanya dimuat saat pertama kali dikunjungi dan di-cache permanen di GPU memory.
+  final Set<int> _activatedTabs = {0};
   // Zero-rebuild ValueNotifier: Mengisolasi transisi hide/show Bottom Nav Bar
   // agar TIDAK memicu setState() ataupun me-rebuild widget tree utama saat user scrolling.
   final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
@@ -148,15 +153,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
 
   /// Smart Reselect & Tab Switching:
-  /// - Jika tab lain ditekan: Pindah tab & pastikan bar navigasi tampak.
+  /// - Jika tab lain ditekan: Aktifkan tab (jika belum pernah dibuka), pindah tab & tampilkan bar navigasi.
   /// - Jika tab yang sedang aktif ditekan kembali: Memicu animasi smooth Scroll-to-Top!
   void _handleTabTap(int index) {
     if (index == _currentIndex) {
       _scrollToTop(index);
     } else {
-      setState(() {
-        _currentIndex = index;
-      });
+      if (!_activatedTabs.contains(index)) {
+        setState(() {
+          _activatedTabs.add(index);
+          _currentIndex = index;
+        });
+      } else {
+        setState(() {
+          _currentIndex = index;
+        });
+      }
       _isNavBarVisible.value = true;
     }
   }
@@ -210,57 +222,117 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return false;
   }
 
+  DateTime? _lastBackPressTime;
+
+  /// Algoritma Navigasi Tombol Kembali Cerdas:
+  /// 1. Jika pengguna TIDAK berada di Beranda (misal di Presensi, Akademik, Tagihan SPP, atau Profil):
+  ///    Tombol kembali mengarahkan pengguna kembali ke tab Beranda (index 0) secara mulus.
+  /// 2. Jika pengguna SUDAH berada di Beranda (index 0):
+  ///    Menerapkan algoritma "Double-Tap to Exit" (klik 2x dalam jeda <= 2 detik).
+  ///    Klik pertama memunculkan notifikasi peringatan mengambang.
+  ///    Klik kedua mengizinkan aplikasi keluar secara bersih.
+  void _handleBackPress() {
+    if (_currentIndex != 0) {
+      HapticFeedback.lightImpact();
+      _handleTabTap(0);
+      return;
+    }
+
+    final now = DateTime.now();
+    if (_lastBackPressTime == null || now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+      _lastBackPressTime = now;
+      HapticFeedback.selectionClick();
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Text(
+                'Tekan sekali lagi untuk keluar dari aplikasi',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 88),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      extendBody: true,
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _onScrollNotification,
-        child: FadeIndexedStack(
-          index: _currentIndex,
-          duration: const Duration(milliseconds: 200),
-          children: _pages,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        extendBody: true,
+        body: NotificationListener<ScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: FadeIndexedStack(
+            index: _currentIndex,
+            duration: const Duration(milliseconds: 200),
+            children: _pages,
+          ),
         ),
-      ),
-      // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
-      // Perubahan status hide/show atau update badge tagihan/outbox HANYA
-      // merender ulang bilah navigasi tanpa menyentuh IndexedStack atau halaman aktif.
-      bottomNavigationBar: ValueListenableBuilder<bool>(
-        valueListenable: _isNavBarVisible,
-        builder: (context, isVisible, child) {
-          final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-          final isKeyboardVisible = bottomInset > 0;
-          final isEffectiveVisible = isVisible && !isKeyboardVisible;
+        // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
+        // Perubahan status hide/show atau update badge tagihan/outbox HANYA
+        // merender ulang bilah navigasi tanpa menyentuh IndexedStack atau halaman aktif.
+        bottomNavigationBar: ValueListenableBuilder<bool>(
+          valueListenable: _isNavBarVisible,
+          builder: (context, isVisible, child) {
+            final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+            final isKeyboardVisible = bottomInset > 0;
+            final isEffectiveVisible = isVisible && !isKeyboardVisible;
 
-          return AnimatedSlide(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            offset: isEffectiveVisible ? Offset.zero : const Offset(0, 1.35),
-            child: IgnorePointer(
-              ignoring: !isEffectiveVisible,
-              child: child,
-            ),
-          );
-        },
-        child: Builder(
-          builder: (context) {
-            final billingState = context.watch<BillingCubit>().state;
-            final unpaidInvoiceCount = billingState is BillingLoaded
-                ? billingState.invoices.where((inv) => !inv.isPaid).length
-                : 0;
-            final pendingOutbox = context.watch<LocalStorage>().hive.totalPendingOutbox;
-
-            return AppBottomNavBar(
-              currentIndex: _currentIndex,
-              onTap: _handleTabTap,
-              schoolColor: _schoolColor,
-              isStaffOrTeacher: _isStaffOrTeacher,
-              pendingOutboxCount: pendingOutbox,
-              unpaidInvoiceCount: unpaidInvoiceCount,
-              isFloating: true,
+            return AnimatedSlide(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              offset: isEffectiveVisible ? Offset.zero : const Offset(0, 1.35),
+              child: IgnorePointer(
+                ignoring: !isEffectiveVisible,
+                child: child,
+              ),
             );
           },
+          child: Builder(
+            builder: (context) {
+              final billingState = context.watch<BillingCubit>().state;
+              final unpaidInvoiceCount = billingState is BillingLoaded
+                  ? billingState.invoices.where((inv) => !inv.isPaid).length
+                  : 0;
+              final pendingOutbox = context.watch<LocalStorage>().hive.totalPendingOutbox;
+
+              return AppBottomNavBar(
+                currentIndex: _currentIndex,
+                onTap: _handleTabTap,
+                schoolColor: _schoolColor,
+                isStaffOrTeacher: _isStaffOrTeacher,
+                pendingOutboxCount: pendingOutbox,
+                unpaidInvoiceCount: unpaidInvoiceCount,
+                isFloating: true,
+              );
+            },
+          ),
         ),
       ),
     );
