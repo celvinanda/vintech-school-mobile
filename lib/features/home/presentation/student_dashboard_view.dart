@@ -48,45 +48,59 @@ class StudentDashboardView extends StatelessWidget {
           key: const PageStorageKey('student_dashboard_scroll_view'),
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bento 0: Asisten Cerdas Kontekstual (Waktu KBM, Presensi, SPP, Tugas)
-              StudentSmartAssistantBanner(
-                profile: profile,
-                schoolColor: _schoolColor,
-                onAttendanceTap: () => onNavigateTab(1),
-                onAcademicTap: () => onNavigateTab(2),
-                onBillingTap: () => onNavigateTab(3),
-              ),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 650),
+            curve: const Cubic(0.16, 1.0, 0.3, 1.0),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value.clamp(0.0, 1.0),
+                child: Transform.translate(
+                  offset: Offset(0, 20.0 * (1.0 - value)),
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bento 0: Asisten Cerdas Kontekstual (Waktu KBM, Presensi, SPP, Tugas)
+                StudentSmartAssistantBanner(
+                  profile: profile,
+                  schoolColor: _schoolColor,
+                  onAttendanceTap: () => onNavigateTab(1),
+                  onAcademicTap: () => onNavigateTab(2),
+                  onBillingTap: () => onNavigateTab(3),
+                ),
 
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // Bento 1: Digital Student Smart Card
-              StudentSmartCard(
-                profile: profile,
-                schoolColor: _schoolColor,
-              ),
+                // Bento 1: Digital Student Smart Card
+                StudentSmartCard(
+                  profile: profile,
+                  schoolColor: _schoolColor,
+                ),
 
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // Bento 2: Quick Service 4-Grid Action Buttons
-              StudentQuickServices(
-                onNavigateTab: onNavigateTab,
-              ),
+                // Bento 2: Quick Service 4-Grid Action Buttons
+                StudentQuickServices(
+                  onNavigateTab: onNavigateTab,
+                ),
 
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
 
-              // Bento 3: Attendance Summary Card
-              StudentAttendanceSummaryCard(
-                onNavigateTab: onNavigateTab,
-              ),
+                // Bento 3: Attendance Summary Card
+                StudentAttendanceSummaryCard(
+                  onNavigateTab: onNavigateTab,
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Bento 4: School Announcements Feed
-              const StudentAnnouncementsSection(),
-            ],
+                // Bento 4: School Announcements Feed
+                const StudentAnnouncementsSection(),
+              ],
+            ),
           ),
         ),
       ),

@@ -35,22 +35,36 @@ class TeacherDashboardView extends StatelessWidget {
           key: const PageStorageKey('teacher_dashboard_scroll_view'),
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Teacher Smart Digital Card
-              _buildTeacherSmartCard(),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 650),
+            curve: const Cubic(0.16, 1.0, 0.3, 1.0),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value.clamp(0.0, 1.0),
+                child: Transform.translate(
+                  offset: Offset(0, 20.0 * (1.0 - value)),
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Teacher Smart Digital Card
+                _buildTeacherSmartCard(),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Action Banner: Input Presensi Siswa Cepat
-              _buildQuickAttendanceAction(context),
+                // Action Banner: Input Presensi Siswa Cepat
+                _buildQuickAttendanceAction(context),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Real-time School Metrics
-              _buildSchoolStatisticsSection(),
-            ],
+                // Real-time School Metrics
+                _buildSchoolStatisticsSection(),
+              ],
+            ),
           ),
         ),
       ),

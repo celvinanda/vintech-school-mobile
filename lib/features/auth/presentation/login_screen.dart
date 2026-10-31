@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/server_settings_sheet.dart';
+import '../../../core/widgets/smooth_welcome_page_route.dart';
 import '../../home/presentation/main_navigation_screen.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
@@ -15,16 +16,50 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = true;
   final _formKey = GlobalKey<FormState>();
 
+  late final AnimationController _entranceController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _slideAnimation;
+  late final Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    // Inisialisasi Entrance Animation yang hangat dan elegan (650ms)
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.85, curve: Curves.easeOut),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.0, 0.9, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _slideAnimation = Tween<double>(begin: 22.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.05, 1.0, curve: Cubic(0.16, 1.0, 0.3, 1.0)),
+      ),
+    );
+
+    _entranceController.forward();
+
     // Default demo student
     _usernameController.text = 'siswa.sman1jkt.20261001';
     _passwordController.text = 'siswa123';
@@ -37,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _entranceController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -332,9 +368,10 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is Authenticated) {
+          HapticFeedback.mediumImpact();
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => MainNavigationScreen(profile: state.profile),
+            SmoothWelcomePageRoute(
+              child: MainNavigationScreen(profile: state.profile),
             ),
             (route) => false,
           );
@@ -420,88 +457,109 @@ class _LoginScreenState extends State<LoginScreen> {
                             horizontal: 24,
                             vertical: 12,
                           ),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                              const SizedBox(height: 10),
+                          child: AnimatedBuilder(
+                            animation: _entranceController,
+                            builder: (context, child) {
+                              return FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: Transform.translate(
+                                  offset: Offset(0, _slideAnimation.value),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const SizedBox(height: 10),
 
-                              // Stitch Header: Emblem Logo
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF004AC6), Color(0xFF2563EB)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(18),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF004AC6)
-                                          .withValues(alpha: 0.25),
-                                      blurRadius: 18,
-                                      offset: const Offset(0, 6),
+                                  // Stitch Header: Emblem Logo (Warm Scale Spring)
+                                  ScaleTransition(
+                                    scale: _scaleAnimation,
+                                    child: Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF004AC6), Color(0xFF2563EB)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(18),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF004AC6)
+                                                .withValues(alpha: 0.25),
+                                            blurRadius: 18,
+                                            offset: const Offset(0, 6),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.school_rounded,
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
                                     ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.school_rounded,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              // Stitch Header: Badge Pill
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFDBE1FF).withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  'PORTAL SISWA & AKADEMIK',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
-                                    color: const Color(0xFF004AC6),
                                   ),
-                                ),
-                              ),
 
-                              const SizedBox(height: 10),
+                                  const SizedBox(height: 14),
 
-                              // Stitch Header: Title
-                              Text(
-                                'Vintech School',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF191C1E),
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
+                                  // Stitch Header: Badge Pill
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFDBE1FF).withValues(alpha: 0.6),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      'PORTAL SISWA & AKADEMIK',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                        color: const Color(0xFF004AC6),
+                                      ),
+                                    ),
+                                  ),
 
-                              const SizedBox(height: 6),
+                                  const SizedBox(height: 12),
 
-                              // Stitch Header: Subtitle
-                              Text(
-                                'Masuk ke akun Anda untuk mengakses presensi, jadwal & kartu ujian.',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 13.5,
-                                  color: const Color(0xFF565E74),
-                                  height: 1.4,
-                                ),
-                              ),
+                                  // Stitch Header: Warm Greeting Title
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Selamat Datang',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF191C1E),
+                                          letterSpacing: -0.6,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Text('👋', style: TextStyle(fontSize: 24)),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  // Stitch Header: Subtitle
+                                  Text(
+                                    'Silakan masuk untuk mengakses presensi, jadwal & kartu ujian Anda.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 13.5,
+                                      color: const Color(0xFF565E74),
+                                      height: 1.4,
+                                    ),
+                                  ),
 
                               const SizedBox(height: 28),
 
@@ -889,6 +947,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+            ),
 
                 // 3. Server Settings Action (Discreet Top Bar Button - Top Right)
                 Positioned(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/smooth_welcome_page_route.dart';
 import '../../home/presentation/main_navigation_screen.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
@@ -133,19 +134,9 @@ class _SplashScreenState extends State<SplashScreen>
       targetScreen = const LoginScreen();
     }
 
+    HapticFeedback.lightImpact();
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
-        pageBuilder: (_, animation, secondaryAnimation) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ),
-            child: targetScreen,
-          );
-        },
-      ),
+      SmoothWelcomePageRoute(child: targetScreen),
     );
   }
 
