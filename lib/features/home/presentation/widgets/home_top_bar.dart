@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/storage/local_storage.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../data/models/school_dashboard_model.dart';
 import '../school_profile_screen.dart';
 import '../student_notifications_screen.dart';
+import 'top_bar/top_bar_emblem.dart';
+import 'top_bar/top_bar_network_status.dart';
+import 'top_bar/top_bar_notification_action.dart';
+import 'top_bar/top_bar_title_context.dart';
 
-/// Komponen Top Bar Beranda yang diselaraskan 1:1 dengan Google Stitch Design.
-/// - Kiri: School Emblem (Rounded Box dengan primary color & white school icon)
-/// - Tengah: Nama Institusi Sekolah & Periode Akademik / Sapaan
-/// - Kanan: Icon Lonceng Notifikasi mandiri dengan navigasi ke halaman Notifikasi Siswa
+/// Top Bar Beranda Modular & Cerdas (Smart Top Bar)
+/// Mengimplementasikan arsitektur modular terpisah:
+/// 1. [TopBarEmblem]: Logo / emblem institusi sekolah
+/// 2. [TopBarTitleContext]: Sapaan waktu dinamis (Pagi/Siang/Sore), nama siswa, dan indikator multi-sekolah
+/// 3. [TopBarNetworkStatus]: Indikator status sinkronisasi offline Hive ke cloud
+/// 4. [TopBarNotificationAction]: Tombol lonceng notifikasi pintar dengan hitungan badge unread
 class HomeTopBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
@@ -28,16 +35,7 @@ class HomeTopBar extends StatelessWidget {
     this.hasUnreadNotifications = true,
   });
 
-  String get _firstName {
-    final full = profile.user.fullName.trim();
-    if (full.isEmpty) {
-      return profile.activeSchool?.isStaffOrTeacher == true ? 'Guru' : 'Siswa';
-    }
-    return full.split(' ').first;
-  }
-
   void _handleSchoolTap(BuildContext context) {
-    HapticFeedback.selectionClick();
     if (onSchoolTap != null) {
       onSchoolTap!();
       return;
@@ -51,7 +49,6 @@ class HomeTopBar extends StatelessWidget {
   }
 
   void _handleNotificationTap(BuildContext context) {
-    HapticFeedback.selectionClick();
     if (onNotificationTap != null) {
       onNotificationTap!();
       return;
@@ -72,122 +69,57 @@ class HomeTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final school = profile.activeSchool;
     final schoolName = school?.name ?? 'Vintech School';
+    final isStaff = school?.isStaffOrTeacher == true;
+    final hasMultipleSchools = profile.memberships.length > 1;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // 1. School Emblem (Stitch Design: rounded-lg bg-primary shadow-sm)
-        GestureDetector(
-          onTap: () => _handleSchoolTap(context),
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: schoolColor,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: schoolColor.withValues(alpha: 0.28),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.school_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
+    // Menghitung jumlah notifikasi pengumuman yang belum dibaca
+    final unreadAnnouncementsCount = announcements?.length ?? 0;
 
-        // 2. School Name & Academic Period / Semester
-        Expanded(
-          child: GestureDetector(
+    // Membaca status outbox sinkronisasi offline Hive
+    int pendingOutbox = 0;
+    try {
+      pendingOutbox = context.watch<LocalStorage>().hive.totalPendingOutbox;
+    } catch (_) {
+      pendingOutbox = 0;
+    }
+
+    return RepaintBoundary(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 1. Modular School Emblem
+          TopBarEmblem(
+            schoolColor: schoolColor,
             onTap: () => _handleSchoolTap(context),
-            behavior: HitTestBehavior.opaque,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  schoolName.toUpperCase(),
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF191C1E),
-                    letterSpacing: -0.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Semester Genap 2025/2026 • Halo, $_firstName',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    color: const Color(0xFF565E74),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
           ),
-        ),
-        const SizedBox(width: 8),
+          const SizedBox(width: 12),
 
-        // 3. Tombol Notifikasi Icon Lonceng (Stitch Design)
-        GestureDetector(
-          onTap: () => _handleNotificationTap(context),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Center(
-                  child: Icon(
-                    Icons.notifications_outlined,
-                    color: Color(0xFF434655),
-                    size: 21,
-                  ),
-                ),
-                if (hasUnreadNotifications)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFBA1A1A),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                    ),
-                  ),
-              ],
+          // 2. Smart Contextual Title & Time-Aware Greeting
+          Expanded(
+            child: TopBarTitleContext(
+              schoolName: schoolName,
+              fullName: profile.user.fullName,
+              classroomName: isStaff ? school?.title : school?.classroomName,
+              isStaffOrTeacher: isStaff,
+              hasMultipleSchools: hasMultipleSchools,
+              onTap: () => _handleSchoolTap(context),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+
+          // 3. Smart Offline & Cloud Sync Status (Hanya tampil jika ada data pending di Hive)
+          TopBarNetworkStatus(
+            pendingSyncCount: pendingOutbox,
+          ),
+
+          // 4. Smart Notification Bell Action
+          TopBarNotificationAction(
+            onTap: () => _handleNotificationTap(context),
+            unreadCount: unreadAnnouncementsCount,
+            hasUnread: hasUnreadNotifications || unreadAnnouncementsCount > 0,
+          ),
+        ],
+      ),
     );
   }
 }
