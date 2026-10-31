@@ -27,13 +27,15 @@ echo  (Jika dibuka di browser laptop ini: http://localhost:8080)
 echo =======================================================================
 echo.
 echo Pilih Mode Web Server:
-echo [1] Mode RELEASE KILAT (Sangat Direkomendasikan untuk Ponsel / Chrome / Safari)
-echo     -^> Loading instan 1-2 detik, 1 file teroptimasi, hemat RAM, super mulus!
-echo [2] Mode DEBUG Developer (Untuk Hot-Restart / Coding)
-echo     -^> Mendukung Hot-Restart (tombol R), namun loading di ponsel lebih lambat.
+echo [1] Mode RELEASE KILAT (PILIHAN UTAMA - Sangat Cepat, Mulus, Anti-Blank)
+echo     -^> Membuka langsung dalam 1-2 detik di Edge, Chrome, Safari, dan Ponsel.
+echo [2] Mode DEBUG Developer (Khusus Developer dengan Chrome Dart Debugger)
+echo     -^> PERHATIAN: Membutuhkan Chrome Debugger. Jangan gunakan di Edge/Safari/HP
+echo         karena akan tertahan (stuck blank putih) menunggu debugger.
 echo [3] Build Ulang Web Release (Kompilasi kode terbaru sebelum dijalankan)
 echo.
-set /p mode="Pilih mode [1/2/3, default 1]: "
+set "mode=1"
+set /p mode="Pilih mode [1/2/3, default 1 (TEKAN ENTER LANGSUNG)]: "
 if "%mode%"=="" set mode=1
 
 if "%mode%"=="2" goto mode_debug
@@ -46,7 +48,7 @@ if not exist "build\web\index.html" (
     call flutter build web --release
 )
 echo [OK] Menjalankan High-Speed Web Server pada http://%MY_IP%:8080 ...
-echo [TIPS] Di browser ponsel Chrome atau Safari, buka: http://%MY_IP%:8080
+echo [TIPS] Di browser ponsel Chrome/Safari atau Edge laptop, buka: http://%MY_IP%:8080
 echo Tekan Ctrl+C untuk menghentikan server.
 echo.
 python -m http.server 8080 --bind 0.0.0.0 --directory build\web
@@ -61,6 +63,14 @@ python -m http.server 8080 --bind 0.0.0.0 --directory build\web
 goto end
 
 :mode_debug
+echo.
+echo =======================================================================
+echo [PERHATIAN MODE DEBUG]
+echo Mode ini menjalankan Dart Web Debug Service (DWDS).
+echo Jika dibuka di Microsoft Edge atau Safari tanpa ekstensi debugger Chrome,
+echo halaman akan berhenti pada status 'Loading...' / blank putih.
+echo Jika ingin melihat tampilan aplikasi secara normal, gunakan MODE 1.
+echo =======================================================================
 echo.
 echo Menjalankan Flutter Web Server pada host 0.0.0.0:8080 (Mode Debug)...
 echo.
