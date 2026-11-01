@@ -1777,7 +1777,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                     child: _buildFacilityTile(
                       icon: Icons.computer_rounded,
                       color: const Color(0xFF004AC6),
-                      label: 'Lab AI & Cloud Workstations',
+                      label: 'Lab AI & Workstations',
                     ),
                   ),
                   const SizedBox(width: 8),
