@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 
@@ -20,12 +21,22 @@ class ProfileDigitalCardModal extends StatelessWidget {
 
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile.activeSchool?.isParent == true;
-  String get _schoolName => (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA').toUpperCase();
+  String get _schoolName =>
+      (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA').toUpperCase();
   String get _nis => _isParent
       ? (student?.nis ?? profile.primaryChild?.nis ?? profile.user.cleanIdentifier)
       : profile.user.cleanIdentifier;
-  String get _nisn => student?.nisn ?? (profile.activeSchool?.isStudent == true ? '0081234501' : (_isParent ? (profile.primaryChild?.nisn ?? '-') : '-'));
-  String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? (_isParent ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat') : 'Kelas X-IPA-1');
+  String get _nisn =>
+      student?.nisn ??
+      (profile.activeSchool?.isStudent == true
+          ? '0081234501'
+          : (_isParent ? (profile.primaryChild?.nisn ?? '-') : '-'));
+  String get _classroomName =>
+      student?.classroomName ??
+      profile.activeSchool?.classroomName ??
+      (_isParent
+          ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat')
+          : 'Kelas X-IPA-1');
   String get _cardTitle => _isParent
       ? 'KARTU PELAJAR DIGITAL (ANAK TERIKAT)'
       : (profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL');
@@ -34,13 +45,19 @@ class ProfileDigitalCardModal extends StatelessWidget {
       : profile.user.fullName;
 
   String get _initials {
-    final name = profile.user.fullName.trim();
+    final name = (_isParent ? _studentFullName : profile.user.fullName).trim();
     if (name.isEmpty) return 'ST';
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
+    final parts = name.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  String get _validationCode {
+    final schCode = (profile.activeSchool?.code ?? 'VNT').toUpperCase();
+    final idStr = _nis.isNotEmpty ? _nis : 'STUDENT';
+    return 'VALIDASI: $schCode-$idStr-VERIFIED';
   }
 
   @override
@@ -195,7 +212,7 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // QR Barcode Box
+                    // QR Barcode Box (Dynamic Scannable QR Code)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -207,24 +224,34 @@ class ProfileDigitalCardModal extends StatelessWidget {
                       child: Column(
                         children: [
                           Container(
-                            width: 100,
-                            height: 100,
+                            width: 104,
+                            height: 104,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: const Color(0xFFCBD5E1)),
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.qr_code_2_rounded,
-                                size: 84,
-                                color: Color(0xFF004AC6),
+                            padding: const EdgeInsets.all(4),
+                            child: Center(
+                              child: QrImageView(
+                                data:
+                                    'VINTECH:SCHOOL:${profile.activeSchool?.code ?? "VNT"}:NIS:$_nis:NISN:$_nisn',
+                                version: QrVersions.auto,
+                                size: 96.0,
+                                eyeStyle: const QrEyeStyle(
+                                  eyeShape: QrEyeShape.square,
+                                  color: Color(0xFF004AC6),
+                                ),
+                                dataModuleStyle: const QrDataModuleStyle(
+                                  dataModuleShape: QrDataModuleShape.square,
+                                  color: Color(0xFF0F172A),
+                                ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'KODE VALIDASI: VNT-2026-X1-88',
+                            _validationCode,
                             style: GoogleFonts.jetBrainsMono(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -247,7 +274,8 @@ class ProfileDigitalCardModal extends StatelessWidget {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('✓ Kartu Tanda Pelajar berhasil disimpan ke galeri foto!'),
+                              content: Text(
+                                  '✓ Kartu Tanda Pelajar berhasil disimpan ke galeri foto!'),
                               backgroundColor: Color(0xFF007D55),
                               duration: Duration(seconds: 2),
                             ),
