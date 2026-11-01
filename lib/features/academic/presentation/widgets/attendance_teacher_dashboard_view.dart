@@ -6,18 +6,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../data/models/attendance_model.dart';
 import '../attendance_entry_sheet.dart';
-import 'attendance_teacher_roster_view.dart';
 
 /// Dashboard Presensi Khusus Akun Guru & Staf
 /// Selaras 1:1 dengan Google Stitch Design Canvas: "Dashboard Presensi - Vintech School"
-/// Mengimplementasikan 7 Bento Cards:
-/// 1. Teacher Greeting & Dynamic Date Banner
-/// 2. Key Attendance Metrics (High Visual Bento Gradient Card)
-/// 3. Quick Actions Grid (Aksi Cepat Guru - 4 Grid Cards)
-/// 4. Weekly Trend Chart Section (Tren Kehadiran Mingguan 5 Hari)
-/// 5. Class Attendance Monitoring (Status Pengisian Presensi Kelas)
-/// 6. Attention & Follow-Up Section (Perlu Tindak Lanjut Wali Kelas)
-/// 7. Operational Sync & Gateway Footer Status
+/// Terdiri dari 2 Mode View Utama:
+/// 1. [Dashboard Presensi]: Bento Grid Ringkasan Kehadiran, Aksi Cepat, Tren Mingguan, Tindak Lanjut, Gateway Sync
+/// 2. [Status Presensi Kelas]: Monitoring Pengisian Presensi Seluruh Rombel, Filter Terkunci/Pending, Detail Roster Siswa Rombel
 class AttendanceTeacherDashboardView extends StatefulWidget {
   final UserProfileResponse profile;
   final List<AttendanceModel> allRecords;
@@ -51,9 +45,16 @@ class AttendanceTeacherDashboardView extends StatefulWidget {
 
 class _AttendanceTeacherDashboardViewState
     extends State<AttendanceTeacherDashboardView> {
-  // Mode View: 0 = Dashboard Presensi (Stitch), 1 = Roster Siswa Detail
+  // Mode View: 0 = Dashboard Presensi (Stitch), 1 = Status Presensi Kelas
   int _activeViewIndex = 0;
-  String _classFilter = 'all'; // all, locked, pending
+  String _classFilter = 'all'; // all, locked, pending, advisory
+  final TextEditingController _classSearchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _classSearchController.dispose();
+    super.dispose();
+  }
 
   String get _currentDateFormatted {
     try {
@@ -534,7 +535,7 @@ class _AttendanceTeacherDashboardViewState
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.people_alt_rounded,
+                            Icons.meeting_room_rounded,
                             size: 16,
                             color: _activeViewIndex == 1
                                 ? widget.schoolColor
@@ -542,7 +543,7 @@ class _AttendanceTeacherDashboardViewState
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Roster Siswa (${widget.allRecords.length})',
+                            'Status Presensi Kelas',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 12.5,
                               fontWeight: _activeViewIndex == 1
@@ -566,16 +567,7 @@ class _AttendanceTeacherDashboardViewState
         // Main Content Area
         Expanded(
           child: _activeViewIndex == 1
-              ? AttendanceTeacherRosterView(
-                  allRecords: widget.allRecords,
-                  filteredRecords: widget.filteredRecords,
-                  searchController: widget.searchController,
-                  statusFilter: widget.statusFilter,
-                  schoolColor: widget.schoolColor,
-                  scrollController: widget.scrollController,
-                  onFilterChanged: widget.onFilterChanged,
-                  onSearchChanged: widget.onSearchChanged,
-                )
+              ? _buildClassStatusFullView(context)
               : RefreshIndicator(
                   color: widget.schoolColor,
                   onRefresh: widget.onRefresh,
@@ -607,15 +599,11 @@ class _AttendanceTeacherDashboardViewState
                         _buildWeeklyTrendCard(),
                         const SizedBox(height: 18),
 
-                        // Card 5: Class Attendance Monitoring (Status Presensi Kelas)
-                        _buildClassMonitoringSection(),
-                        const SizedBox(height: 18),
-
-                        // Card 6: Attention & Follow-Up (Perlu Tindak Lanjut Wali Kelas)
+                        // Card 5: Attention & Follow-Up (Perlu Tindak Lanjut Wali Kelas)
                         _buildFollowUpSection(context),
                         const SizedBox(height: 18),
 
-                        // Card 7: Operational Sync & Gateway Footer
+                        // Card 6: Operational Sync & Gateway Footer
                         _buildGatewaySyncFooter(),
                       ],
                     ),
@@ -1450,151 +1438,980 @@ class _AttendanceTeacherDashboardViewState
   }
 
   // ==========================================
-  // CARD 5: CLASS ATTENDANCE MONITORING
+  // VIEW: STATUS PRESENSI KELAS (DEDICATED FULL VIEW)
   // ==========================================
-  Widget _buildClassMonitoringSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildClassStatusFullView(BuildContext context) {
+    final classList = _getClassList();
+    final lockedCount = classList.where((c) => c.statusKey == 'locked').length;
+    final pendingCount = classList.where((c) => c.statusKey != 'locked').length;
+    final totalCount = classList.length;
+    final lockPercent = totalCount > 0
+        ? ((lockedCount / totalCount) * 100).round()
+        : 0;
+
+    final query = _classSearchController.text.trim().toLowerCase();
+    final filtered = classList.where((c) {
+      if (_classFilter == 'locked' && c.statusKey != 'locked') return false;
+      if (_classFilter == 'pending' && c.statusKey == 'locked') return false;
+      if (_classFilter == 'advisory' && !c.isAdvisory) return false;
+      if (query.isNotEmpty) {
+        final matchName = c.className.toLowerCase().contains(query);
+        final matchSub = c.roomSubtitle.toLowerCase().contains(query);
+        final matchBadge = c.badgeTitle.toLowerCase().contains(query);
+        return matchName || matchSub || matchBadge;
+      }
+      return true;
+    }).toList();
+
+    return RefreshIndicator(
+      color: widget.schoolColor,
+      onRefresh: widget.onRefresh,
+      child: SingleChildScrollView(
+        controller: widget.scrollController,
+        key: const PageStorageKey('attendance_teacher_class_status_scroll'),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Status Presensi Kelas',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF0F172A),
+            // KPI Summary Row
+            _buildClassSummaryKpiRow(
+              totalCount: totalCount,
+              lockedCount: lockedCount,
+              pendingCount: pendingCount,
+              lockPercent: lockPercent,
+            ),
+            const SizedBox(height: 14),
+
+            // Search Bar & Filter Chips Header
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFECEEF0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: _classSearchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      hintText: 'Cari rombel atau guru pengajar...',
+                      hintStyle: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.search_rounded,
+                        size: 20,
+                        color: Color(0xFF64748B),
+                      ),
+                      suffixIcon: _classSearchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear_rounded, size: 18),
+                              onPressed: () {
+                                _classSearchController.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildClassFilterChip('all', 'Semua ($totalCount)'),
+                        const SizedBox(width: 8),
+                        _buildClassFilterChip(
+                          'locked',
+                          'Sudah Terkunci ($lockedCount)',
+                        ),
+                        const SizedBox(width: 8),
+                        _buildClassFilterChip(
+                          'pending',
+                          'Belum Selesai ($pendingCount)',
+                        ),
+                        const SizedBox(width: 8),
+                        _buildClassFilterChip('advisory', 'Kelas Binaan Anda'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            InkWell(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _activeViewIndex = 1);
-              },
-              child: Text(
-                'Lihat Roster',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: widget.schoolColor,
+            const SizedBox(height: 14),
+
+            // Section Title & Counter
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Daftar Status Pengisian Rombel (${filtered.length})',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
-              ),
+                Text(
+                  _currentDateFormatted,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 10),
+
+            // Class Cards List
+            if (filtered.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 20,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFECEEF0)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.search_off_rounded,
+                      size: 48,
+                      color: Color(0xFF94A3B8),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Tidak ada rombel yang cocok',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Silakan sesuaikan kata kunci pencarian atau ubah filter status.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...filtered.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildClassCard(
+                    className: item.className,
+                    badgeTitle: item.badgeTitle,
+                    badgeBg: item.badgeBg,
+                    badgeTextColor: item.badgeTextColor,
+                    roomSubtitle: item.roomSubtitle,
+                    statusLabel: item.statusLabel,
+                    statusBg: item.statusBg,
+                    statusTextColor: item.statusTextColor,
+                    statusIcon: item.statusIcon,
+                    progressText: item.progressText,
+                    cloudSyncText: item.cloudSyncText,
+                    hadirCount: item.hadirCount,
+                    sakitCount: item.sakitCount,
+                    izinCount: item.izinCount,
+                    alpaCount: item.alpaCount,
+                    footerNote: item.footerNote,
+                    actionButtonLabel: item.statusKey == 'locked'
+                        ? 'Detail Siswa'
+                        : (item.statusKey == 'pending'
+                              ? 'Ingatkan Guru'
+                              : 'Input Sekarang'),
+                    actionIsWarning: item.statusKey == 'pending',
+                    actionIsPrimary: item.statusKey == 'waiting',
+                    onAction: () {
+                      HapticFeedback.selectionClick();
+                      if (item.statusKey == 'locked') {
+                        _showClassStudentDetailModal(context, item);
+                      } else if (item.statusKey == 'pending') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '✓ Pesan pengingat presensi otomatis terkirim untuk ${item.className}!',
+                            ),
+                            backgroundColor: const Color(0xFF007D55),
+                          ),
+                        );
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          builder: (_) => const AttendanceEntrySheet(),
+                        );
+                      }
+                    },
+                  ),
+                );
+              }),
           ],
         ),
-        const SizedBox(height: 10),
-        // Filter Chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildClassFilterChip('all', 'Semua (12)'),
-              const SizedBox(width: 8),
-              _buildClassFilterChip('locked', 'Sudah Terkunci (9)'),
-              const SizedBox(width: 8),
-              _buildClassFilterChip('pending', 'Belum Selesai (3)'),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildClassSummaryKpiRow({
+    required int totalCount,
+    required int lockedCount,
+    required int pendingCount,
+    required int lockPercent,
+  }) {
+    return Row(
+      children: [
+        // Total Rombel
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFECEEF0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.meeting_room_rounded,
+                        size: 15,
+                        color: Color(0xFF004AC6),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Total Rombel',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$totalCount Kelas',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Terjadwal hari ini',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 12),
-        // Class Cards Stack
-        if (_classFilter == 'all' || _classFilter == 'locked') ...[
-          _buildClassCard(
-            className:
-                widget.profile.activeSchool?.classroomNameField ?? 'XII RPL 1',
-            badgeTitle: 'Kelas Binaan',
-            badgeBg: const Color(0xFFEFF6FF),
-            badgeTextColor: const Color(0xFF004AC6),
-            roomSubtitle:
-                'Wali Kelas: ${widget.profile.user.fullName} • Ruang Lab KBM',
-            statusLabel: 'Selesai 100%',
-            statusBg: const Color(0xFFECFDF5),
-            statusTextColor: const Color(0xFF007D55),
-            statusIcon: Icons.lock_rounded,
-            progressText: 'Progress: 36 / 36 Siswa',
-            cloudSyncText: 'Sinkron Cloud',
-            hadirCount: 32,
-            sakitCount: 2,
-            izinCount: 1,
-            alpaCount: 1,
-            footerNote: 'Terkunci: 07:45 WIB',
-            actionButtonLabel: 'Detail Roster',
-            onAction: () {
-              HapticFeedback.selectionClick();
-              setState(() => _activeViewIndex = 1);
-            },
-          ),
-          const SizedBox(height: 10),
-        ],
-        if (_classFilter == 'all' || _classFilter == 'pending') ...[
-          _buildClassCard(
-            className: 'XII RPL 2',
-            badgeTitle: 'Belum Kunci',
-            badgeBg: const Color(0xFFFEE2E2),
-            badgeTextColor: const Color(0xFFDC2626),
-            roomSubtitle: 'Guru Mengajar: Ibu Rina Marlina, S.Pd.',
-            statusLabel: '28 / 36 Siswa',
-            statusBg: const Color(0xFFF1F5F9),
-            statusTextColor: const Color(0xFF475569),
-            statusIcon: Icons.timelapse_rounded,
-            progressText: 'Tersisa 8 siswa belum diabsen',
-            cloudSyncText: 'Kurang 22%',
-            hadirCount: 26,
-            sakitCount: 1,
-            izinCount: 1,
-            alpaCount: 0,
-            footerNote: 'Batas submit: 10:00 WIB',
-            actionButtonLabel: 'Ingatkan Guru',
-            actionIsWarning: true,
-            onAction: () {
-              HapticFeedback.selectionClick();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    '✓ Pesan pengingat presensi otomatis terkirim ke Ibu Rina Marlina!',
+        const SizedBox(width: 8),
+        // Sudah Terkunci
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFECEEF0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.lock_rounded,
+                        size: 15,
+                        color: Color(0xFF007D55),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Terkunci',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$lockedCount ($lockPercent%)',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF007D55),
                   ),
-                  backgroundColor: Color(0xFF007D55),
                 ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          _buildClassCard(
-            className: 'XI TJKT 1',
-            badgeTitle: 'Kosong (0/34)',
-            badgeBg: const Color(0xFFFEF3C7),
-            badgeTextColor: const Color(0xFFB45309),
-            roomSubtitle: 'Jadwal Praktik Komputer Jaringan',
-            statusLabel: 'Menunggu',
-            statusBg: const Color(0xFFFEF2F2),
-            statusTextColor: const Color(0xFFDC2626),
-            statusIcon: Icons.warning_amber_rounded,
-            progressText: 'Belum ada presensi dimulai',
-            cloudSyncText: 'Jam Ke-4',
-            hadirCount: 0,
-            sakitCount: 0,
-            izinCount: 0,
-            alpaCount: 0,
-            footerNote: 'Jadwal aktif sekarang',
-            actionButtonLabel: 'Input Sekarang',
-            actionIsPrimary: true,
-            onAction: () {
-              HapticFeedback.selectionClick();
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                const SizedBox(height: 2),
+                Text(
+                  '100% tervalidasi',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    color: const Color(0xFF007D55),
+                  ),
                 ),
-                builder: (_) => const AttendanceEntrySheet(),
-              );
-            },
+              ],
+            ),
           ),
-        ],
+        ),
+        const SizedBox(width: 8),
+        // Belum Selesai
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFECEEF0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.timelapse_rounded,
+                        size: 15,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Pending',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$pendingCount Kelas',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Batas jam 10:00',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 10,
+                    color: const Color(0xFFDC2626),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
+  }
+
+  void _showClassStudentDetailModal(
+    BuildContext context,
+    _ClassAttendanceInfo item,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        final matchingRecords = widget.allRecords
+            .where(
+              (r) =>
+                  (r.classroomName ?? '').toLowerCase() ==
+                  item.className.toLowerCase(),
+            )
+            .toList();
+
+        final studentsList = matchingRecords.isNotEmpty
+            ? matchingRecords
+            : _generateMockStudentsForClass(item);
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.45,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, scrollCtl) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFCBD5E1),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                item.className,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: item.badgeBg,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  item.badgeTitle,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: item.badgeTextColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.roomSubtitle,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              color: const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFFECEEF0)),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  color: const Color(0xFFF8FAFC),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildMiniBadge(
+                        'Hadir',
+                        item.hadirCount.toString(),
+                        const Color(0xFFECFDF5),
+                        const Color(0xFF007D55),
+                      ),
+                      _buildMiniBadge(
+                        'Sakit',
+                        item.sakitCount.toString(),
+                        const Color(0xFFFEF3C7),
+                        const Color(0xFFB45309),
+                      ),
+                      _buildMiniBadge(
+                        'Izin',
+                        item.izinCount.toString(),
+                        const Color(0xFFEFF6FF),
+                        const Color(0xFF004AC6),
+                      ),
+                      _buildMiniBadge(
+                        'Alpa',
+                        item.alpaCount.toString(),
+                        const Color(0xFFFEE2E2),
+                        const Color(0xFFDC2626),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: Color(0xFFECEEF0)),
+                Expanded(
+                  child: ListView.separated(
+                    controller: scrollCtl,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: studentsList.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, idx) {
+                      final s = studentsList[idx];
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFF1F5F9)),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: const Color(0xFFEFF6FF),
+                              child: Text(
+                                s.studentName.isNotEmpty
+                                    ? s.studentName[0]
+                                    : 'S',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF004AC6),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    s.studentName,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'NIS: ${s.studentNis} • ${s.notes.isNotEmpty ? s.notes : "Presensi Tervalidasi"}',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11,
+                                      color: const Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _buildClassStatusBadge(s.status),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMiniBadge(String label, String count, Color bg, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$label: ',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: text,
+            ),
+          ),
+          Text(
+            count,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: text,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassStatusBadge(String status) {
+    Color bg;
+    Color fg;
+    String label = status;
+    switch (status.toUpperCase()) {
+      case 'HADIR':
+        bg = const Color(0xFFECFDF5);
+        fg = const Color(0xFF007D55);
+        break;
+      case 'SAKIT':
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFFB45309);
+        break;
+      case 'IZIN':
+        bg = const Color(0xFFEFF6FF);
+        fg = const Color(0xFF004AC6);
+        break;
+      case 'ALPA':
+      default:
+        bg = const Color(0xFFFEE2E2);
+        fg = const Color(0xFFDC2626);
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w700,
+          color: fg,
+        ),
+      ),
+    );
+  }
+
+  List<AttendanceModel> _generateMockStudentsForClass(
+    _ClassAttendanceInfo item,
+  ) {
+    const todayStr = '2026-11-01';
+    return [
+      AttendanceModel(
+        id: '1',
+        studentId: '101',
+        studentNis: '20241001',
+        studentName: 'Ahmad Raihan Pratama',
+        classroomName: item.className,
+        date: todayStr,
+        status: 'HADIR',
+        statusDisplay: 'Hadir',
+        notes: 'Masuk 06:48 WIB',
+      ),
+      AttendanceModel(
+        id: '2',
+        studentId: '102',
+        studentNis: '20241002',
+        studentName: 'Bunga Citra Amanda',
+        classroomName: item.className,
+        date: todayStr,
+        status: 'HADIR',
+        statusDisplay: 'Hadir',
+        notes: 'Masuk 06:52 WIB',
+      ),
+      AttendanceModel(
+        id: '3',
+        studentId: '103',
+        studentNis: '20241003',
+        studentName: 'Danang Tri Saputra',
+        classroomName: item.className,
+        date: todayStr,
+        status: 'HADIR',
+        statusDisplay: 'Hadir',
+        notes: 'Masuk 06:55 WIB',
+      ),
+      AttendanceModel(
+        id: '4',
+        studentId: '104',
+        studentNis: '20241004',
+        studentName: 'Fajar Nugraha',
+        classroomName: item.className,
+        date: todayStr,
+        status: item.alpaCount > 0 ? 'ALPA' : 'HADIR',
+        statusDisplay: item.alpaCount > 0 ? 'Alpa' : 'Hadir',
+        notes: item.alpaCount > 0 ? 'Tanpa Keterangan' : 'Masuk 07:05 WIB',
+      ),
+      AttendanceModel(
+        id: '5',
+        studentId: '105',
+        studentNis: '20241005',
+        studentName: 'Nabila Zahra Putri',
+        classroomName: item.className,
+        date: todayStr,
+        status: item.sakitCount > 0 ? 'SAKIT' : 'HADIR',
+        statusDisplay: item.sakitCount > 0 ? 'Sakit' : 'Hadir',
+        notes: item.sakitCount > 0
+            ? 'Surat Dokter Terlampir'
+            : 'Masuk 06:45 WIB',
+      ),
+      AttendanceModel(
+        id: '6',
+        studentId: '106',
+        studentNis: '20241006',
+        studentName: 'Rizky Ramadhan',
+        classroomName: item.className,
+        date: todayStr,
+        status: item.izinCount > 0 ? 'IZIN' : 'HADIR',
+        statusDisplay: item.izinCount > 0 ? 'Izin' : 'Hadir',
+        notes: item.izinCount > 0 ? 'Dispensasi LKS' : 'Masuk 07:00 WIB',
+      ),
+      AttendanceModel(
+        id: '7',
+        studentId: '107',
+        studentNis: '20241007',
+        studentName: 'Siti Nurhaliza',
+        classroomName: item.className,
+        date: todayStr,
+        status: 'HADIR',
+        statusDisplay: 'Hadir',
+        notes: 'Masuk 06:50 WIB',
+      ),
+    ];
+  }
+
+  List<_ClassAttendanceInfo> _getClassList() {
+    final school = widget.profile.activeSchool;
+    final advisoryName = school?.classroomNameField ?? 'XII RPL 1';
+    final teacherName = widget.profile.user.fullName;
+
+    return [
+      _ClassAttendanceInfo(
+        className: advisoryName,
+        badgeTitle: 'Kelas Binaan Anda',
+        badgeBg: const Color(0xFFEFF6FF),
+        badgeTextColor: const Color(0xFF004AC6),
+        roomSubtitle: 'Wali Kelas: $teacherName • Ruang Lab RPL 1',
+        statusLabel: 'Selesai 100%',
+        statusBg: const Color(0xFFECFDF5),
+        statusTextColor: const Color(0xFF007D55),
+        statusIcon: Icons.lock_rounded,
+        progressText: 'Progress: 36 / 36 Siswa',
+        cloudSyncText: 'Sinkron Cloud',
+        totalStudents: 36,
+        hadirCount: 32,
+        sakitCount: 2,
+        izinCount: 1,
+        alpaCount: 1,
+        footerNote: 'Terkunci: 07:45 WIB',
+        isAdvisory: true,
+        statusKey: 'locked',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'XII RPL 2',
+        badgeTitle: 'Belum Kunci',
+        badgeBg: Color(0xFFFEE2E2),
+        badgeTextColor: Color(0xFFDC2626),
+        roomSubtitle: 'Guru: Ibu Rina Marlina, S.Pd. • Lab RPL 2',
+        statusLabel: '28 / 36 Siswa',
+        statusBg: Color(0xFFF1F5F9),
+        statusTextColor: Color(0xFF475569),
+        statusIcon: Icons.timelapse_rounded,
+        progressText: 'Tersisa 8 siswa belum diabsen',
+        cloudSyncText: 'Kurang 22%',
+        totalStudents: 36,
+        hadirCount: 26,
+        sakitCount: 1,
+        izinCount: 1,
+        alpaCount: 0,
+        footerNote: 'Batas submit: 10:00 WIB',
+        statusKey: 'pending',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'XI TJKT 1',
+        badgeTitle: 'Kosong (0/34)',
+        badgeBg: Color(0xFFFEF3C7),
+        badgeTextColor: Color(0xFFB45309),
+        roomSubtitle: 'Jadwal Praktik Lab Jaringan Komputer',
+        statusLabel: 'Menunggu',
+        statusBg: Color(0xFFFEF2F2),
+        statusTextColor: Color(0xFFDC2626),
+        statusIcon: Icons.warning_amber_rounded,
+        progressText: 'Belum ada presensi dimulai',
+        cloudSyncText: 'Jam Ke-4',
+        totalStudents: 34,
+        hadirCount: 0,
+        sakitCount: 0,
+        izinCount: 0,
+        alpaCount: 0,
+        footerNote: 'Jadwal aktif sekarang',
+        statusKey: 'waiting',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'XI TJKT 2',
+        badgeTitle: 'Terkunci',
+        badgeBg: Color(0xFFF1F5F9),
+        badgeTextColor: Color(0xFF475569),
+        roomSubtitle: 'Guru: Bpk. Dani Gunawan, S.Kom. • Lab Fiber',
+        statusLabel: 'Selesai 100%',
+        statusBg: Color(0xFFECFDF5),
+        statusTextColor: Color(0xFF007D55),
+        statusIcon: Icons.lock_rounded,
+        progressText: 'Progress: 35 / 35 Siswa',
+        cloudSyncText: 'Sinkron Cloud',
+        totalStudents: 35,
+        hadirCount: 33,
+        sakitCount: 1,
+        izinCount: 1,
+        alpaCount: 0,
+        footerNote: 'Terkunci: 08:00 WIB',
+        statusKey: 'locked',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'X PPLG 1',
+        badgeTitle: 'Terkunci',
+        badgeBg: Color(0xFFF1F5F9),
+        badgeTextColor: Color(0xFF475569),
+        roomSubtitle: 'Guru: Ibu Citra Lestari, M.Kom. • Teori 01',
+        statusLabel: 'Selesai 100%',
+        statusBg: Color(0xFFECFDF5),
+        statusTextColor: Color(0xFF007D55),
+        statusIcon: Icons.lock_rounded,
+        progressText: 'Progress: 36 / 36 Siswa',
+        cloudSyncText: 'Sinkron Cloud',
+        totalStudents: 36,
+        hadirCount: 35,
+        sakitCount: 1,
+        izinCount: 0,
+        alpaCount: 0,
+        footerNote: 'Terkunci: 07:40 WIB',
+        statusKey: 'locked',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'X PPLG 2',
+        badgeTitle: 'Belum Kunci',
+        badgeBg: Color(0xFFFEE2E2),
+        badgeTextColor: Color(0xFFDC2626),
+        roomSubtitle: 'Guru: Bpk. Ahmad Fauzi, S.Pd. • Teori 02',
+        statusLabel: '30 / 36 Siswa',
+        statusBg: Color(0xFFF1F5F9),
+        statusTextColor: Color(0xFF475569),
+        statusIcon: Icons.timelapse_rounded,
+        progressText: 'Tersisa 6 siswa belum diabsen',
+        cloudSyncText: 'Kurang 16%',
+        totalStudents: 36,
+        hadirCount: 29,
+        sakitCount: 1,
+        izinCount: 0,
+        alpaCount: 0,
+        footerNote: 'Batas submit: 10:00 WIB',
+        statusKey: 'pending',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'XII DKV 1',
+        badgeTitle: 'Terkunci',
+        badgeBg: Color(0xFFF1F5F9),
+        badgeTextColor: Color(0xFF475569),
+        roomSubtitle: 'Guru: Bpk. Eko Prasetyo, S.Sn. • Studio 1',
+        statusLabel: 'Selesai 100%',
+        statusBg: Color(0xFFECFDF5),
+        statusTextColor: Color(0xFF007D55),
+        statusIcon: Icons.lock_rounded,
+        progressText: 'Progress: 34 / 34 Siswa',
+        cloudSyncText: 'Sinkron Cloud',
+        totalStudents: 34,
+        hadirCount: 32,
+        sakitCount: 1,
+        izinCount: 1,
+        alpaCount: 0,
+        footerNote: 'Terkunci: 07:50 WIB',
+        statusKey: 'locked',
+      ),
+      const _ClassAttendanceInfo(
+        className: 'XI DKV 2',
+        badgeTitle: 'Terkunci',
+        badgeBg: Color(0xFFF1F5F9),
+        badgeTextColor: Color(0xFF475569),
+        roomSubtitle: 'Guru: Ibu Maya Anggraini, M.Ds. • Studio Animasi',
+        statusLabel: 'Selesai 100%',
+        statusBg: Color(0xFFECFDF5),
+        statusTextColor: Color(0xFF007D55),
+        statusIcon: Icons.lock_rounded,
+        progressText: 'Progress: 32 / 32 Siswa',
+        cloudSyncText: 'Sinkron Cloud',
+        totalStudents: 32,
+        hadirCount: 30,
+        sakitCount: 1,
+        izinCount: 1,
+        alpaCount: 0,
+        footerNote: 'Terkunci: 07:35 WIB',
+        statusKey: 'locked',
+      ),
+    ];
   }
 
   Widget _buildClassFilterChip(String filterKey, String label) {
@@ -2252,4 +3069,48 @@ class _AttendanceTeacherDashboardViewState
       ),
     );
   }
+}
+
+class _ClassAttendanceInfo {
+  final String className;
+  final String badgeTitle;
+  final Color badgeBg;
+  final Color badgeTextColor;
+  final String roomSubtitle;
+  final String statusLabel;
+  final Color statusBg;
+  final Color statusTextColor;
+  final IconData statusIcon;
+  final String progressText;
+  final String cloudSyncText;
+  final int totalStudents;
+  final int hadirCount;
+  final int sakitCount;
+  final int izinCount;
+  final int alpaCount;
+  final String footerNote;
+  final bool isAdvisory;
+  final String statusKey; // 'locked', 'pending', 'waiting'
+
+  const _ClassAttendanceInfo({
+    required this.className,
+    required this.badgeTitle,
+    required this.badgeBg,
+    required this.badgeTextColor,
+    required this.roomSubtitle,
+    required this.statusLabel,
+    required this.statusBg,
+    required this.statusTextColor,
+    required this.statusIcon,
+    required this.progressText,
+    required this.cloudSyncText,
+    required this.totalStudents,
+    required this.hadirCount,
+    required this.sakitCount,
+    required this.izinCount,
+    required this.alpaCount,
+    required this.footerNote,
+    this.isAdvisory = false,
+    required this.statusKey,
+  });
 }
