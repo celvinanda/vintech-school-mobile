@@ -34,9 +34,10 @@ echo [4] Jalankan Aplikasi di Windows Desktop [Instan, Hemat RAM ~100MB]
 echo [5] Buka Logcat Android Real-Time [ms]
 echo [6] Cek Perangkat Terhubung [flutter devices]
 echo [7] Jalankan Unit ^& Widget Test [flutter test]
-echo [8] Keluar
+echo [8] Build ^& Install APK ke Perangkat Android [HP Fisik / Emulator]
+echo [9] Keluar
 echo.
-set /p opt="Pilih opsi [0-8]: "
+set /p opt="Pilih opsi [0-9]: "
 
 if "%opt%"=="0" (
     echo.
@@ -126,6 +127,19 @@ if "%opt%"=="7" (
     goto menu
 )
 if "%opt%"=="8" (
+    echo.
+    echo Membuka proses Build ^& Install APK ke Android di tab baru...
+    if "%USE_WT%"=="1" (
+        wt.exe -w 0 nt --title "Build & Install Android" -d "%CD%" cmd.exe /k build_install_android.bat
+    ) else (
+        start "Build & Install Android" cmd.exe /k build_install_android.bat
+    )
+    echo Tab proses Build ^& Install telah dibuka di Windows Terminal!
+    echo.
+    pause
+    goto menu
+)
+if "%opt%"=="9" (
     exit /b
 )
 
