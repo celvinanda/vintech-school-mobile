@@ -35,6 +35,34 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   String get _effectiveParentName => student?.parentName ?? parentName;
   String get _effectiveParentPhone => student?.parentPhone ?? parentPhone;
 
+  String get _effectiveHomeroomName {
+    if (student?.homeroomTeacherName != null &&
+        student!.homeroomTeacherName!.isNotEmpty) {
+      return student!.homeroomTeacherName!;
+    }
+    return homeroomTeacherName;
+  }
+
+  String get _effectiveHomeroomPhone {
+    if (student?.homeroomTeacherPhone != null &&
+        student!.homeroomTeacherPhone!.isNotEmpty) {
+      return student!.homeroomTeacherPhone!;
+    }
+    return homeroomTeacherPhone;
+  }
+
+  String get _homeroomInitials {
+    final clean = _effectiveHomeroomName
+        .replaceAll(RegExp(r'^(Dra\.|Dr\.|Drs\.|Bpk\.|Ibu\.|H\.|Hj\.)\s*', caseSensitive: false), '')
+        .trim();
+    if (clean.isEmpty) return 'WK';
+    final parts = clean.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return clean.isNotEmpty ? clean[0].toUpperCase() : 'WK';
+  }
+
   String get _effectiveAddress {
     if (profile.user.address.isNotEmpty) {
       return profile.user.address;
@@ -73,11 +101,13 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   Future<void> _launchWa(BuildContext context) async {
     HapticFeedback.lightImpact();
     final childName =
-        student?.fullName ?? profile.primaryChild?.fullName ?? 'Aditya';
+        student?.fullName ?? profile.primaryChild?.fullName ?? 'Anak Kami';
     final greeting = _isParent
-        ? 'Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
-        : 'Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.';
-    final uri = Uri.parse('https://wa.me/$homeroomTeacherPhone?text=$greeting');
+        ? 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
+        : 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.';
+    final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
+    final cleanPhone = rawPhone.startsWith('0') ? '62${rawPhone.substring(1)}' : rawPhone;
+    final uri = Uri.parse('https://wa.me/$cleanPhone?text=$greeting');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -86,6 +116,30 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Membuka kontak WhatsApp Wali Kelas...')),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchBkConsultation(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final childName =
+        student?.fullName ?? profile.primaryChild?.fullName ?? 'Anak Kami';
+    final greeting =
+        'Halo%20Layanan%20BK%20atau%20Konseling%20Sekolah,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).%20Saya%20ingin%20berkonsultasi%20terkait%20perkembangan%20belajar%20anak.';
+    final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
+    final cleanPhone = rawPhone.startsWith('0')
+        ? '62${rawPhone.substring(1)}'
+        : (rawPhone.isNotEmpty ? rawPhone : '6281200000000');
+    final uri = Uri.parse('https://wa.me/$cleanPhone?text=$greeting');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Membuka kontak konseling Guru BK via WhatsApp...')),
         );
       }
     }
@@ -192,7 +246,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         radius: 19,
                         backgroundColor: const Color(0xFFDBEAFE),
                         child: Text(
-                          _isStaffOrTeacher ? 'HW' : 'SW',
+                          _isStaffOrTeacher ? 'HW' : _homeroomInitials,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -221,7 +275,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                             Text(
                               _isStaffOrTeacher
                                   ? 'Dr. H. Hendra Wijaya, M.Pd.'
-                                  : homeroomTeacherName,
+                                  : _effectiveHomeroomName,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -347,14 +401,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                       InkWell(
                         onTap: () {
                           if (_isParent) {
-                            HapticFeedback.lightImpact();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'Membuka kontak konseling Guru BK via WhatsApp...'),
-                                backgroundColor: Color(0xFF007D55),
-                              ),
-                            );
+                            _launchBkConsultation(context);
                           } else {
                             _launchParentCall(context);
                           }
