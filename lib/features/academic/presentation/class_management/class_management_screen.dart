@@ -39,6 +39,7 @@ class ClassManagementScreen extends StatefulWidget {
 
 class _ClassManagementScreenState extends State<ClassManagementScreen> {
   late ClassAttendanceInfo _currentClass;
+  late PageController _pageController;
   int _activeTabIndex =
       0; // 0: Siswa, 1: Pengurus, 2: Jadwal & Piket, 3: Catatan
 
@@ -50,7 +51,14 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   void initState() {
     super.initState();
     _currentClass = widget.classInfo;
+    _pageController = PageController(initialPage: _activeTabIndex);
     _loadDataForCurrentClass();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _loadDataForCurrentClass() {
@@ -411,39 +419,63 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+              child: ClassManagementHeroCard(
+                classInfo: _currentClass,
+                homeroomTeacher: teacherName,
+              ),
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PinnedTabBarDelegate(
+              height: 52,
+              child: Container(
+                color: const Color(0xFFF8FAFC),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                child: ClassManagementTabBar(
+                  selectedIndex: _activeTabIndex,
+                  onTabChanged: (index) {
+                    setState(() => _activeTabIndex = index);
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeInOutCubic,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: (index) {
+            HapticFeedback.selectionClick();
+            setState(() => _activeTabIndex = index);
+          },
           children: [
-            // Minimalist Hero Banner
-            ClassManagementHeroCard(
-              classInfo: _currentClass,
-              homeroomTeacher: teacherName,
-            ),
-            const SizedBox(height: 14),
-
-            // Segmented Tab Navigation
-            ClassManagementTabBar(
-              selectedIndex: _activeTabIndex,
-              onTabChanged: (index) {
-                setState(() {
-                  _activeTabIndex = index;
-                });
-              },
-            ),
-            const SizedBox(height: 14),
-
-            // Active Tab Content
-            if (_activeTabIndex == 0)
-              ClassStudentTabView(
+            SingleChildScrollView(
+              primary: false,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: ClassStudentTabView(
                 students: _students,
                 onStudentTap: _showStudentDetail,
                 onChatTap: _handleChatStudent,
                 onCallTap: _handleCallStudent,
-              )
-            else if (_activeTabIndex == 1)
-              ClassOfficersTabView(
+              ),
+            ),
+            SingleChildScrollView(
+              primary: false,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: ClassOfficersTabView(
                 officers: _officers,
                 onContactTap: (ClassOfficerItem officer) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -457,44 +489,93 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                     ),
                   );
                 },
-              )
-            else if (_activeTabIndex == 2)
-              const ClassScheduleTabView()
-            else
-              ClassNotesTabView(notes: _notes),
-
-            const SizedBox(height: 18),
-
-            // Clean Bottom Action Button (+ Tambah Catatan Siswa)
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.edit_note_rounded, size: 20),
-                label: Text(
-                  '+ Tambah Catatan Siswa',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF004AC6),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  _openAddNoteDialog();
-                },
               ),
+            ),
+            const SingleChildScrollView(
+              primary: false,
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: ClassScheduleTabView(),
+            ),
+            SingleChildScrollView(
+              primary: false,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: ClassNotesTabView(notes: _notes),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          10,
+          16,
+          10 + MediaQuery.of(context).padding.bottom,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          boxShadow: [
+            BoxShadow(
+              color: Color.fromRGBO(15, 23, 42, 0.04),
+              blurRadius: 6,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          height: 46,
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.edit_note_rounded, size: 20),
+            label: Text(
+              '+ Tambah Catatan Siswa',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF004AC6),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _openAddNoteDialog();
+            },
+          ),
+        ),
+      ),
     );
+  }
+}
+
+/// Delegate untuk menyematkan Tab Bar di posisi teratas saat discroll
+class _PinnedTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _PinnedTabBarDelegate({required this.child, required this.height});
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox(height: height, child: child);
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedTabBarDelegate oldDelegate) {
+    return oldDelegate.height != height || oldDelegate.child != child;
   }
 }
