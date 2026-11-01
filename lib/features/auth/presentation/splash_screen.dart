@@ -13,12 +13,12 @@ import 'login_screen.dart';
 
 /// Splash Screen Berstandar Google Stitch Design System ("Vintech School Splash").
 /// Mengimplementasikan arsitektur performa tinggi & keamanan enterprise:
-/// 1. Coordinated Timing Handshake Adaptif (Returning: 450ms, First: 900ms, Reduce Motion: 0ms)
-/// 2. Overlapping Exit Dissolve (≤420ms) selaras dengan Welcoming Bloom Route
+/// 1. Coordinated Timing Handshake Adaptif (Returning: 400ms, First/Update: 800ms, Reduce Motion: 0ms)
+/// 2. Overlapping Exit Dissolve (≤300ms) selaras dengan Welcoming Bloom Route
 /// 3. Zero-Heap Allocation CustomPainter dengan RepaintBoundary GPU caching
 /// 4. Aksesibilitas Terpadu: Semantics + Clamped Text Scaling + Reduce Motion Guard
 /// 5. Bulletproof Fallback Anti-Stuck: Watchdog 2500ms selalu fallback ke LoginScreen
-/// 6. Responsif Bebas RenderFlex Overflow: LayoutBuilder + IntrinsicHeight
+/// 6. Responsif Bebas RenderFlex Overflow: LayoutBuilder + ConstrainedBox (Tanpa IntrinsicHeight)
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -49,10 +49,10 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _initTime = DateTime.now();
 
-    // 1. Inisialisasi Entrance Animation (500ms, easeOutCubic)
+    // 1. Inisialisasi Entrance Animation yang tangkas & mulus (350ms, easeOutCubic)
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 350),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -60,17 +60,17 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOut,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.90, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
       CurvedAnimation(
         parent: _entranceController,
         curve: Curves.easeOutCubic,
       ),
     );
 
-    // 2. Inisialisasi Exit Dissolve Animation (320ms - Overlap dengan Route Transition)
+    // 2. Inisialisasi Exit Dissolve Animation (300ms - Overlap dengan Route Transition)
     _exitController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 300),
     );
 
     _exitFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _exitScaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+    _exitScaleAnimation = Tween<double>(begin: 1.0, end: 1.04).animate(
       CurvedAnimation(
         parent: _exitController,
         curve: Curves.easeOutCubic,
@@ -129,8 +129,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   /// Menjadwalkan transisi dengan Dwell Time Adaptif:
   /// - Reduce Motion aktif (disableAnimations): 0 ms (langsung handoff)
-  /// - Returning Daily User: ~450 ms (snappy, bebas "pajak waktu")
-  /// - First Launch / Update: ~900 ms (branding penuh)
+  /// - Returning Daily User: ~400 ms (snappy, bebas "pajak waktu")
+  /// - First Launch / Update: ~800 ms (branding penuh)
   void _triggerScheduledNavigation() {
     if (_hasNavigated || !mounted) return;
 
@@ -147,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
 
       final isReturning = context.read<LocalStorage>().isReturningUser();
-      final targetDwell = isReturning ? 450 : 900;
+      final targetDwell = isReturning ? 400 : 800;
       final elapsed = DateTime.now().difference(_initTime).inMilliseconds;
       final remainingDwell = math.max(0, targetDwell - elapsed);
 
@@ -174,7 +174,7 @@ class _SplashScreenState extends State<SplashScreen>
     _watchdogTimer?.cancel();
     _waveController.stop();
 
-    // Catat bahwa pengguna sudah pernah membuka aplikasi
+    // Catat versi aplikasi terakhir yang dikunjungi pengguna
     try {
       context.read<LocalStorage>().markUserVisited();
     } catch (_) {}
@@ -239,11 +239,16 @@ class _SplashScreenState extends State<SplashScreen>
                     child: SafeArea(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
+                          final minContentHeight = math.max(constraints.maxHeight, 520.0);
                           return SingleChildScrollView(
-                            physics: const ClampingScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             child: ConstrainedBox(
-                              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                              child: IntrinsicHeight(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                                minWidth: constraints.maxWidth,
+                              ),
+                              child: SizedBox(
+                                height: minContentHeight,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -400,15 +405,20 @@ class _SplashScreenState extends State<SplashScreen>
                                                   ),
                                                 ),
                                                 const SizedBox(height: 4),
-                                                Text(
-                                                  'v2.4.0 • Enterprise Edition',
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    color: const Color(0xFF94A3B8),
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w500,
-                                                    letterSpacing: 0.2,
-                                                  ),
+                                                Builder(
+                                                  builder: (context) {
+                                                    final appVersion = context.read<LocalStorage>().currentAppVersion;
+                                                    return Text(
+                                                      'v$appVersion • Enterprise Edition',
+                                                      textAlign: TextAlign.center,
+                                                      style: GoogleFonts.plusJakartaSans(
+                                                        color: const Color(0xFF94A3B8),
+                                                        fontSize: 11,
+                                                        fontWeight: FontWeight.w500,
+                                                        letterSpacing: 0.2,
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
                                               ],
                                             ),
@@ -434,154 +444,174 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Ambient Glow Orbs diisolasi dengan RepaintBoundary agar 0 cost GPU repaint
+  /// Ambient Glow Orbs sesuai Stitch Design Specification.
+  /// Dibungkus RepaintBoundary agar di-cache permanen di GPU memory.
   Widget _buildAmbientGlow() {
     return RepaintBoundary(
-      child: IgnorePointer(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(
-              top: -100,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 320,
-                  height: 320,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFFDBE1FF).withValues(alpha: 0.50),
-                        const Color(0xFFDBE1FF).withValues(alpha: 0.0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -80,
-              right: -60,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            top: -120,
+            left: 0,
+            right: 0,
+            child: Center(
               child: Container(
-                width: 280,
-                height: 280,
+                width: 320,
+                height: 320,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFFDAE2FD).withValues(alpha: 0.40),
-                      const Color(0xFFDAE2FD).withValues(alpha: 0.0),
+                      const Color(0xFFDBE1FF).withValues(alpha: 0.45),
+                      const Color(0xFFDBE1FF).withValues(alpha: 0.0),
                     ],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            bottom: -80,
+            right: -60,
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFDAE2FD).withValues(alpha: 0.40),
+                    const Color(0xFFDAE2FD).withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Indikator Wave 3 Titik Harmonic Berstandar Google Stitch
+  /// Stitch 3-Dot Harmonic Wave Animation:
+  /// Tiga titik berosilasi dengan kurva sinus offset fasa 120° (2*pi/3).
   Widget _buildWaveLoadingIndicator() {
     return AnimatedBuilder(
       animation: _waveController,
       builder: (context, _) {
         return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
-          children: List.generate(3, (index) {
-            // Offset fase 0.16 per dot untuk gerakan gelombang organik
-            final t = (_waveController.value - (index * 0.16)) % 1.0;
-            final progress = (math.sin(t * math.pi * 2) + 1.0) / 2.0;
-            final scale = 0.75 + (0.40 * progress);
-            final opacity = 0.30 + (0.70 * progress);
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Transform.scale(
-                scale: scale,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF004AC6).withValues(alpha: opacity),
-                  ),
-                ),
-              ),
-            );
-          }),
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildWaveDot(0),
+            const SizedBox(width: 8),
+            _buildWaveDot(1),
+            const SizedBox(width: 8),
+            _buildWaveDot(2),
+          ],
         );
       },
     );
   }
+
+  Widget _buildWaveDot(int index) {
+    // Offset fasa 120 derajat per titik
+    final phaseOffset = index * (2 * math.pi / 3);
+    final waveValue = math.sin(_waveController.value * 2 * math.pi - phaseOffset);
+    final normalized = (waveValue + 1.0) / 2.0; // 0.0 -> 1.0
+
+    // Animasi translasi Y (-4.5px hingga 0px)
+    final translateY = -4.5 * normalized;
+    // Animasi opacity (0.45 hingga 1.0)
+    final opacity = 0.45 + (0.55 * normalized);
+    // Animasi skala titik (0.85 hingga 1.15)
+    final scale = 0.85 + (0.30 * normalized);
+
+    return Transform.translate(
+      offset: Offset(0, translateY),
+      child: Transform.scale(
+        scale: scale,
+        child: Opacity(
+          opacity: opacity,
+          child: Container(
+            width: 7,
+            height: 7,
+            decoration: const BoxDecoration(
+              color: Color(0xFF004AC6), // Google Stitch: primary royal blue
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-/// Custom Vector Painter mereproduksi Toga / Graduation Cap SVG dari Google Stitch
-/// Menggunakan objek Paint yang di-cache untuk mencegah alokasi memori heap di setiap frame
+/// CustomPainter Toga Kelulusan (Graduation Cap) Vintech School berstandar Stitch Design.
+/// Dialokasikan nol memory heap di Paint loop.
 class _StitchGraduationCapPainter extends CustomPainter {
-  final Paint _tasselPaint = Paint()
-    ..color = const Color(0xFF004AC6)
+  static final Paint _capPaint = Paint()
+    ..color = const Color(0xFF004AC6) // primary
+    ..style = PaintingStyle.fill
+    ..isAntiAlias = true;
+
+  static final Paint _accentPaint = Paint()
+    ..color = const Color(0xFF6F9CFF) // primary light
+    ..style = PaintingStyle.fill
+    ..isAntiAlias = true;
+
+  static final Paint _tasselPaint = Paint()
+    ..color = const Color(0xFFE0B300) // gold accent
+    ..style = PaintingStyle.stroke
     ..strokeWidth = 2.0
     ..strokeCap = StrokeCap.round
-    ..style = PaintingStyle.stroke;
+    ..isAntiAlias = true;
 
-  final Paint _circlePaint = Paint()
-    ..color = const Color(0xFF004AC6)
-    ..style = PaintingStyle.fill;
+  static final Paint _tasselTipPaint = Paint()
+    ..color = const Color(0xFFE0B300)
+    ..style = PaintingStyle.fill
+    ..isAntiAlias = true;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final scaleX = size.width / 48.0;
-    final scaleY = size.height / 48.0;
+    final w = size.width;
+    final h = size.height;
 
-    canvas.save();
-    canvas.scale(scaleX, scaleY);
-
-    // Gradien Resmi Vintech Stitch (#004AC6 -> #2563EB)
-    final shader = const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [Color(0xFF004AC6), Color(0xFF2563EB)],
-    ).createShader(const Rect.fromLTWH(6, 6, 36, 32));
-
-    final paintMain = Paint()
-      ..shader = shader
-      ..style = PaintingStyle.fill;
-
-    final paintBody = Paint()
-      ..shader = shader
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFF004AC6).withValues(alpha: 0.85);
-
-    // 1. Top Rhombus Cap (M24 6L6 16L24 26L42 16L24 6Z)
-    final topCapPath = Path()
-      ..moveTo(24, 6)
-      ..lineTo(6, 16)
-      ..lineTo(24, 26)
-      ..lineTo(42, 16)
+    // 1. Belah ketupat mahkota toga (Rhombus Top Cap)
+    final capPath = Path()
+      ..moveTo(w * 0.50, h * 0.22)
+      ..lineTo(w * 0.88, h * 0.40)
+      ..lineTo(w * 0.50, h * 0.58)
+      ..lineTo(w * 0.12, h * 0.40)
       ..close();
-    canvas.drawPath(topCapPath, paintMain);
+    canvas.drawPath(capPath, _capPaint);
 
-    // 2. Lower Cap Body (M12 21.5V30.5C12 34.2 17.4 37.5 24 37.5C30.6 37.5 36 34.2 36 30.5V21.5L24 28.5L12 21.5Z)
-    final bodyPath = Path()
-      ..moveTo(12, 21.5)
-      ..lineTo(12, 30.5)
-      ..cubicTo(12, 34.2, 17.4, 37.5, 24, 37.5)
-      ..cubicTo(30.6, 37.5, 36, 34.2, 36, 30.5)
-      ..lineTo(36, 21.5)
-      ..lineTo(24, 28.5)
+    // 2. Garis lipatan / sorot cahaya mahkota toga
+    final highlightPath = Path()
+      ..moveTo(w * 0.50, h * 0.24)
+      ..lineTo(w * 0.84, h * 0.40)
+      ..lineTo(w * 0.50, h * 0.42)
       ..close();
-    canvas.drawPath(bodyPath, paintBody);
+    canvas.drawPath(highlightPath, _accentPaint);
 
-    // 3. Tassel String & Ball
-    canvas.drawLine(const Offset(40, 18), const Offset(40, 30), _tasselPaint);
-    canvas.drawCircle(const Offset(40, 31), 2.0, _circlePaint);
+    // 3. Batok kepala bawah toga (Skull Cap)
+    final baseCapPath = Path()
+      ..moveTo(w * 0.26, h * 0.47)
+      ..lineTo(w * 0.26, h * 0.64)
+      ..quadraticBezierTo(w * 0.50, h * 0.80, w * 0.74, h * 0.64)
+      ..lineTo(w * 0.74, h * 0.47)
+      ..quadraticBezierTo(w * 0.50, h * 0.60, w * 0.26, h * 0.47)
+      ..close();
+    canvas.drawPath(baseCapPath, _capPaint);
 
-    canvas.restore();
+    // 4. Tali rumbai emas (Gold Tassel)
+    final tasselPath = Path()
+      ..moveTo(w * 0.50, h * 0.40)
+      ..quadraticBezierTo(w * 0.22, h * 0.42, w * 0.18, h * 0.66);
+    canvas.drawPath(tasselPath, _tasselPaint);
+
+    // Bandul ujung rumbai
+    canvas.drawCircle(Offset(w * 0.18, h * 0.68), 2.5, _tasselTipPaint);
   }
 
   @override

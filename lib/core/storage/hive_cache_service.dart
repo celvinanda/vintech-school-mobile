@@ -5,7 +5,12 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 /// Layanan Database Lokal Offline-First berbasis Hive.
 /// Menyimpan data profil, dashboard sekolah, presensi, daftar kelas, siswa,
 /// tagihan SPP, serta antrean sinkronisasi offline (Outbox Queue).
-/// Dilengkapi sistem pemulihan otomatis jika box korup atau terkunci di disk.
+///
+/// Kebijakan Pemulihan Data (Safe Recovery Policy):
+/// 1. _cacheBoxName (Data Transien): Diperbolehkan reset otomatis jika file cache korup.
+/// 2. _sessionBoxName (Sesi Pengguna): TIDAK PERNAH dihapus otomatis dari disk tanpa persetujuan.
+/// 3. _outboxBoxName (Antrean Presensi Offline): DILINDUNGI MUTLAK (Zero Data Loss Policy).
+///    Tidak boleh dihapus saat terjadi error pembukaan file.
 class HiveCacheService {
   static const String _sessionBoxName = 'vintech_session_box';
   static const String _cacheBoxName = 'vintech_offline_cache_box';
@@ -17,18 +22,44 @@ class HiveCacheService {
 
   HiveCacheService._(this._sessionBox, this._cacheBox, this._outboxBox);
 
-  /// Membuka Hive Box secara tangguh dengan fallback otomatis jika korup
-  static Future<Box<String>> _openBoxSafely(String boxName) async {
+  /// Membuka Hive Box secara tangguh dengan proteksi ketat anti-data-loss.
+  static Future<Box<String>> _openBoxSafely(
+    String boxName, {
+    bool allowDeleteOnCorruption = false,
+  }) async {
     try {
       return await Hive.openBox<String>(boxName);
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[HIVE DB] Box $boxName korup/terkunci: $e. Memulihkan database...');
+        debugPrint('[HIVE DB] Box $boxName gagal dibuka / terkunci: $e');
       }
+
+      // HANYA box cache transien yang boleh dihapus otomatis dari disk
+      if (allowDeleteOnCorruption) {
+        if (kDebugMode) {
+          debugPrint('[HIVE DB] Menghapus box cache sementara $boxName dari disk untuk pemulihan...');
+        }
+        try {
+          await Hive.deleteBoxFromDisk(boxName);
+        } catch (delErr) {
+          if (kDebugMode) {
+            debugPrint('[HIVE DB] Gagal deleteBoxFromDisk: $delErr');
+          }
+        }
+        return await Hive.openBox<String>(boxName);
+      }
+
+      // Untuk Box Kritis (Session & Outbox Presensi Offline):
+      // JANGAN PERNAH panggil deleteBoxFromDisk! Coba buka kembali sekali lagi.
       try {
-        await Hive.deleteBoxFromDisk(boxName);
-      } catch (_) {}
-      return await Hive.openBox<String>(boxName);
+        await Future.delayed(const Duration(milliseconds: 60));
+        return await Hive.openBox<String>(boxName);
+      } catch (retryError) {
+        debugPrint(
+          '[HIVE CRITICAL] Gagal membuka $boxName tanpa menghapus data penting: $retryError',
+        );
+        rethrow;
+      }
     }
   }
 
@@ -37,13 +68,14 @@ class HiveCacheService {
       await Hive.initFlutter();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[HIVE DB] Hive.initFlutter warning: $e');
+        debugPrint('[HIVE DB] Hive.initFlutter notice: $e');
       }
     }
 
-    final sessionBox = await _openBoxSafely(_sessionBoxName);
-    final cacheBox = await _openBoxSafely(_cacheBoxName);
-    final outboxBox = await _openBoxSafely(_outboxBoxName);
+    // Penerapan Aturan Keamanan: Cache transien aman di-reset, Session & Outbox dilindungi mutlak
+    final sessionBox = await _openBoxSafely(_sessionBoxName, allowDeleteOnCorruption: false);
+    final cacheBox = await _openBoxSafely(_cacheBoxName, allowDeleteOnCorruption: true);
+    final outboxBox = await _openBoxSafely(_outboxBoxName, allowDeleteOnCorruption: false);
 
     if (kDebugMode) {
       debugPrint(

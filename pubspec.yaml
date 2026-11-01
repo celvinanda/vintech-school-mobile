@@ -44,6 +44,8 @@ dependencies:
   hive_ce: ^2.22.0
   hive_ce_flutter: ^2.5.0
   shorebird_code_push: ^2.0.7
+  flutter_secure_storage: ^11.2.0
+  package_info_plus: ^10.2.2
 
 dev_dependencies:
   flutter_test:

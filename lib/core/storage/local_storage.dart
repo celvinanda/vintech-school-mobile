@@ -1,60 +1,154 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import 'hive_cache_service.dart';
 
+/// Layanan Penyimpanan Lokal Hibrida Terpadu (Enterprise Hybrid Storage).
+/// 1. flutter_secure_storage: Hardware-backed Keystore/Keychain untuk Auth Token.
+/// 2. Hive Database: High-performance JSON Document Store untuk cache offline & outbox presensi.
+/// 3. SharedPreferences: Key-Value store untuk preferensi dasar & tracking versi aplikasi.
 class LocalStorage {
   static const String _keyToken = 'auth_token';
   static const String _keySchoolCode = 'active_school_code';
   static const String _keyUserData = 'user_data';
   static const String _keySchoolData = 'school_data';
   static const String _keyBaseUrl = 'base_url_override';
-  static const String _keyHasVisited = 'has_visited_app';
+  static const String _keyLastAppVersion = 'last_seen_app_version';
 
   final SharedPreferences _prefs;
   final HiveCacheService _hive;
+  final FlutterSecureStorage _secureStorage;
+  final String _currentAppVersion;
+  final bool _isReturningUser;
 
-  LocalStorage(this._prefs, this._hive);
+  // In-memory cache untuk akses token sinkron tanpa latensi (0ms) pada Dio Interceptor
+  String? _cachedToken;
+
+  LocalStorage(
+    this._prefs,
+    this._hive,
+    this._secureStorage,
+    this._currentAppVersion,
+    this._isReturningUser, [
+    this._cachedToken,
+  ]);
 
   HiveCacheService get hive => _hive;
+  String get currentAppVersion => _currentAppVersion;
 
-  static Future<LocalStorage> init() async {
+  static Future<LocalStorage> init({
+    FlutterSecureStorage? secureStorageOverride,
+    PackageInfo? packageInfoOverride,
+  }) async {
+    final secureStorage = secureStorageOverride ??
+        const FlutterSecureStorage(
+          aOptions: AndroidOptions(resetOnError: true),
+        );
+
     final results = await Future.wait([
       SharedPreferences.getInstance(),
       HiveCacheService.init(),
     ]);
+
+    final prefs = results[0] as SharedPreferences;
+    final hive = results[1] as HiveCacheService;
+
+    // 1. Ekstraksi Versi Aplikasi untuk Deteksi Pembaruan (package_info_plus)
+    String currentVersion = '1.0.0+1';
+    try {
+      final info = packageInfoOverride ?? await PackageInfo.fromPlatform();
+      currentVersion = '${info.version}+${info.buildNumber}';
+    } catch (_) {
+      // Fallback aman untuk platform yang belum terdaftar atau lingkungan pengujian
+    }
+
+    final lastSeenVersion = prefs.getString(_keyLastAppVersion);
+    final bool isReturning = (lastSeenVersion != null && lastSeenVersion == currentVersion);
+
+    // 2. Akses Token Terenkripsi di Hardware Keystore / Keychain
+    String? token;
+    try {
+      token = await secureStorage.read(key: _keyToken);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[STORAGE] Gagal membaca token dari SecureStorage: $e');
+      }
+    }
+
+    // 3. Migrasi Aman dari Penyimpanan Plaintext Legacy (SharedPreferences / Hive)
+    if (token == null || token.isEmpty) {
+      final legacyHiveToken = hive.getJson(_keyToken, isSession: true) as String?;
+      final legacyPrefsToken = prefs.getString(_keyToken);
+      final legacyToken = (legacyHiveToken != null && legacyHiveToken.isNotEmpty)
+          ? legacyHiveToken
+          : legacyPrefsToken;
+
+      if (legacyToken != null && legacyToken.isNotEmpty) {
+        token = legacyToken;
+        try {
+          await secureStorage.write(key: _keyToken, value: token);
+          if (kDebugMode) {
+            debugPrint('[STORAGE] Berhasil migrasi token ke FlutterSecureStorage.');
+          }
+          // Hapus jejak plaintext token demi standar keamanan
+          await prefs.remove(_keyToken);
+          await hive.putJson(_keyToken, '', isSession: true);
+        } catch (_) {}
+      }
+    }
+
     return LocalStorage(
-      results[0] as SharedPreferences,
-      results[1] as HiveCacheService,
+      prefs,
+      hive,
+      secureStorage,
+      currentVersion,
+      isReturning,
+      token,
     );
   }
 
   // ===========================================================================
-  // AUTH & SESSION STORAGE (HIVE + SHARED PREFERENCES)
+  // AUTH & SESSION STORAGE
   // ===========================================================================
 
-  bool isReturningUser() {
-    return _prefs.getBool(_keyHasVisited) ?? false;
-  }
+  /// Mengembalikan true HANYA jika pengguna telah membuka versi aplikasi yang sama sebelumnya.
+  /// Jika pengguna pertama kali install atau baru saja update, akan bernilai false.
+  bool isReturningUser() => _isReturningUser;
 
+  /// Memperbarui catatan versi terakhir aplikasi yang dikunjungi pengguna
   Future<void> markUserVisited() async {
-    await _prefs.setBool(_keyHasVisited, true);
+    await _prefs.setString(_keyLastAppVersion, _currentAppVersion);
   }
 
+  /// Menyimpan token autentikasi ke dalam Hardware Keystore / Keychain
   Future<void> saveToken(String token) async {
-    await _hive.putJson(_keyToken, token, isSession: true);
-    await _prefs.setString(_keyToken, token);
-  }
-
-  String? getToken() {
-    final fromHive = _hive.getJson(_keyToken, isSession: true) as String?;
-    if (fromHive != null && fromHive.isNotEmpty) return fromHive;
-    return _prefs.getString(_keyToken);
-  }
-
-  Future<void> clearToken() async {
-    await _hive.putJson(_keyToken, '', isSession: true);
+    _cachedToken = token;
+    try {
+      await _secureStorage.write(key: _keyToken, value: token);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[STORAGE] Error menulis ke FlutterSecureStorage: $e');
+      }
+    }
+    // Pastikan Hive dan SharedPreferences bersih dari plaintext token
     await _prefs.remove(_keyToken);
+    await _hive.putJson(_keyToken, '', isSession: true);
+  }
+
+  /// Mengambil token secara sinkron & instan (0ms) dari in-memory cache
+  String? getToken() => _cachedToken;
+
+  /// Menghapus token dari secure storage dan memori
+  Future<void> clearToken() async {
+    _cachedToken = null;
+    try {
+      await _secureStorage.delete(key: _keyToken);
+    } catch (_) {}
+    await _prefs.remove(_keyToken);
+    await _hive.putJson(_keyToken, '', isSession: true);
   }
 
   Future<void> saveSchoolCode(String schoolCode) async {
@@ -209,6 +303,7 @@ class LocalStorage {
   }
 
   Future<void> resetAll() async {
+    await clearToken();
     await _hive.clearSessionAndCache();
     await _prefs.clear();
   }

@@ -6,11 +6,15 @@ import '../../../core/network/background_sync_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/update/ota_update_service.dart';
+import '../../../core/widgets/smooth_welcome_page_route.dart';
 import '../../academic/data/academic_repository.dart';
 import '../../academic/logic/attendance_cubit.dart';
 import '../../academic/presentation/academic_screen.dart';
 import '../../academic/presentation/attendance_screen.dart';
 import '../../auth/data/models/user_model.dart';
+import '../../auth/logic/auth_cubit.dart';
+import '../../auth/logic/auth_state.dart';
+import '../../auth/presentation/login_screen.dart';
 import '../../billing/logic/billing_cubit.dart';
 import '../../billing/logic/billing_state.dart';
 import '../../billing/presentation/billing_screen.dart';
@@ -326,10 +330,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         if (didPop) return;
         _handleBackPress();
       },
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        extendBody: true,
-        body: Column(
+      child: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is Unauthenticated) {
+            // Sesi dibatalkan atau berakhir (misal 401 saat background sync)
+            Navigator.of(context).pushAndRemoveUntil(
+              SmoothWelcomePageRoute(child: const LoginScreen()),
+              (route) => false,
+            );
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppTheme.backgroundLight,
+          extendBody: true,
+          body: Column(
           children: [
             // 1. BASE TOP BAR TERPADU (Wadah Statis Permanen - Bebas Kedip/Flicker)
             AppBaseTopBar(
@@ -393,8 +407,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 /// Transisi Halus (Smooth Crossfade & Micro-Scale) untuk perpindahan tab:

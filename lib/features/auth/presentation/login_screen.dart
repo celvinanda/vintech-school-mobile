@@ -375,6 +375,31 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             (route) => false,
           );
+        } else if (state is Unauthenticated && state.sessionExpiredMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: const Color(0xFF191C1E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              content: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: Color(0xFFFFB4AB), size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      state.sessionExpiredMessage!,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              duration: const Duration(seconds: 4),
+            ),
+          );
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/network/api_response.dart';
 import '../../../core/storage/local_storage.dart';
 import '../data/auth_repository.dart';
 import '../data/models/school_lookup_model.dart';
@@ -25,7 +28,7 @@ class AuthCubit extends Cubit<AuthState> {
       return;
     }
 
-    // 1. Offline-First Instant Auth: Jika profil sudah tersimpan di Hive, aktifkan instan (~1-5 ms)
+    // 1. Offline-First Instant Auth: Jika profil tersimpan di Hive, aktifkan instan (~1-5 ms)
     final cachedUserData = _storage.getUserData();
     if (cachedUserData != null) {
       try {
@@ -39,19 +42,40 @@ class AuthCubit extends Cubit<AuthState> {
       final profile = await _repository.getMe().timeout(const Duration(seconds: 4));
       emit(Authenticated(profile));
     } catch (e) {
-      final errorStr = e.toString().toLowerCase();
-      final is401 = errorStr.contains('401') || errorStr.contains('unauthorized');
+      int? statusCode;
+      if (e is ApiException) {
+        statusCode = e.statusCode;
+      } else if (e is DioException) {
+        statusCode = e.response?.statusCode ??
+            (e.error is ApiException ? (e.error as ApiException).statusCode : null);
+      }
+
+      // Klasifikasi error yang ketat: HANYA HTTP 401 murni yang memicu logout paksa
+      final is401 = statusCode == 401 ||
+          e.toString().toLowerCase().contains('401') ||
+          e.toString().toLowerCase().contains('unauthorized');
 
       if (is401) {
-        // Token dicabut atau kadaluwarsa di server -> hapus sesi dan minta login ulang
+        // Token dicabut atau kadaluwarsa di server -> hapus sesi dan arahkan login ulang dengan pesan ramah
+        if (kDebugMode) {
+          debugPrint('[AUTH] HTTP 401 terdeteksi: Sesi telah kedaluwarsa. Mengarahkan ke Login...');
+        }
         await _storage.clearAllSession();
         emit(Unauthenticated(
           schoolCode: schoolCode,
           cachedSchool: cachedSchool,
+          sessionExpiredMessage: 'Sesi Anda telah berakhir. Silakan masuk kembali.',
         ));
       } else if (state is! Authenticated) {
-        // Masalah timeout/koneksi saat offline pertama kali tanpa cache
+        // Jika TIDAK punya data cache offline dan jaringan bermasalah -> arahkan ke Login
         emit(Unauthenticated(schoolCode: schoolCode, cachedSchool: cachedSchool));
+      } else {
+        // PERTAHANKAN SESI OFFLINE-FIRST:
+        // Jika user sudah masuk dari data lokal Hive, kegagalan jaringan (timeout, 5xx server, tanpa internet)
+        // TIDAK BOLEH mengeluarkan user dari aplikasi.
+        if (kDebugMode) {
+          debugPrint('[AUTH] Background sync profil gagal ($e), mempertahankan sesi lokal offline-first.');
+        }
       }
     }
   }

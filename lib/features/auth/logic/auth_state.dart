@@ -23,7 +23,13 @@ class Authenticated extends AuthState {
 class Unauthenticated extends AuthState {
   final String? schoolCode;
   final SchoolLookupModel? cachedSchool;
-  Unauthenticated({this.schoolCode, this.cachedSchool});
+  final String? sessionExpiredMessage;
+
+  Unauthenticated({
+    this.schoolCode,
+    this.cachedSchool,
+    this.sessionExpiredMessage,
+  });
 }
 
 class AuthError extends AuthState {
