@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Sub-komponen 3: Smart Notification Bell Action Button
-/// Menampilkan tombol lonceng notifikasi dengan badge unread dinamis dan feedback haptic
+/// Sub-komponen: Smart Notification Bell Action Button
+/// Menampilkan ikon lonceng notifikasi minimalis dan bersih (langsung icon tanpa card/border circle)
+/// dilengkapi badge unread dinamis dan feedback haptic.
 class TopBarNotificationAction extends StatelessWidget {
   final VoidCallback onTap;
   final int unreadCount;
@@ -24,41 +25,30 @@ class TopBarNotificationAction extends StatelessWidget {
 
     return RepaintBoundary(
       child: Material(
-        color: Colors.white,
-        shape: const CircleBorder(),
-        child: InkWell(
+        color: Colors.transparent,
+        child: InkResponse(
           onTap: () {
             HapticFeedback.selectionClick();
             onTap();
           },
-          customBorder: const CircleBorder(),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+          radius: 22,
+          highlightShape: BoxShape.circle,
+          child: SizedBox(
+            width: 36,
+            height: 36,
             child: Stack(
               clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 const Icon(
                   Icons.notifications_outlined,
-                  color: Color(0xFF475569),
-                  size: 21,
+                  color: Color(0xFF334155),
+                  size: 24,
                 ),
                 if (showBadge)
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 4,
+                    right: 4,
                     child: unreadCount > 1
                         ? Container(
                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
@@ -77,8 +67,8 @@ class TopBarNotificationAction extends StatelessWidget {
                             ),
                           )
                         : Container(
-                            width: 8,
-                            height: 8,
+                            width: 8.5,
+                            height: 8.5,
                             decoration: BoxDecoration(
                               color: badgeColor,
                               shape: BoxShape.circle,
