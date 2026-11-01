@@ -27,11 +27,11 @@ class ClassroomModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'grade_level': gradeLevel,
-        'capacity': capacity,
-        'student_count': studentCount,
-        'homeroom_teacher': homeroomTeacher,
-      };
+    'id': id,
+    'name': name,
+    'grade_level': gradeLevel,
+    'capacity': capacity,
+    'student_count': studentCount,
+    'homeroom_teacher': homeroomTeacher,
+  };
 }

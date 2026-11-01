@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vintech_school_mobile/features/academic/data/models/attendance_model.dart';
 import 'package:vintech_school_mobile/features/academic/presentation/attendance_entry_sheet.dart';
+import 'package:vintech_school_mobile/features/academic/presentation/class_management/class_management_screen.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 
 import '../components/teacher_class_card.dart';
@@ -268,6 +269,21 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
                   child: TeacherClassCard(
                     classInfo: item,
                     schoolColor: widget.schoolColor,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ClassManagementScreen(
+                            classInfo: item,
+                            allClasses: classList,
+                            profile: widget.profile,
+                            allRecords: widget.allRecords,
+                            schoolColor: widget.schoolColor,
+                          ),
+                        ),
+                      );
+                    },
                     onAction: () {
                       HapticFeedback.selectionClick();
                       if (item.statusKey == 'locked') {

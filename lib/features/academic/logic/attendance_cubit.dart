@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../data/academic_repository.dart';
 import '../data/models/attendance_model.dart';
 import '../data/models/classroom_model.dart';
@@ -29,8 +30,9 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         studentNis: studentNis,
       );
       final hiveClassrooms = _repository.getCachedClassrooms();
-      final hiveStudents =
-          isStaff ? _repository.getCachedStudents(classroomId: classroomId) : null;
+      final hiveStudents = isStaff
+          ? _repository.getCachedStudents(classroomId: classroomId)
+          : null;
 
       if (hiveClassrooms != null && _cachedClassrooms.isEmpty) {
         _cachedClassrooms = hiveClassrooms;
@@ -67,7 +69,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         futures.add(_repository.getClassrooms());
       }
 
-      final bool needStudents = isStaff && (_cachedStudents.isEmpty || forceRefreshMeta);
+      final bool needStudents =
+          isStaff && (_cachedStudents.isEmpty || forceRefreshMeta);
       if (needStudents) {
         futures.add(_repository.getStudents(classroomId: classroomId));
       }

@@ -36,26 +36,27 @@ class AttendanceModel {
       id: json['id'] as String? ?? '',
       date: json['date'] as String? ?? '',
       status: json['status'] as String? ?? 'HADIR',
-      statusDisplay: json['status_display'] as String? ?? json['status'] as String? ?? '',
+      statusDisplay:
+          json['status_display'] as String? ?? json['status'] as String? ?? '',
       notes: json['notes'] as String? ?? '',
       studentId: student['id'] as String? ?? '',
-      studentNis: student['nis'] as String? ?? json['student_nis'] as String? ?? '',
-      studentName: student['full_name'] as String? ?? json['student_name'] as String? ?? '',
+      studentNis:
+          student['nis'] as String? ?? json['student_nis'] as String? ?? '',
+      studentName:
+          student['full_name'] as String? ??
+          json['student_name'] as String? ??
+          '',
       classroomName: classroomName,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'date': date,
-        'status': status,
-        'status_display': statusDisplay,
-        'notes': notes,
-        'student': {
-          'id': studentId,
-          'nis': studentNis,
-          'full_name': studentName,
-        },
-        'classroom': classroomName,
-      };
+    'id': id,
+    'date': date,
+    'status': status,
+    'status_display': statusDisplay,
+    'notes': notes,
+    'student': {'id': studentId, 'nis': studentNis, 'full_name': studentName},
+    'classroom': classroomName,
+  };
 }

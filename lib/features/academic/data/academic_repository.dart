@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
@@ -43,7 +44,9 @@ class AcademicRepository {
     String? classroomId,
     String? studentNis,
   }) {
-    final raw = _storage.getCachedAttendances(_attCacheKey(classroomId, studentNis));
+    final raw = _storage.getCachedAttendances(
+      _attCacheKey(classroomId, studentNis),
+    );
     if (raw == null) return null;
     return raw.map((a) => AttendanceModel.fromJson(a)).toList();
   }
@@ -62,8 +65,9 @@ class AcademicRepository {
 
       if (envelope.success && envelope.data != null) {
         final list = envelope.data!['classrooms'] as List<dynamic>? ?? [];
-        final models =
-            list.map((c) => ClassroomModel.fromJson(c as Map<String, dynamic>)).toList();
+        final models = list
+            .map((c) => ClassroomModel.fromJson(c as Map<String, dynamic>))
+            .toList();
         await _storage.cacheClassrooms(models.map((m) => m.toJson()).toList());
         return models;
       }
@@ -76,13 +80,17 @@ class AcademicRepository {
     }
   }
 
-  Future<List<StudentModel>> getStudents({String? classroomId, String? search}) async {
+  Future<List<StudentModel>> getStudents({
+    String? classroomId,
+    String? search,
+  }) async {
     final cacheKey = _stuCacheKey(classroomId, search);
     try {
       final response = await _dio.get(
         ApiConstants.students,
         queryParameters: {
-          if (classroomId != null && classroomId.isNotEmpty) 'classroom_id': classroomId,
+          if (classroomId != null && classroomId.isNotEmpty)
+            'classroom_id': classroomId,
           if (search != null && search.isNotEmpty) 'q': search,
         },
       );
@@ -96,12 +104,18 @@ class AcademicRepository {
         final models = envelope.data!
             .map((s) => StudentModel.fromJson(s as Map<String, dynamic>))
             .toList();
-        await _storage.cacheStudents(cacheKey, models.map((m) => m.toJson()).toList());
+        await _storage.cacheStudents(
+          cacheKey,
+          models.map((m) => m.toJson()).toList(),
+        );
         return models;
       }
       return getCachedStudents(classroomId: classroomId, search: search) ?? [];
     } on DioException catch (e) {
-      final cached = getCachedStudents(classroomId: classroomId, search: search);
+      final cached = getCachedStudents(
+        classroomId: classroomId,
+        search: search,
+      );
       if (cached != null) return cached;
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal memuat direktori siswa: ${e.message}');
@@ -142,8 +156,10 @@ class AcademicRepository {
       final response = await _dio.get(
         ApiConstants.attendance,
         queryParameters: {
-          if (classroomId != null && classroomId.isNotEmpty) 'classroom_id': classroomId,
-          if (studentNis != null && studentNis.isNotEmpty) 'student_nis': studentNis,
+          if (classroomId != null && classroomId.isNotEmpty)
+            'classroom_id': classroomId,
+          if (studentNis != null && studentNis.isNotEmpty)
+            'student_nis': studentNis,
         },
       );
 
@@ -156,12 +172,22 @@ class AcademicRepository {
         final models = envelope.data!
             .map((a) => AttendanceModel.fromJson(a as Map<String, dynamic>))
             .toList();
-        await _storage.cacheAttendances(cacheKey, models.map((m) => m.toJson()).toList());
+        await _storage.cacheAttendances(
+          cacheKey,
+          models.map((m) => m.toJson()).toList(),
+        );
         return models;
       }
-      return getCachedAttendances(classroomId: classroomId, studentNis: studentNis) ?? [];
+      return getCachedAttendances(
+            classroomId: classroomId,
+            studentNis: studentNis,
+          ) ??
+          [];
     } on DioException catch (e) {
-      final cached = getCachedAttendances(classroomId: classroomId, studentNis: studentNis);
+      final cached = getCachedAttendances(
+        classroomId: classroomId,
+        studentNis: studentNis,
+      );
       if (cached != null) return cached;
       if (e.error is ApiException) throw e.error as ApiException;
       throw ApiException('Gagal memuat riwayat presensi: ${e.message}');
@@ -226,7 +252,9 @@ class AcademicRepository {
         return envelope.data!;
       }
       throw ApiException(
-        envelope.message.isNotEmpty ? envelope.message : 'Gagal mencatat presensi',
+        envelope.message.isNotEmpty
+            ? envelope.message
+            : 'Gagal mencatat presensi',
       );
     } on DioException catch (e) {
       // Jika offline (tidak ada sinyal), simpan ke Hive Offline Outbox Queue

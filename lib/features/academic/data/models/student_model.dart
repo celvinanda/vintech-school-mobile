@@ -32,7 +32,8 @@ class StudentModel {
     if (rawClassroom is Map) {
       classroomName = rawClassroom['name'] as String?;
       homeroomTeacherName ??= rawClassroom['homeroom_teacher'] as String?;
-      homeroomTeacherPhone ??= rawClassroom['homeroom_teacher_phone'] as String?;
+      homeroomTeacherPhone ??=
+          rawClassroom['homeroom_teacher_phone'] as String?;
     } else if (rawClassroom is String) {
       classroomName = rawClassroom;
     }
@@ -52,15 +53,15 @@ class StudentModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'nis': nis,
-        'nisn': nisn,
-        'full_name': fullName,
-        'gender': gender,
-        'classroom': classroomName,
-        'parent_name': parentName,
-        'parent_phone': parentPhone,
-        'homeroom_teacher': homeroomTeacherName,
-        'homeroom_teacher_phone': homeroomTeacherPhone,
-      };
+    'id': id,
+    'nis': nis,
+    'nisn': nisn,
+    'full_name': fullName,
+    'gender': gender,
+    'classroom': classroomName,
+    'parent_name': parentName,
+    'parent_phone': parentPhone,
+    'homeroom_teacher': homeroomTeacherName,
+    'homeroom_teacher_phone': homeroomTeacherPhone,
+  };
 }
