@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vintech_school_mobile/features/academic/data/models/attendance_model.dart';
+import 'package:vintech_school_mobile/features/academic/presentation/attendance_entry_sheet.dart';
 import 'package:vintech_school_mobile/features/academic/presentation/widgets/teacher_attendance/models/class_attendance_info.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 
 import 'dialogs/add_class_note_dialog.dart';
 import 'dialogs/class_switcher_sheet.dart';
+import 'dialogs/manage_officers_sheet.dart';
+import 'dialogs/manage_schedule_piket_sheet.dart';
 import 'models/class_student_item.dart';
 import 'widgets/class_management_hero_card.dart';
 import 'widgets/class_management_tab_bar.dart';
@@ -464,7 +467,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
           children: [
             SingleChildScrollView(
               primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
               child: ClassStudentTabView(
                 students: _students,
                 onStudentTap: _showStudentDetail,
@@ -474,7 +477,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             ),
             SingleChildScrollView(
               primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
               child: ClassOfficersTabView(
                 officers: _officers,
                 onContactTap: (ClassOfficerItem officer) {
@@ -493,60 +496,104 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             ),
             const SingleChildScrollView(
               primary: false,
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: EdgeInsets.fromLTRB(16, 8, 16, 80),
               child: ClassScheduleTabView(),
             ),
             SingleChildScrollView(
               primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
               child: ClassNotesTabView(notes: _notes),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          10,
-          16,
-          10 + MediaQuery.of(context).padding.bottom,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(15, 23, 42, 0.04),
-              blurRadius: 6,
-              offset: Offset(0, -2),
+      floatingActionButton: _buildContextualFab(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  /// FAB Cerdas Kontekstual yang otomatis menyesuaikan fungsinya dengan tab aktif
+  Widget _buildContextualFab() {
+    IconData icon;
+    String label;
+    VoidCallback onTap;
+
+    switch (_activeTabIndex) {
+      case 0:
+        icon = Icons.playlist_add_check_rounded;
+        label = 'Mulai Presensi';
+        onTap = () {
+          HapticFeedback.lightImpact();
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-          ],
-        ),
-        child: SizedBox(
-          height: 46,
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.edit_note_rounded, size: 20),
-            label: Text(
-              '+ Tambah Catatan Siswa',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF004AC6),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _openAddNoteDialog();
+            builder: (_) => const AttendanceEntrySheet(),
+          );
+        };
+        break;
+      case 1:
+        icon = Icons.manage_accounts_rounded;
+        label = 'Kelola Pengurus';
+        onTap = () {
+          HapticFeedback.lightImpact();
+          ManageOfficersSheet.show(
+            context,
+            currentOfficers: _officers,
+            students: _students,
+            onOfficersUpdated: (updated) {
+              setState(() => _officers = updated);
             },
+          );
+        };
+        break;
+      case 2:
+        icon = Icons.edit_calendar_rounded;
+        label = 'Atur Jadwal & Piket';
+        onTap = () {
+          HapticFeedback.lightImpact();
+          ManageSchedulePiketSheet.show(context, students: _students);
+        };
+        break;
+      case 3:
+      default:
+        icon = Icons.edit_note_rounded;
+        label = 'Tambah Catatan';
+        onTap = () {
+          HapticFeedback.lightImpact();
+          _openAddNoteDialog();
+        };
+        break;
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: animation, child: child),
+        );
+      },
+      child: FloatingActionButton.extended(
+        key: ValueKey<int>(_activeTabIndex),
+        onPressed: onTap,
+        backgroundColor: const Color(0xFF004AC6),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        highlightElevation: 6,
+        icon: Icon(icon, size: 20),
+        label: Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.2,
           ),
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
     );
   }
