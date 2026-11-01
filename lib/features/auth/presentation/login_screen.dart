@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/server_settings_sheet.dart';
 import '../../../core/widgets/smooth_welcome_page_route.dart';
@@ -82,13 +83,14 @@ class _LoginScreenState extends State<LoginScreen>
     FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthCubit>().login(
-            _usernameController.text.trim(),
-            _passwordController.text.trim(),
-          );
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+      );
     }
   }
 
-  bool get _isParentAccount => _usernameController.text.trim().startsWith('ortu.');
+  bool get _isParentAccount =>
+      _usernameController.text.trim().startsWith('ortu.');
 
   String get _parentLinkedStudentInfo {
     final u = _usernameController.text.trim();
@@ -100,12 +102,20 @@ class _LoginScreenState extends State<LoginScreen>
     return 'Terikat otomatis dengan profil & data akademik putra/putri Anda.';
   }
 
-  void _fillAccount(String username, String password) {
+  void _fillAccount(
+    String username,
+    String password, {
+    bool autoLogin = false,
+  }) {
     FocusScope.of(context).unfocus();
+    HapticFeedback.lightImpact();
     setState(() {
       _usernameController.text = username;
       _passwordController.text = password;
     });
+    if (autoLogin) {
+      _onLogin();
+    }
   }
 
   void _simulateBiometric() {
@@ -118,12 +128,19 @@ class _LoginScreenState extends State<LoginScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Row(
           children: [
-            const Icon(Icons.fingerprint_rounded, color: Color(0xFF4EDEA3), size: 22),
+            const Icon(
+              Icons.fingerprint_rounded,
+              color: Color(0xFF4EDEA3),
+              size: 22,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Memverifikasi Face ID / Sidik Jari...',
-                style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.white),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -264,7 +281,10 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                         content: Text(
                           'Tautan reset sandi telah dikirim ke WhatsApp wali murid.',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: Colors.white),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     );
@@ -340,12 +360,18 @@ class _LoginScreenState extends State<LoginScreen>
               ),
               const SizedBox(height: 20),
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: const BorderSide(color: Color(0xFFE6E8EA)),
                 ),
-                leading: const Icon(Icons.chat_rounded, color: Color(0xFF16A34A)),
+                leading: const Icon(
+                  Icons.chat_rounded,
+                  color: Color(0xFF16A34A),
+                ),
                 title: Text(
                   'WhatsApp Helpdesk TU',
                   style: GoogleFonts.plusJakartaSans(
@@ -355,14 +381,19 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
                 subtitle: Text(
                   '+62 821-8888-0199 (Senin - Jumat 07:00 - 16:00)',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 12, color: const Color(0xFF737686)),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: const Color(0xFF737686),
+                  ),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 onTap: () {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Membuka kontak WhatsApp Helpdesk Tata Usaha...'),
+                      content: Text(
+                        'Membuka kontak WhatsApp Helpdesk Tata Usaha...',
+                      ),
                     ),
                   );
                 },
@@ -387,15 +418,22 @@ class _LoginScreenState extends State<LoginScreen>
             ),
             (route) => false,
           );
-        } else if (state is Unauthenticated && state.sessionExpiredMessage != null) {
+        } else if (state is Unauthenticated &&
+            state.sessionExpiredMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
               backgroundColor: const Color(0xFF191C1E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               content: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: Color(0xFFFFB4AB), size: 20),
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFFFFB4AB),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -417,7 +455,9 @@ class _LoginScreenState extends State<LoginScreen>
             SnackBar(
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppTheme.danger,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               content: Text(
                 state.message,
                 style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w500),
@@ -520,7 +560,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       height: 56,
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFF004AC6), Color(0xFF2563EB)],
+                                          colors: [
+                                            Color(0xFF004AC6),
+                                            Color(0xFF2563EB),
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -551,7 +594,8 @@ class _LoginScreenState extends State<LoginScreen>
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFDBE1FF).withValues(alpha: 0.6),
+                                      color: const Color(0xFFDBE1FF)
+                                          .withValues(alpha: 0.6),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -581,7 +625,10 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Text('👋', style: TextStyle(fontSize: 24)),
+                                      const Text(
+                                        '👋',
+                                        style: TextStyle(fontSize: 24),
+                                      ),
                                     ],
                                   ),
 
@@ -598,439 +645,494 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   ),
 
-                              const SizedBox(height: 28),
+                                  const SizedBox(height: 28),
 
-                              // Input 1: ID Pengguna / NISN / NIP
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'ID Pengguna / NISN / NIP',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF191C1E),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: const Color(0xFFE0E3E5)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF191C1E)
-                                          .withValues(alpha: 0.03),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: TextFormField(
-                                  controller: _usernameController,
-                                  textInputAction: TextInputAction.next,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14,
-                                    color: const Color(0xFF191C1E),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Masukkan NISN / Username',
-                                    hintStyle: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13.5,
-                                      color: const Color(0xFF737686),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.badge_outlined,
-                                      color: Color(0xFF565E74),
-                                      size: 20,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
-                                    ),
-                                  ),
-                                  validator: (val) {
-                                    if (val == null || val.trim().isEmpty) {
-                                      return 'ID Pengguna wajib diisi';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Input 2: Kata Sandi
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Kata Sandi',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF191C1E),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(color: const Color(0xFFE0E3E5)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF191C1E)
-                                          .withValues(alpha: 0.03),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  textInputAction: TextInputAction.done,
-                                  onFieldSubmitted: (_) => _onLogin(),
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 14,
-                                    color: const Color(0xFF191C1E),
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Masukkan Kata Sandi',
-                                    hintStyle: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13.5,
-                                      color: const Color(0xFF737686),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.lock_outline_rounded,
-                                      color: Color(0xFF565E74),
-                                      size: 20,
-                                    ),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(
-                                        _obscurePassword
-                                            ? Icons.visibility_off_outlined
-                                            : Icons.visibility_outlined,
-                                        color: const Color(0xFF565E74),
-                                        size: 20,
+                                  // Input 1: ID Pengguna / NISN / NIP
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'ID Pengguna / NISN / NIP',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF191C1E),
                                       ),
-                                      onPressed: () {
-                                        setState(() {
-                                          _obscurePassword = !_obscurePassword;
-                                        });
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: const Color(0xFFE0E3E5),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF191C1E)
+                                              .withValues(alpha: 0.03),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: TextFormField(
+                                      controller: _usernameController,
+                                      textInputAction: TextInputAction.next,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        color: const Color(0xFF191C1E),
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: 'Masukkan NISN / Username',
+                                        hintStyle: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13.5,
+                                          color: const Color(0xFF737686),
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.badge_outlined,
+                                          color: Color(0xFF565E74),
+                                          size: 20,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 14,
+                                            ),
+                                      ),
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'ID Pengguna wajib diisi';
+                                        }
+                                        return null;
                                       },
                                     ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Input 2: Kata Sandi
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Kata Sandi',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF191C1E),
+                                      ),
                                     ),
                                   ),
-                                  validator: (val) {
-                                    if (val == null || val.isEmpty) {
-                                      return 'Kata sandi wajib diisi';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                              ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: const Color(0xFFE0E3E5),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF191C1E)
+                                              .withValues(alpha: 0.03),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: TextFormField(
+                                      controller: _passwordController,
+                                      obscureText: _obscurePassword,
+                                      textInputAction: TextInputAction.done,
+                                      onFieldSubmitted: (_) => _onLogin(),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        color: const Color(0xFF191C1E),
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: 'Masukkan Kata Sandi',
+                                        hintStyle: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13.5,
+                                          color: const Color(0xFF737686),
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.lock_outline_rounded,
+                                          color: Color(0xFF565E74),
+                                          size: 20,
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            _obscurePassword
+                                                ? Icons.visibility_off_outlined
+                                                : Icons.visibility_outlined,
+                                            color: const Color(0xFF565E74),
+                                            size: 20,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _obscurePassword =
+                                                  !_obscurePassword;
+                                            });
+                                          },
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 14,
+                                            ),
+                                      ),
+                                      validator: (val) {
+                                        if (val == null || val.isEmpty) {
+                                          return 'Kata sandi wajib diisi';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
 
-                              const SizedBox(height: 12),
+                                  const SizedBox(height: 12),
 
-                              // Auxiliary Controls (Ingat Saya & Lupa Sandi)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _rememberMe = !_rememberMe;
-                                      });
-                                    },
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4),
+                                  // Auxiliary Controls (Ingat Saya & Lupa Sandi)
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _rememberMe = !_rememberMe;
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 4,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: Checkbox(
+                                                  value: _rememberMe,
+                                                  activeColor: const Color(
+                                                    0xFF004AC6,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          5,
+                                                        ),
+                                                  ),
+                                                  onChanged: (val) {
+                                                    setState(() {
+                                                      _rememberMe = val ?? true;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Ingat Saya',
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: const Color(
+                                                        0xFF434655,
+                                                      ),
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: Size.zero,
+                                          tapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        onPressed: _showForgotPasswordDialog,
+                                        child: Text(
+                                          'Lupa Kata Sandi?',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF004AC6),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  if (_isParentAccount) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFFBEB),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: const Color(0xFFFDE68A),
+                                        ),
+                                      ),
                                       child: Row(
                                         children: [
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: Checkbox(
-                                              value: _rememberMe,
-                                              activeColor: const Color(0xFF004AC6),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(5),
-                                              ),
-                                              onChanged: (val) {
-                                                setState(() {
-                                                  _rememberMe = val ?? true;
-                                                });
-                                              },
+                                          const Icon(
+                                            Icons.family_restroom_rounded,
+                                            color: Color(0xFFD97706),
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Akun Orang Tua Terverifikasi',
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 11.5,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: const Color(
+                                                          0xFF92400E,
+                                                        ),
+                                                      ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  _parentLinkedStudentInfo,
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: const Color(
+                                                          0xFFB45309,
+                                                        ),
+                                                      ),
+                                                ),
+                                              ],
                                             ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 22),
+
+                                  // Primary CTA Button (Masuk ke Akun)
+                                  BlocBuilder<AuthCubit, AuthState>(
+                                    builder: (context, state) {
+                                      final isLoading = state is AuthLoading;
+                                      return SizedBox(
+                                        width: double.infinity,
+                                        height: 50,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFF004AC6,
+                                            ),
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                            ),
+                                            shadowColor: const Color(0xFF004AC6)
+                                                .withValues(alpha: 0.3),
+                                          ),
+                                          onPressed: isLoading
+                                              ? null
+                                              : _onLogin,
+                                          child: isLoading
+                                              ? Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 18,
+                                                      height: 18,
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                            strokeWidth: 2.2,
+                                                            color: Colors.white,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Text(
+                                                      'Memverifikasi...',
+                                                      style:
+                                                          GoogleFonts.plusJakartaSans(
+                                                            fontSize: 14.5,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                )
+                                              : Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      'Masuk ke Akun',
+                                                      style:
+                                                          GoogleFonts.plusJakartaSans(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: Colors.white,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    const Icon(
+                                                      Icons
+                                                          .arrow_forward_rounded,
+                                                      size: 19,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Divider "atau"
+                                  Row(
+                                    children: [
+                                      const Expanded(
+                                        child: Divider(
+                                          color: Color(0xFFE0E3E5),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        child: Text(
+                                          'atau',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 12,
+                                            color: const Color(0xFF737686),
+                                          ),
+                                        ),
+                                      ),
+                                      const Expanded(
+                                        child: Divider(
+                                          color: Color(0xFFE0E3E5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 16),
+
+                                  // Biometric Button (Stitch Specification)
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 48,
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        side: const BorderSide(
+                                          color: Color(0xFFE0E3E5),
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                        ),
+                                      ),
+                                      onPressed: _simulateBiometric,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.fingerprint_rounded,
+                                            size: 22,
+                                            color: Color(0xFF004AC6),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Ingat Saya',
+                                            'Face ID / Sidik Jari',
                                             style: GoogleFonts.plusJakartaSans(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w500,
-                                              color: const Color(0xFF434655),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF191C1E),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: Size.zero,
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    onPressed: _showForgotPasswordDialog,
-                                    child: Text(
-                                      'Lupa Kata Sandi?',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF004AC6),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
 
-                              if (_isParentAccount) ...[
-                                const SizedBox(height: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFFBEB),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: const Color(0xFFFDE68A)),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.family_restroom_rounded,
-                                        color: Color(0xFFD97706),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Akun Orang Tua Terverifikasi',
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 11.5,
-                                                fontWeight: FontWeight.w700,
-                                                color: const Color(0xFF92400E),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              _parentLinkedStudentInfo,
-                                              style: GoogleFonts.plusJakartaSans(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w500,
-                                                color: const Color(0xFFB45309),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                                  const SizedBox(height: 28),
 
-                              const SizedBox(height: 22),
+                                  // 1-Click Fast Demo Accounts Section
+                                  _buildDemoSection(),
 
-                              // Primary CTA Button (Masuk ke Akun)
-                              BlocBuilder<AuthCubit, AuthState>(
-                                builder: (context, state) {
-                                  final isLoading = state is AuthLoading;
-                                  return SizedBox(
-                                    width: double.infinity,
-                                    height: 50,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF004AC6),
-                                        foregroundColor: Colors.white,
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(14),
-                                        ),
-                                        shadowColor: const Color(0xFF004AC6)
-                                            .withValues(alpha: 0.3),
-                                      ),
-                                      onPressed: isLoading ? null : _onLogin,
-                                      child: isLoading
-                                          ? Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const SizedBox(
-                                                  width: 18,
-                                                  height: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2.2,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Text(
-                                                  'Memverifikasi...',
-                                                  style: GoogleFonts.plusJakartaSans(
-                                                    fontSize: 14.5,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                            )
-                                          : Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  'Masuk ke Akun',
-                                                  style:
-                                                      GoogleFonts.plusJakartaSans(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                const Icon(
-                                                  Icons.arrow_forward_rounded,
-                                                  size: 19,
-                                                  color: Colors.white,
-                                                ),
-                                              ],
-                                            ),
-                                    ),
-                                  );
-                                },
-                              ),
+                                  const SizedBox(height: 28),
 
-                              const SizedBox(height: 16),
-
-                              // Divider "atau"
-                              Row(
-                                children: [
-                                  const Expanded(
-                                    child: Divider(color: Color(0xFFE0E3E5)),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text(
-                                      'atau',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
-                                        color: const Color(0xFF737686),
-                                      ),
-                                    ),
-                                  ),
-                                  const Expanded(
-                                    child: Divider(color: Color(0xFFE0E3E5)),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Biometric Button (Stitch Specification)
-                              SizedBox(
-                                width: double.infinity,
-                                height: 48,
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    side: const BorderSide(color: Color(0xFFE0E3E5)),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  onPressed: _simulateBiometric,
-                                  child: Row(
+                                  // Minimalist Footer (Stitch Specification)
+                                  Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(
-                                        Icons.fingerprint_rounded,
-                                        size: 22,
-                                        color: Color(0xFF004AC6),
-                                      ),
-                                      const SizedBox(width: 8),
                                       Text(
-                                        'Face ID / Sidik Jari',
+                                        'Butuh bantuan akses? ',
                                         style: GoogleFonts.plusJakartaSans(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF191C1E),
+                                          fontSize: 12.5,
+                                          color: const Color(0xFF565E74),
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: _showTuContactSheet,
+                                        child: Text(
+                                          'Hubungi Tata Usaha (TU)',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFF004AC6),
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 28),
-
-                              // 1-Click Fast Demo Accounts Section
-                              _buildDemoSection(),
-
-                              const SizedBox(height: 28),
-
-                              // Minimalist Footer (Stitch Specification)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                  const SizedBox(height: 6),
                                   Text(
-                                    'Butuh bantuan akses? ',
+                                    '© 2026 Vintech School • v2.4.0',
                                     style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12.5,
-                                      color: const Color(0xFF565E74),
+                                      fontSize: 11,
+                                      color: const Color(0xFF737686),
                                     ),
                                   ),
-                                  InkWell(
-                                    onTap: _showTuContactSheet,
-                                    child: Text(
-                                      'Hubungi Tata Usaha (TU)',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF004AC6),
-                                      ),
-                                    ),
-                                  ),
+
+                                  const SizedBox(height: 12),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '© 2026 Vintech School • v2.4.0',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  color: const Color(0xFF737686),
-                                ),
-                              ),
-
-                              const SizedBox(height: 12),
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
                 // 3. Server Settings Action (Discreet Top Bar Button - Top Right)
                 Positioned(
@@ -1171,16 +1273,25 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Guru SMAN 1 (Fisika)',
-                username: 'guru.sman1jkt.198609182011012004',
+                label: 'Guru Fisika (Siti Nurhaliza)',
+                username: 'guru.siti',
+                password: 'guru123',
+                color: const Color(0xFF007D55),
+                subtitle: 'Fisika • NIP: 198609182011012004',
+              ),
+              _buildDemoChip(
+                label: 'Wali Kelas X-IPA-1 (Drs. Bambang)',
+                username: 'guru.bambang',
                 password: 'guru123',
                 color: const Color(0xFF004AC6),
+                subtitle: 'Matematika • NIP: 197804122005011002',
               ),
               _buildDemoChip(
                 label: 'Guru SMK Vintech (RPL)',
                 username: 'guru.smkvintech.199205112018011005',
                 password: 'guru123',
                 color: const Color(0xFF0284C7),
+                subtitle: 'Reza Rahadian, S.Kom.',
               ),
             ],
           ),
@@ -1234,10 +1345,18 @@ class _LoginScreenState extends State<LoginScreen>
     final isSelected = _usernameController.text == username;
 
     return Material(
-      color: isSelected ? color.withValues(alpha: 0.08) : const Color(0xFFF7F9FB),
+      color: isSelected
+          ? color.withValues(alpha: 0.08)
+          : const Color(0xFFF7F9FB),
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
-        onTap: () => _fillAccount(username, password),
+        onTap: () {
+          if (isSelected) {
+            _onLogin();
+          } else {
+            _fillAccount(username, password);
+          }
+        },
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -1268,10 +1387,44 @@ class _LoginScreenState extends State<LoginScreen>
                     label,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isSelected ? color : const Color(0xFF191C1E),
                     ),
                   ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Masuk',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 10,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
               if (subtitle != null) ...[
@@ -1282,8 +1435,12 @@ class _LoginScreenState extends State<LoginScreen>
                     subtitle,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 9.5,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      color: isSelected ? color.withValues(alpha: 0.85) : const Color(0xFF74777F),
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? color.withValues(alpha: 0.85)
+                          : const Color(0xFF74777F),
                     ),
                   ),
                 ),
