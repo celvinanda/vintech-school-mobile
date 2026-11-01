@@ -31,8 +31,6 @@ import 'widgets/profile_hero_card.dart';
 
 import 'widgets/profile_registered_info_section.dart';
 
-
-
 /// Halaman Profil & Akun Siswa selaras 1:1 dengan Google Stitch Design ("Profil Siswa").
 
 /// Mengimplementasikan arsitektur modular Bento Grid:
@@ -55,8 +53,6 @@ class ProfileScreen extends StatefulWidget {
 
   final ScrollController? scrollController;
 
-
-
   const ProfileScreen({
 
     super.key,
@@ -67,15 +63,11 @@ class ProfileScreen extends StatefulWidget {
 
   });
 
-
-
   @override
 
   State<ProfileScreen> createState() => _ProfileScreenState();
 
 }
-
-
 
 class _ProfileScreenState extends State<ProfileScreen> {
 
@@ -88,8 +80,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _tuitionStatus = 'Lunas';
 
   String _tuitionMonth = 'November';
-
-
 
   UserProfileResponse get profile {
 
@@ -105,11 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   }
 
-
-
   Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
-
-
 
   @override
 
@@ -125,23 +111,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   }
 
-
-
   Future<void> _loadLiveStudentData() async {
 
     final isParent = profile.activeSchool?.isParent == true;
 
     final isStudent = profile.activeSchool?.isStudent == true;
 
-
-
     final targetNis = isParent
 
         ? (profile.primaryChild?.nis ?? '')
 
         : (isStudent ? profile.user.cleanIdentifier : '');
-
-
 
     if (targetNis.isEmpty) {
 
@@ -155,13 +135,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     }
 
-
-
     final academicRepo = context.read<AcademicRepository>();
 
     final billingRepo = context.read<BillingRepository>();
-
-
 
     // 1. Ambil data StudentModel lengkap
 
@@ -188,8 +164,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
     }
-
-
 
     // 2. Ambil data Presensi riil
 
@@ -220,8 +194,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
     } catch (_) {}
-
-
 
     // 3. Ambil data Tagihan SPP riil
 
@@ -277,8 +249,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   }
 
-
-
   Future<void> _handleRefresh() async {
 
     HapticFeedback.lightImpact();
@@ -292,8 +262,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ]);
 
   }
-
-
 
   void _showDigitalCard(BuildContext context) {
 
@@ -314,8 +282,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
   }
-
-
 
   void _showShareQrModal(BuildContext context) {
     HapticFeedback.selectionClick();
@@ -440,8 +406,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
 
     }
-
-
 
     showModalBottomSheet(
 
@@ -599,8 +563,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   }
 
-
-
   void _confirmLogout(BuildContext context) {
 
     showDialog(
@@ -675,8 +637,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   }
 
-
-
   @override
 
   Widget build(BuildContext context) {
@@ -725,8 +685,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 16),
 
-
-
                       // 3. Quick Academic Capsules
 
                       ProfileAcademicMetricsCapsules(
@@ -745,8 +703,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 16),
 
-
-
                       // 4. Registered Contact & Guardian Information
 
                       ProfileRegisteredInfoSection(
@@ -759,15 +715,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 16),
 
-
-
               // 5. Academic Files & Documents
 
               ProfileAcademicServicesSection(isParent: profile.activeSchool?.isParent == true),
 
               const SizedBox(height: 16),
-
-
 
               // 6. Switch School (if multi-school membership)
 
@@ -808,8 +760,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
 
               ],
-
-
 
               // 7. Logout Button
 
@@ -862,8 +812,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
 
               const SizedBox(height: 16),
-
-
 
               // Security & Cloud footer note
 
