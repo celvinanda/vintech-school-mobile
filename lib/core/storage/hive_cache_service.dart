@@ -5,6 +5,7 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 /// Layanan Database Lokal Offline-First berbasis Hive.
 /// Menyimpan data profil, dashboard sekolah, presensi, daftar kelas, siswa,
 /// tagihan SPP, serta antrean sinkronisasi offline (Outbox Queue).
+/// Dilengkapi sistem pemulihan otomatis jika box korup atau terkunci di disk.
 class HiveCacheService {
   static const String _sessionBoxName = 'vintech_session_box';
   static const String _cacheBoxName = 'vintech_offline_cache_box';
@@ -16,11 +17,34 @@ class HiveCacheService {
 
   HiveCacheService._(this._sessionBox, this._cacheBox, this._outboxBox);
 
+  /// Membuka Hive Box secara tangguh dengan fallback otomatis jika korup
+  static Future<Box<String>> _openBoxSafely(String boxName) async {
+    try {
+      return await Hive.openBox<String>(boxName);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[HIVE DB] Box $boxName korup/terkunci: $e. Memulihkan database...');
+      }
+      try {
+        await Hive.deleteBoxFromDisk(boxName);
+      } catch (_) {}
+      return await Hive.openBox<String>(boxName);
+    }
+  }
+
   static Future<HiveCacheService> init() async {
-    await Hive.initFlutter();
-    final sessionBox = await Hive.openBox<String>(_sessionBoxName);
-    final cacheBox = await Hive.openBox<String>(_cacheBoxName);
-    final outboxBox = await Hive.openBox<String>(_outboxBoxName);
+    try {
+      await Hive.initFlutter();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[HIVE DB] Hive.initFlutter warning: $e');
+      }
+    }
+
+    final sessionBox = await _openBoxSafely(_sessionBoxName);
+    final cacheBox = await _openBoxSafely(_cacheBoxName);
+    final outboxBox = await _openBoxSafely(_outboxBoxName);
+
     if (kDebugMode) {
       debugPrint(
         '[HIVE DB] Offline-First Storage siap '

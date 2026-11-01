@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +21,18 @@ import 'features/home/logic/home_cubit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Sinkronisasi warna Bar Notifikasi (Status Bar) dengan Top Bar Aplikasi
+  // 1. Global Crash & Telemetry Error Handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('[GLOBAL ERROR] FlutterError: ${details.exceptionAsString()}');
+  };
+
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    debugPrint('[GLOBAL ERROR] PlatformDispatcher uncaught: $error');
+    return true;
+  };
+
+  // 2. Sinkronisasi warna Bar Notifikasi (Status Bar) dengan Top Bar Aplikasi
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -31,14 +44,18 @@ void main() async {
     ),
   );
 
-  // Initialize Local Storage (Hive Multi-Box & SharedPreferences)
+  // 3. Initialize Local Storage (Hive Multi-Box & SharedPreferences)
   final storage = await LocalStorage.init();
 
-  // Initialize Shorebird OTA Code Push Engine
+  // 4. Initialize Shorebird OTA Code Push Engine di latar belakang (Non-Blocking Startup)
   final otaUpdateService = OtaUpdateService();
-  await otaUpdateService.initialize();
+  unawaited(
+    otaUpdateService.initialize().catchError((e) {
+      debugPrint('[OTA] Error initializing Shorebird: $e');
+    }),
+  );
 
-  // Initialize Network & Repositories (Offline-First with Hive + Cloud API)
+  // 5. Initialize Network & Repositories (Offline-First with Hive + Cloud API)
   final apiClient = ApiClient(storage);
   final authRepository = AuthRepository(apiClient, storage);
   final homeRepository = HomeRepository(apiClient, storage);
@@ -134,4 +151,3 @@ class AppScrollBehavior extends MaterialScrollBehavior {
     );
   }
 }
-

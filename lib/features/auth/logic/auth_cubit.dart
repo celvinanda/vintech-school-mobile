@@ -25,7 +25,7 @@ class AuthCubit extends Cubit<AuthState> {
       return;
     }
 
-    // 1. Offline-First Instant Auth: Jika profil sudah tersimpan di Hive, langsung masuk (0 ms)
+    // 1. Offline-First Instant Auth: Jika profil sudah tersimpan di Hive, aktifkan instan (~1-5 ms)
     final cachedUserData = _storage.getUserData();
     if (cachedUserData != null) {
       try {
@@ -34,12 +34,23 @@ class AuthCubit extends Cubit<AuthState> {
       } catch (_) {}
     }
 
-    // 2. Sinkronisasi profil terbaru di latar belakang jika online
+    // 2. Sinkronisasi profil terbaru di latar belakang jika online (timeout 4 detik)
     try {
       final profile = await _repository.getMe().timeout(const Duration(seconds: 4));
       emit(Authenticated(profile));
-    } catch (_) {
-      if (state is! Authenticated) {
+    } catch (e) {
+      final errorStr = e.toString().toLowerCase();
+      final is401 = errorStr.contains('401') || errorStr.contains('unauthorized');
+
+      if (is401) {
+        // Token dicabut atau kadaluwarsa di server -> hapus sesi dan minta login ulang
+        await _storage.clearAllSession();
+        emit(Unauthenticated(
+          schoolCode: schoolCode,
+          cachedSchool: cachedSchool,
+        ));
+      } else if (state is! Authenticated) {
+        // Masalah timeout/koneksi saat offline pertama kali tanpa cache
         emit(Unauthenticated(schoolCode: schoolCode, cachedSchool: cachedSchool));
       }
     }

@@ -9,6 +9,7 @@ class LocalStorage {
   static const String _keyUserData = 'user_data';
   static const String _keySchoolData = 'school_data';
   static const String _keyBaseUrl = 'base_url_override';
+  static const String _keyHasVisited = 'has_visited_app';
 
   final SharedPreferences _prefs;
   final HiveCacheService _hive;
@@ -31,6 +32,14 @@ class LocalStorage {
   // ===========================================================================
   // AUTH & SESSION STORAGE (HIVE + SHARED PREFERENCES)
   // ===========================================================================
+
+  bool isReturningUser() {
+    return _prefs.getBool(_keyHasVisited) ?? false;
+  }
+
+  Future<void> markUserVisited() async {
+    await _prefs.setBool(_keyHasVisited, true);
+  }
 
   Future<void> saveToken(String token) async {
     await _hive.putJson(_keyToken, token, isSession: true);

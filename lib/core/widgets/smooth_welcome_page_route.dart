@@ -1,46 +1,47 @@
 import 'package:flutter/material.dart';
 
 /// Transisi Halaman Cerdas & Mewah ("Welcoming Bloom Page Route"):
-/// Dirancang untuk menghadirkan pengalaman visual yang hangat, lembut, dan profesional:
-/// 1. Micro-Scale Bloom: Skala anggun dari 0.925 -> 1.000 (efek mekar yang jelas dan elegan).
-/// 2. Soft Elevation Glide: Mengapung naik dari Offset(0.0, 0.08) -> Offset.zero (~85-95px).
-/// 3. Silky Deceleration: Kurva perlambatan alami Cubic(0.05, 0.7, 0.1, 1.0) dengan durasi 650ms.
-/// 4. Opacity Crossfade: Fade-in lembut 0.0 -> 1.0 yang menyatu sempurna tanpa color flash.
+/// 1. Durasi terpadu responsif (420 ms) yang menyatu tanpa lag.
+/// 2. Menghormati pengaturan aksesibilitas sistem (Reduce Motion / disableAnimations).
+/// 3. Micro-Scale Bloom: 0.94 -> 1.00.
+/// 4. Soft Elevation Glide: Offset(0, 0.055) -> Offset.zero (~55-65px).
+/// 5. Kurva dekselerasi sutra Cubic(0.12, 1.0, 0.24, 1.0).
 class SmoothWelcomePageRoute<T> extends PageRouteBuilder<T> {
   final Widget child;
 
   SmoothWelcomePageRoute({
     required this.child,
-    Duration duration = const Duration(milliseconds: 650),
+    Duration duration = const Duration(milliseconds: 420),
     super.settings,
   }) : super(
           transitionDuration: duration,
-          reverseTransitionDuration: const Duration(milliseconds: 400),
+          reverseTransitionDuration: const Duration(milliseconds: 320),
           pageBuilder: (context, animation, secondaryAnimation) => child,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            // Kurva pelambatan natural khas Apple iOS & Android 14 Expressive
+            final reduceMotion = MediaQuery.of(context).disableAnimations;
+            if (reduceMotion) {
+              return child;
+            }
+
             final curvedAnimation = CurvedAnimation(
               parent: animation,
-              curve: const Cubic(0.05, 0.7, 0.1, 1.0),
+              curve: const Cubic(0.12, 1.0, 0.24, 1.0),
               reverseCurve: Curves.easeInCubic,
             );
 
-            // 1. Soft Elevation Glide (Mengapung naik ~85-95px secara jelas dan anggun)
             final slideAnimation = Tween<Offset>(
-              begin: const Offset(0.0, 0.08),
+              begin: const Offset(0.0, 0.055),
               end: Offset.zero,
             ).animate(curvedAnimation);
 
-            // 2. Micro-Scale Bloom (Sensasi mekar 7.5% yang sangat terasa di layar fisik)
             final scaleAnimation = Tween<double>(
-              begin: 0.925,
+              begin: 0.94,
               end: 1.0,
             ).animate(curvedAnimation);
 
-            // 3. Opacity Crossfade (Selesai pada 80% perjalanan agar visual tegas dan terang)
             final fadeAnimation = CurvedAnimation(
               parent: animation,
-              curve: const Interval(0.0, 0.80, curve: Curves.easeOut),
+              curve: const Interval(0.0, 0.85, curve: Curves.easeOut),
             );
 
             return SlideTransition(
