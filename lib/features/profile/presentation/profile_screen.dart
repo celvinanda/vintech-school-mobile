@@ -24,7 +24,7 @@ import 'widgets/profile_registered_info_section.dart';
 /// 3. Quick Academic Capsules ([ProfileAcademicMetricsCapsules] - IPK 88.5, Hadir 96%, Bebas SPP)
 /// 4. Kontak & Data Terdaftar ([ProfileRegisteredInfoSection] - Wali Kelas WA, Orang Tua Call, Domisili)
 /// 5. Berkas & Layanan Akademik ([ProfileAcademicServicesSection] - E-Rapor PDF, Surat Aktif, Dapodik)
-/// 6. Ganti Institusi Multi-Tenant & Logout
+/// 6. Ganti Institusi Multi-Tenant (Bila terdaftar di >1 sekolah)
 class ProfileScreen extends StatefulWidget {
   final UserProfileResponse profile;
   final ScrollController? scrollController;
@@ -362,46 +362,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _confirmLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Keluar dari Aplikasi?',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w800,
-            fontSize: 17,
-          ),
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin mengakhiri sesi akun ${profile.user.fullName}?',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<AuthCubit>().logout();
-            },
-            child: const Text('Ya, Keluar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -467,34 +427,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ],
-              // 7. Logout Button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () => _confirmLogout(context),
-                  icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: Text(
-                    profile.activeSchool?.isParent == true
-                        ? 'Keluar dari Akun Wali Murid'
-                        : 'Keluar dari Akun',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFEF2F2),
-                    foregroundColor: const Color(0xFFDC2626),
-                    elevation: 0,
-                    side: const BorderSide(color: Color(0xFFFECACA)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               // Security & Cloud footer note
               Center(
                 child: Row(
