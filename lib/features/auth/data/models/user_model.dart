@@ -188,7 +188,7 @@ class ActiveSchoolModel {
     if (classroomNameField != null && classroomNameField!.isNotEmpty) {
       return classroomNameField!;
     }
-    return title.isNotEmpty ? title : 'Kelas X-IPA-1';
+    return title.isNotEmpty ? title : '-';
   }
 
   factory ActiveSchoolModel.fromJson(Map<String, dynamic> json) {

@@ -20,8 +20,8 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
     this.gradeLetter = '-',
     this.attendanceRate = 0,
     this.attendanceRank = '0 Hadir',
-    this.tuitionStatus = 'Lunas',
-    this.tuitionMonth = 'November',
+    this.tuitionStatus = '-',
+    this.tuitionMonth = '-',
   });
   bool get _isStaffOrTeacher => profile?.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile?.activeSchool?.isParent == true;
@@ -56,23 +56,25 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                   iconColor: const Color(0xFF004AC6),
                   iconBg: const Color(0xFFEFF6FF),
                   badgeLabel: _isStaffOrTeacher
-                      ? 'Linier'
+                      ? '-'
                       : (gpa <= 0 ? '-' : gradeLetter),
                   badgeColor: _isStaffOrTeacher
-                      ? const Color(0xFF004AC6)
+                      ? const Color(0xFF64748B)
                       : (gpa <= 0
                             ? const Color(0xFF64748B)
                             : const Color(0xFF004AC6)),
                   badgeBg: _isStaffOrTeacher
-                      ? const Color(0xFFDBEAFE)
+                      ? const Color(0xFFF1F5F9)
                       : (gpa <= 0
                             ? const Color(0xFFF1F5F9)
                             : const Color(0xFFDBEAFE)),
                   value: _isStaffOrTeacher
-                      ? '24 JP'
+                      ? '0 JP'
                       : (gpa <= 0
                             ? '0'
-                            : (gpa == gpa.roundToDouble() ? '' : '')),
+                            : (gpa == gpa.roundToDouble()
+                                  ? '\${gpa.toInt()}'
+                                  : '\$gpa')),
                   subtitle: _isStaffOrTeacher
                       ? 'Beban KBM'
                       : (_isParent ? 'Rata Nilai Anak' : 'Rata-rata Nilai'),
@@ -85,16 +87,14 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                   icon: Icons.checklist_rounded,
                   iconColor: const Color(0xFF007D55),
                   iconBg: const Color(0xFFECFDF5),
-                  badgeLabel: _isStaffOrTeacher
-                      ? 'Tepat Waktu'
-                      : (attendanceRate <= 0 ? '0 Hadir' : attendanceRank),
+                  badgeLabel: attendanceRate <= 0 ? '0 Hadir' : attendanceRank,
                   badgeColor: attendanceRate <= 0
                       ? const Color(0xFF64748B)
                       : const Color(0xFF007D55),
                   badgeBg: attendanceRate <= 0
                       ? const Color(0xFFF1F5F9)
                       : const Color(0xFFA7F3D0),
-                  value: _isStaffOrTeacher ? '98%' : '$attendanceRate%',
+                  value: '\$attendanceRate%',
                   subtitle: _isStaffOrTeacher
                       ? 'Presensi Guru'
                       : (_isParent ? 'Presensi Anak' : 'Kehadiran'),
@@ -110,29 +110,75 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                             ? Icons.account_balance_wallet_rounded
                             : Icons.verified_rounded),
                   iconColor: _isStaffOrTeacher
-                      ? const Color(0xFF0F766E)
+                      ? ((profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true)
+                            ? const Color(0xFF0F766E)
+                            : const Color(0xFF64748B))
                       : (tuitionStatus == 'Belum Lunas'
                             ? const Color(0xFFDC2626)
-                            : const Color(0xFF0F766E)),
+                            : (tuitionStatus == 'Lunas'
+                                  ? const Color(0xFF0F766E)
+                                  : const Color(0xFF64748B))),
                   iconBg: _isStaffOrTeacher
-                      ? const Color(0xFFF0FDFA)
+                      ? ((profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true)
+                            ? const Color(0xFFF0FDFA)
+                            : const Color(0xFFF1F5F9))
                       : (tuitionStatus == 'Belum Lunas'
                             ? const Color(0xFFFEF2F2)
-                            : const Color(0xFFF0FDFA)),
-                  badgeLabel: _isStaffOrTeacher ? 'Wali Kelas' : tuitionStatus,
+                            : (tuitionStatus == 'Lunas'
+                                  ? const Color(0xFFF0FDFA)
+                                  : const Color(0xFFF1F5F9))),
+                  badgeLabel: _isStaffOrTeacher
+                      ? ((profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true)
+                            ? 'Wali Kelas'
+                            : '-')
+                      : tuitionStatus,
                   badgeColor: _isStaffOrTeacher
-                      ? const Color(0xFF0F766E)
+                      ? ((profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true)
+                            ? const Color(0xFF0F766E)
+                            : const Color(0xFF64748B))
                       : (tuitionStatus == 'Belum Lunas'
                             ? const Color(0xFFDC2626)
-                            : const Color(0xFF0F766E)),
+                            : (tuitionStatus == 'Lunas'
+                                  ? const Color(0xFF0F766E)
+                                  : const Color(0xFF64748B))),
                   badgeBg: _isStaffOrTeacher
-                      ? const Color(0xFFCCFBF1)
+                      ? ((profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true)
+                            ? const Color(0xFFCCFBF1)
+                            : const Color(0xFFF1F5F9))
                       : (tuitionStatus == 'Belum Lunas'
                             ? const Color(0xFFFEE2E2)
-                            : const Color(0xFFCCFBF1)),
+                            : (tuitionStatus == 'Lunas'
+                                  ? const Color(0xFFCCFBF1)
+                                  : const Color(0xFFF1F5F9))),
                   value: _isStaffOrTeacher
-                      ? (profile?.activeSchool?.classroomName ?? 'XI-IPA-1')
-                      : tuitionMonth,
+                      ? (profile
+                                    ?.activeSchool
+                                    ?.classroomNameField
+                                    ?.isNotEmpty ==
+                                true
+                            ? profile!.activeSchool!.classroomNameField!
+                            : '-')
+                      : (tuitionMonth.isNotEmpty ? tuitionMonth : '-'),
                   subtitle: _isStaffOrTeacher
                       ? 'Kelas Binaan'
                       : (_isParent ? 'Tagihan SPP Anak' : 'Status SPP'),

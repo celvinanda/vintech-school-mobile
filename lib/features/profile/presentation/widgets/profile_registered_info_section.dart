@@ -22,21 +22,23 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     super.key,
     required this.profile,
     this.student,
-    this.homeroomTeacherName = 'Dra. Sri Wahyuni, M.Pd',
-    this.homeroomTeacherPhone = '6281200000000',
-    this.parentName = 'Bpk. Pratama',
-    this.parentPhone = '0811992201',
-    this.address = 'Jl. Budi Utomo No. 7, Sawah Besar, Jakarta Pusat',
+    this.homeroomTeacherName = '-',
+    this.homeroomTeacherPhone = '',
+    this.parentName = '-',
+    this.parentPhone = '-',
+    this.address = '-',
   });
 
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile.activeSchool?.isParent == true;
   String get _classroomName =>
-      student?.classroomName ??
-      profile.activeSchool?.classroomName ??
-      'X-IPA-1';
-  String get _effectiveParentName => student?.parentName ?? parentName;
-  String get _effectiveParentPhone => student?.parentPhone ?? parentPhone;
+      student?.classroomName ?? profile.activeSchool?.classroomName ?? '-';
+  String get _effectiveParentName => student?.parentName?.isNotEmpty == true
+      ? student!.parentName!
+      : parentName;
+  String get _effectiveParentPhone => student?.parentPhone?.isNotEmpty == true
+      ? student!.parentPhone!
+      : parentPhone;
 
   String get _effectiveHomeroomName {
     if (student?.homeroomTeacherName != null &&
@@ -59,7 +61,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
         profile.activeSchool!.principalName!.isNotEmpty) {
       return profile.activeSchool!.principalName!;
     }
-    return 'Dr. H. Hendra Wijaya, M.Pd.';
+    return 'Kepala Sekolah';
   }
 
   String get _principalInitials {
@@ -102,19 +104,14 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     if (profile.user.address.isNotEmpty) {
       return profile.user.address;
     }
-    if (_isParent) {
-      return 'Belum dilengkapi (Ketuk Ubah Kontak TU)';
-    }
-    return address;
+    return address.isNotEmpty && address != '-' ? address : 'Belum dilengkapi';
   }
 
   String get _effectiveEmail {
     if (profile.user.email.isNotEmpty) {
       return profile.user.email;
     }
-    return _isParent
-        ? 'Belum terdaftar di sistem TU'
-        : 'aditya.putra@student.sman1jkt.sch.id';
+    return 'Belum terdaftar';
   }
 
   String get _effectiveUserPhone {
@@ -126,11 +123,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
       final childPhone =
           student?.parentPhone ?? profile.primaryChild?.parentPhone;
       if (childPhone != null && childPhone.isNotEmpty) return childPhone;
-      return 'Belum terdaftar (Ketuk Ubah Kontak TU)';
+      return 'Belum terdaftar';
     }
-    return profile.user.phone.isNotEmpty
-        ? profile.user.phone
-        : '+62 812-3456-7890';
+    return 'Belum terdaftar';
   }
 
   Future<void> _launchWa(BuildContext context) async {
@@ -143,6 +138,16 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
               ? 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
               : 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.');
     final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
+    if (rawPhone.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nomor kontak belum terdaftar di sistem sekolah.'),
+          ),
+        );
+      }
+      return;
+    }
     final cleanPhone = rawPhone.startsWith('0')
         ? '62${rawPhone.substring(1)}'
         : rawPhone;
@@ -169,6 +174,16 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   Future<void> _launchParentCall(BuildContext context) async {
     HapticFeedback.lightImpact();
     final cleanPhone = _effectiveParentPhone.replaceAll(RegExp(r'\D'), '');
+    if (cleanPhone.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Nomor telepon orang tua belum terdaftar di sistem.'),
+          ),
+        );
+      }
+      return;
+    }
     final uri = Uri.parse('tel:$cleanPhone');
     try {
       if (await canLaunchUrl(uri)) {

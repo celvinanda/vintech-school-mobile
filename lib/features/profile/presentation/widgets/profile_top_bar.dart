@@ -33,8 +33,11 @@ class ProfileTopBar extends StatelessWidget {
             ? 'Siswa Aktif'
             : (isParent ? 'Wali Murid' : 'Tenaga Pendidik'));
     final classroom = isParent
-        ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat')
-        : (school?.classroomName ?? 'Kelas X-IPA-1');
+        ? (profile.primaryChild?.classroomName ?? '')
+        : (school?.classroomNameField ?? '');
+    final subtitleText = classroom.isNotEmpty && classroom != '-'
+        ? '${profile.user.fullName} • $roleLabel ($classroom)'
+        : '${profile.user.fullName} • $roleLabel';
 
     return RepaintBoundary(
       child: Row(
@@ -62,7 +65,7 @@ class ProfileTopBar extends StatelessWidget {
                 ),
                 const SizedBox(height: 1.5),
                 Text(
-                  '${profile.user.fullName} • $roleLabel ($classroom)',
+                  subtitleText,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w500,

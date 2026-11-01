@@ -21,24 +21,24 @@ class ProfileDigitalCardModal extends StatelessWidget {
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile.activeSchool?.isParent == true;
   String get _schoolName =>
-      (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA')
-          .toUpperCase();
+      (profile.activeSchool?.schoolName ?? '-').toUpperCase();
   String get _nis => _isParent
       ? (student?.nis ??
             profile.primaryChild?.nis ??
             profile.user.cleanIdentifier)
       : profile.user.cleanIdentifier;
-  String get _nisn =>
-      student?.nisn ??
-      (profile.activeSchool?.isStudent == true
-          ? '0081234501'
-          : (_isParent ? (profile.primaryChild?.nisn ?? '-') : '-'));
-  String get _classroomName =>
-      student?.classroomName ??
-      profile.activeSchool?.classroomName ??
-      (_isParent
-          ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat')
-          : 'Kelas X-IPA-1');
+  String get _nisn => student?.nisn?.isNotEmpty == true
+      ? student!.nisn!
+      : (_isParent
+            ? (profile.primaryChild?.nisn?.isNotEmpty == true
+                  ? profile.primaryChild!.nisn!
+                  : '-')
+            : '-');
+  String get _classroomName => student?.classroomName?.isNotEmpty == true
+      ? student!.classroomName!
+      : (profile.activeSchool?.classroomNameField?.isNotEmpty == true
+            ? profile.activeSchool!.classroomNameField!
+            : (_isParent ? (profile.primaryChild?.classroomName ?? '-') : '-'));
   String get _cardTitle => _isParent
       ? 'KARTU PELAJAR DIGITAL (ANAK TERIKAT)'
       : (profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL');
@@ -207,7 +207,9 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     Text(
                       _isStaffOrTeacher
                           ? '${profile.activeSchool?.title.isNotEmpty == true ? profile.activeSchool!.title : "Tenaga Pendidik"} • Aktif'
-                          : '$_classroomName • TP 2026/2027 Ganjil',
+                          : (_classroomName != '-'
+                                ? '$_classroomName • Semester Aktif'
+                                : 'Semester Aktif'),
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,

@@ -103,7 +103,10 @@ void _showLeavePermissionDialog(BuildContext context) {
   );
 }
 
-void _showTeacherDutyDialog(BuildContext context, UserProfileResponse? profile) {
+void _showTeacherDutyDialog(
+  BuildContext context,
+  UserProfileResponse? profile,
+) {
   HapticFeedback.selectionClick();
   final reasonController = TextEditingController();
   final destController = TextEditingController();
@@ -174,7 +177,10 @@ void _showTeacherDutyDialog(BuildContext context, UserProfileResponse? profile) 
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -242,8 +248,12 @@ void _showTeacherDutyDialog(BuildContext context, UserProfileResponse? profile) 
 
 void _showGtkStatusModal(BuildContext context, UserProfileResponse? profile) {
   HapticFeedback.selectionClick();
-  final nip = profile?.activeSchool?.nip ?? '198609182011012004';
-  final mapel = profile?.activeSchool?.specialization ?? 'Fisika Kuantum & Terapan';
+  final nip = profile?.activeSchool?.nip?.isNotEmpty == true
+      ? profile!.activeSchool!.nip!
+      : '-';
+  final mapel = profile?.activeSchool?.specialization?.isNotEmpty == true
+      ? profile!.activeSchool!.specialization!
+      : '-';
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.white,
@@ -316,15 +326,32 @@ void _showGtkStatusModal(BuildContext context, UserProfileResponse? profile) {
             ),
             child: Column(
               children: [
-                _buildStatusRow('Status Data Pendidik', 'VALID & SINKRON', const Color(0xFF007D55), isBadge: true),
+                _buildStatusRow(
+                  'Status Data Pendidik',
+                  'VALID & SINKRON',
+                  const Color(0xFF007D55),
+                  isBadge: true,
+                ),
                 const Divider(height: 16, color: Color(0xFFE2E8F0)),
                 _buildStatusRow('NIP / NUPTK', nip, const Color(0xFF0F172A)),
                 const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                _buildStatusRow('Mata Pelajaran KBM', mapel, const Color(0xFF0F172A)),
+                _buildStatusRow(
+                  'Mata Pelajaran KBM',
+                  mapel,
+                  const Color(0xFF0F172A),
+                ),
                 const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                _buildStatusRow('Beban Mengajar Linier', '24 Jam Pelajaran (JP)', const Color(0xFF004AC6)),
+                _buildStatusRow(
+                  'Beban Mengajar Linier',
+                  '24 Jam Pelajaran (JP)',
+                  const Color(0xFF004AC6),
+                ),
                 const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                _buildStatusRow('Kelayakan Tunjangan (TPG)', 'Layak / Terbit SKTP', const Color(0xFF007D55)),
+                _buildStatusRow(
+                  'Kelayakan Tunjangan (TPG)',
+                  'Layak / Terbit SKTP',
+                  const Color(0xFF007D55),
+                ),
               ],
             ),
           ),
@@ -353,7 +380,12 @@ void _showGtkStatusModal(BuildContext context, UserProfileResponse? profile) {
   );
 }
 
-Widget _buildStatusRow(String label, String value, Color valueColor, {bool isBadge = false}) {
+Widget _buildStatusRow(
+  String label,
+  String value,
+  Color valueColor, {
+  bool isBadge = false,
+}) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
@@ -422,7 +454,9 @@ class ProfileAcademicServicesSection extends StatelessWidget {
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('✓ Mengunduh SK Pembagian Tugas KBM Semester Ganjil 2025/2026 (PDF)...'),
+        content: Text(
+          '✓ Mengunduh SK Pembagian Tugas KBM Semester Ganjil 2025/2026 (PDF)...',
+        ),
         backgroundColor: Color(0xFF007D55),
         duration: Duration(seconds: 2),
       ),
@@ -458,8 +492,8 @@ class ProfileAcademicServicesSection extends StatelessWidget {
     final sectionTitle = isStaffOrTeacher
         ? 'Dokumen & Layanan Tenaga Pendidik'
         : (isParent
-            ? 'Dokumen & Layanan Orang Tua'
-            : 'Berkas & Layanan Akademik');
+              ? 'Dokumen & Layanan Orang Tua'
+              : 'Berkas & Layanan Akademik');
 
     return RepaintBoundary(
       child: Column(

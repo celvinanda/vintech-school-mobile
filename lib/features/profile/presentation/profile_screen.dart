@@ -42,8 +42,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _attendanceRank = '0 Hadir';
   final double _gpa = 0.0;
   final String _gradeLetter = '-';
-  String _tuitionStatus = 'Lunas';
-  String _tuitionMonth = 'November';
+  String _tuitionStatus = '-';
+  String _tuitionMonth = '-';
   UserProfileResponse get profile {
     final authState = context.read<AuthCubit>().state;
     if (authState is Authenticated) {
@@ -142,8 +142,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             }
           });
         }
+      } else if (mounted) {
+        setState(() {
+          _tuitionStatus = '-';
+          _tuitionMonth = '-';
+        });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _tuitionStatus = '-';
+          _tuitionMonth = '-';
+        });
+      }
+    }
   }
 
   Future<void> _handleRefresh() async {

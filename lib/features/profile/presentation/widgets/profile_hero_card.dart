@@ -33,20 +33,21 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
             widget.profile.primaryChild?.nis ??
             widget.profile.user.cleanIdentifier)
       : widget.profile.user.cleanIdentifier;
-  String get _nisn =>
-      widget.student?.nisn ??
-      (widget.profile.activeSchool?.isStudent == true
-          ? '0081234501'
-          : (_isParent ? (widget.profile.primaryChild?.nisn ?? '-') : '-'));
-  String get _classroomName =>
-      widget.student?.classroomName ??
-      widget.profile.activeSchool?.classroomName ??
-      (_isParent
-          ? (widget.profile.primaryChild?.classroomName ?? 'Siswa Terikat')
-          : 'Kelas X-IPA-1');
-  String get _schoolName =>
-      widget.profile.activeSchool?.schoolName ??
-      'SMA Negeri 1 Nusantara Jakarta';
+  String get _nisn => widget.student?.nisn?.isNotEmpty == true
+      ? widget.student!.nisn!
+      : (_isParent
+            ? (widget.profile.primaryChild?.nisn?.isNotEmpty == true
+                  ? widget.profile.primaryChild!.nisn!
+                  : '-')
+            : '-');
+  String get _classroomName => widget.student?.classroomName?.isNotEmpty == true
+      ? widget.student!.classroomName!
+      : (widget.profile.activeSchool?.classroomNameField?.isNotEmpty == true
+            ? widget.profile.activeSchool!.classroomNameField!
+            : (_isParent
+                  ? (widget.profile.primaryChild?.classroomName ?? '-')
+                  : '-'));
+  String get _schoolName => widget.profile.activeSchool?.schoolName ?? '-';
   String get _roleLabel =>
       widget.profile.activeSchool?.roleDisplayLabel ??
       (_isParent ? 'Wali Murid' : 'Siswa Aktif');
@@ -236,7 +237,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: Text(
-                            'TP 2026/2027 Ganjil',
+                            'Semester Aktif',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -263,7 +264,9 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                     Text(
                       _isStaffOrTeacher
                           ? '${widget.profile.activeSchool?.title.isNotEmpty == true ? widget.profile.activeSchool!.title : _roleLabel} • $_schoolName'
-                          : '$_classroomName • $_schoolName',
+                          : (_classroomName != '-'
+                                ? '$_classroomName • $_schoolName'
+                                : '$_roleLabel • $_schoolName'),
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
