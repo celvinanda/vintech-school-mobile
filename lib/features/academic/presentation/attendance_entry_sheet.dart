@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../data/models/student_model.dart';
 import '../logic/attendance_cubit.dart';
@@ -24,7 +25,9 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
   @override
   void initState() {
     super.initState();
-    _nisController = TextEditingController(text: widget.initialStudentNis ?? '20261001');
+    _nisController = TextEditingController(
+      text: widget.initialStudentNis ?? '20261001',
+    );
   }
 
   @override
@@ -38,10 +41,10 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
     FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AttendanceCubit>().recordAttendance(
-            studentNis: _nisController.text.trim(),
-            status: _selectedStatus,
-            notes: _notesController.text.trim(),
-          );
+        studentNis: _nisController.text.trim(),
+        status: _selectedStatus,
+        notes: _notesController.text.trim(),
+      );
     }
   }
 
@@ -67,8 +70,9 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
         }
       },
       builder: (context, state) {
-        final List<StudentModel> students =
-            state is AttendanceLoaded ? state.students : const [];
+        final List<StudentModel> students = state is AttendanceLoaded
+            ? state.students
+            : const [];
 
         return Padding(
           padding: EdgeInsets.only(
@@ -124,7 +128,10 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFF64748B),
+                        ),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -150,7 +157,8 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
                         separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (context, idx) {
                           final s = students[idx];
-                          final isSelected = _nisController.text.trim() == s.nis;
+                          final isSelected =
+                              _nisController.text.trim() == s.nis;
                           return ActionChip(
                             backgroundColor: isSelected
                                 ? AppTheme.defaultPrimary.withAlpha(25)
@@ -164,7 +172,9 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
                               '${s.fullName.split(' ').first} (${s.nis})',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11.5,
-                                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
                                 color: isSelected
                                     ? AppTheme.defaultPrimary
                                     : const Color(0xFF334155),
@@ -212,13 +222,29 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      _buildStatusOption('HADIR', 'Hadir', const Color(0xFF16A34A)),
+                      _buildStatusOption(
+                        'HADIR',
+                        'Hadir',
+                        const Color(0xFF16A34A),
+                      ),
                       const SizedBox(width: 8),
-                      _buildStatusOption('IZIN', 'Izin', const Color(0xFF2563EB)),
+                      _buildStatusOption(
+                        'IZIN',
+                        'Izin',
+                        const Color(0xFF2563EB),
+                      ),
                       const SizedBox(width: 8),
-                      _buildStatusOption('SAKIT', 'Sakit', const Color(0xFFD97706)),
+                      _buildStatusOption(
+                        'SAKIT',
+                        'Sakit',
+                        const Color(0xFFD97706),
+                      ),
                       const SizedBox(width: 8),
-                      _buildStatusOption('ALPA', 'Alpa', const Color(0xFFDC2626)),
+                      _buildStatusOption(
+                        'ALPA',
+                        'Alpa',
+                        const Color(0xFFDC2626),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -241,7 +267,10 @@ class _AttendanceEntrySheetState extends State<AttendanceEntrySheet> {
                         ),
                       ),
                       onPressed: _submit,
-                      icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 18,
+                      ),
                       label: const Text('Simpan Presensi'),
                     ),
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_or_error_view.dart';
 import '../../auth/data/models/user_model.dart';
@@ -12,18 +13,19 @@ import 'widgets/attendance_check_in_card.dart';
 import 'widgets/attendance_live_clock_card.dart';
 import 'widgets/attendance_metrics_card.dart';
 import 'widgets/attendance_recent_log.dart';
-import 'widgets/attendance_teacher_roster_view.dart';
+import 'widgets/attendance_teacher_dashboard_view.dart';
 import 'widgets/attendance_weekly_calendar.dart';
 
-/// Halaman Presensi Siswa selaras 1:1 dengan Google Stitch Design ("Presensi Siswa").
-/// Mengimplementasikan arsitektur modular Bento Grid:
+/// Halaman Presensi Siswa & Guru selaras 1:1 dengan Google Stitch Design.
+/// Untuk Siswa: Google Stitch Design Canvas "Presensi Siswa"
+/// Untuk Guru: Google Stitch Design Canvas "Dashboard Presensi - Vintech School"
 /// 1. Top Header (School Emblem, Nama Sekolah & Subtitle Presensi)
 /// 2. Live Clock & Geo-Radius Status ([AttendanceLiveClockCard])
 /// 3. Status Masuk & Pulang Interaktif ([AttendanceCheckInCard])
 /// 4. Weekly Strip Mini-Calendar ([AttendanceWeeklyCalendar])
 /// 5. Attendance Metrics & Statistik Kehadiran ([AttendanceMetricsCard])
 /// 6. Riwayat Presensi Terbaru ([AttendanceRecentLog])
-/// 7. Rekap Presensi Guru & Staf ([AttendanceTeacherRosterView])
+/// 7. Dashboard Presensi Guru & Staf ([AttendanceTeacherDashboardView])
 class AttendanceScreen extends StatefulWidget {
   final UserProfileResponse profile;
   final ScrollController? scrollController;
@@ -55,7 +57,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   bool get _isStudent => widget.profile.activeSchool?.isStudent == true;
-  bool get _canRecordAttendance => widget.profile.activeSchool?.isStaffOrTeacher == true;
+  bool get _canRecordAttendance =>
+      widget.profile.activeSchool?.isStaffOrTeacher == true;
 
   Color get _schoolColor {
     final hex = widget.profile.activeSchool?.primaryColor;
@@ -72,11 +75,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     bool forceRefreshMeta = false,
   }) async {
     await context.read<AttendanceCubit>().loadAttendances(
-          classroomId: classroomId,
-          studentNis: _isStudent ? _myCleanNis : null,
-          isStaff: _canRecordAttendance,
-          forceRefreshMeta: forceRefreshMeta,
-        );
+      classroomId: classroomId,
+      studentNis: _isStudent ? _myCleanNis : null,
+      isStaff: _canRecordAttendance,
+      forceRefreshMeta: forceRefreshMeta,
+    );
   }
 
   List<AttendanceModel> _applyFilters(List<AttendanceModel> raw) {
@@ -86,14 +89,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           return false;
         }
       }
-      if (_statusFilter != 'ALL' && item.status.toUpperCase() != _statusFilter) {
+      if (_statusFilter != 'ALL' &&
+          item.status.toUpperCase() != _statusFilter) {
         return false;
       }
       final query = _searchController.text.trim().toLowerCase();
       if (query.isNotEmpty) {
         final matchName = item.studentName.toLowerCase().contains(query);
         final matchNis = item.studentNis.toLowerCase().contains(query);
-        final matchClass = (item.classroomName ?? '').toLowerCase().contains(query);
+        final matchClass = (item.classroomName ?? '').toLowerCase().contains(
+          query,
+        );
         return matchName || matchNis || matchClass;
       }
       return true;
@@ -126,7 +132,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
             return _isStudent
                 ? _buildStudentStitchView(context, state, filtered, schoolName)
-                : AttendanceTeacherRosterView(
+                : AttendanceTeacherDashboardView(
+                    profile: widget.profile,
                     allRecords: state.attendances,
                     filteredRecords: filtered,
                     searchController: _searchController,
@@ -139,6 +146,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     onSearchChanged: () {
                       setState(() {});
                     },
+                    onRefresh: () => _fetchAttendances(forceRefreshMeta: true),
                   );
           }
           return const SizedBox.shrink();
@@ -153,7 +161,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   isScrollControlled: true,
                   backgroundColor: Colors.white,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                   ),
                   builder: (_) => const AttendanceEntrySheet(),
                 );
@@ -190,7 +200,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     int alpaCount = allMyRecords.where((r) => r.status == 'ALPA').length;
 
     // Fallback realistis sesuai Stitch jika data API baru
-    if (hadirCount == 0 && izinCount == 0 && sakitCount == 0 && alpaCount == 0) {
+    if (hadirCount == 0 &&
+        izinCount == 0 &&
+        sakitCount == 0 &&
+        alpaCount == 0) {
       hadirCount = 18;
       izinCount = 1;
       sakitCount = 0;
@@ -198,7 +211,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
 
     final int totalRecorded = hadirCount + izinCount + sakitCount + alpaCount;
-    final double disciplineRate = totalRecorded > 0 ? (hadirCount / totalRecorded) * 100 : 95.0;
+    final double disciplineRate = totalRecorded > 0
+        ? (hadirCount / totalRecorded) * 100
+        : 95.0;
 
     return RefreshIndicator(
       color: _schoolColor,
@@ -206,7 +221,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       child: SingleChildScrollView(
         controller: widget.scrollController,
         key: const PageStorageKey('attendance_student_scroll_view'),
-        physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        physics: const BouncingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

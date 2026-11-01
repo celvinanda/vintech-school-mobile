@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Card 4: Attendance Metrics & Ringkasan Kehadiran Bulanan (Google Stitch Design)
@@ -64,7 +64,10 @@ class AttendanceMetricsCard extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2F4F6),
                     borderRadius: BorderRadius.circular(8),
@@ -80,7 +83,11 @@ class AttendanceMetricsCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.expand_more_rounded, size: 16, color: Color(0xFF565E74)),
+                      const Icon(
+                        Icons.expand_more_rounded,
+                        size: 16,
+                        color: Color(0xFF565E74),
+                      ),
                     ],
                   ),
                 ),
@@ -169,7 +176,9 @@ class AttendanceMetricsCard extends StatelessWidget {
                 value: disciplineRate / 100,
                 minHeight: 8,
                 backgroundColor: const Color(0xFFE0E3E5),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF007D55)),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF007D55),
+                ),
               ),
             ),
           ],

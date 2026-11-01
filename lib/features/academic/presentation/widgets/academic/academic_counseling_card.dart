@@ -7,10 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AcademicCounselingCard extends StatelessWidget {
   final VoidCallback onBookTap;
 
-  const AcademicCounselingCard({
-    super.key,
-    required this.onBookTap,
-  });
+  const AcademicCounselingCard({super.key, required this.onBookTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +18,7 @@ class AcademicCounselingCard extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F172A),
-              Color(0xFF1E293B),
-            ],
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
@@ -95,7 +89,10 @@ class AcademicCounselingCard extends StatelessWidget {
                 backgroundColor: const Color(0xFF0284C7),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

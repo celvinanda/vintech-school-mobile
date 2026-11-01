@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../auth/data/models/user_model.dart';
+
 import 'package:vintech_school_mobile/features/home/presentation/widgets/top_bar/top_bar_emblem.dart';
 
 /// Top Bar Presensi Siswa & Guru Modular & Cerdas
@@ -28,7 +30,9 @@ class AttendanceTopBar extends StatelessWidget {
     final school = profile.activeSchool;
     final schoolName = school?.name ?? 'Vintech School';
     final isParent = school?.isParent == true;
-    final roleLabel = isParent ? 'Kehadiran Anak' : (isStudent ? 'Presensi Siswa' : 'Presensi Pendidik');
+    final roleLabel = isParent
+        ? 'Kehadiran Anak'
+        : (isStudent ? 'Presensi Siswa' : 'Presensi Pendidik');
 
     return RepaintBoundary(
       child: Row(

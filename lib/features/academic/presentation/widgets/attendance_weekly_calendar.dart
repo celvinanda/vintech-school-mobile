@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Card 3: Weekly Strip Mini-Calendar (Google Stitch Design)
@@ -56,7 +56,8 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List.generate(7, (index) {
                 final dayDate = monday.add(Duration(days: index));
-                final isToday = dayDate.day == now.day && dayDate.month == now.month;
+                final isToday =
+                    dayDate.day == now.day && dayDate.month == now.month;
                 final isWeekend = index >= 5;
 
                 Color dotColor;
@@ -80,7 +81,8 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
                       boxShadow: isToday
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF004AC6).withValues(alpha: 0.15),
+                                color: const Color(0xFF004AC6)
+                                    .withValues(alpha: 0.15),
                                 blurRadius: 4,
                                 offset: const Offset(0, 1),
                               ),
@@ -95,8 +97,12 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
                             dayLabels[index],
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 10.5,
-                              fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
-                              color: isToday ? const Color(0xFF00174B) : const Color(0xFF565E74),
+                              fontWeight: isToday
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isToday
+                                  ? const Color(0xFF00174B)
+                                  : const Color(0xFF565E74),
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -104,8 +110,12 @@ class AttendanceWeeklyCalendar extends StatelessWidget {
                             dayDate.day.toString().padLeft(2, '0'),
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
-                              fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-                              color: isToday ? const Color(0xFF00174B) : const Color(0xFF191C1E),
+                              fontWeight: isToday
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              color: isToday
+                                  ? const Color(0xFF00174B)
+                                  : const Color(0xFF191C1E),
                             ),
                           ),
                           const SizedBox(height: 5),

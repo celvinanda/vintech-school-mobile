@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/widgets/empty_or_error_view.dart';
 import '../../data/models/attendance_model.dart';
 
@@ -58,7 +59,10 @@ class AttendanceTeacherRosterView extends StatelessWidget {
                           },
                         )
                       : null,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   filled: true,
                   fillColor: const Color(0xFFF2F4F6),
                   border: OutlineInputBorder(
@@ -72,15 +76,35 @@ class AttendanceTeacherRosterView extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildFilterCapsule('ALL', 'Semua (${allRecords.length})', schoolColor),
+                    _buildFilterCapsule(
+                      'ALL',
+                      'Semua (${allRecords.length})',
+                      schoolColor,
+                    ),
                     const SizedBox(width: 6),
-                    _buildFilterCapsule('HADIR', 'Hadir ($hadirCount)', const Color(0xFF007D55)),
+                    _buildFilterCapsule(
+                      'HADIR',
+                      'Hadir ($hadirCount)',
+                      const Color(0xFF007D55),
+                    ),
                     const SizedBox(width: 6),
-                    _buildFilterCapsule('IZIN', 'Izin ($izinCount)', const Color(0xFF004AC6)),
+                    _buildFilterCapsule(
+                      'IZIN',
+                      'Izin ($izinCount)',
+                      const Color(0xFF004AC6),
+                    ),
                     const SizedBox(width: 6),
-                    _buildFilterCapsule('SAKIT', 'Sakit ($sakitCount)', const Color(0xFFD97706)),
+                    _buildFilterCapsule(
+                      'SAKIT',
+                      'Sakit ($sakitCount)',
+                      const Color(0xFFD97706),
+                    ),
                     const SizedBox(width: 6),
-                    _buildFilterCapsule('ALPA', 'Alpa ($alpaCount)', const Color(0xFFBA1A1A)),
+                    _buildFilterCapsule(
+                      'ALPA',
+                      'Alpa ($alpaCount)',
+                      const Color(0xFFBA1A1A),
+                    ),
                   ],
                 ),
               ),

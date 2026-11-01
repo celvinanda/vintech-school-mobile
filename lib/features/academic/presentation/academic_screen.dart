@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import 'widgets/academic/academic_counseling_card.dart';
@@ -60,77 +61,73 @@ class _AcademicScreenState extends State<AcademicScreen> {
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         color: _schoolColor,
-                child: SingleChildScrollView(
-                  controller: widget.scrollController,
-                  key: const PageStorageKey('academic_scroll_view'),
-                  physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1. Academic Hero Bento Card (IPK 88.6 & Rapor)
-                AcademicHeroCard(
-                  classroomName: 'Kelas X-IPA-1',
-                  academicPeriod: 'Semester Genap 2025/2026',
-                  gpa: 88.6,
-                  rankText: 'Ke-3 dari 36 Siswa',
-                  onReportTap: () {
-                    _showReportModal(context);
-                  },
-                ),
-                const SizedBox(height: 16),
+        child: SingleChildScrollView(
+          controller: widget.scrollController,
+          key: const PageStorageKey('academic_scroll_view'),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Academic Hero Bento Card (IPK 88.6 & Rapor)
+              AcademicHeroCard(
+                classroomName: 'Kelas X-IPA-1',
+                academicPeriod: 'Semester Genap 2025/2026',
+                gpa: 88.6,
+                rankText: 'Ke-3 dari 36 Siswa',
+                onReportTap: () {
+                  _showReportModal(context);
+                },
+              ),
+              const SizedBox(height: 16),
 
-                // 3. Category Filter Chips
-                AcademicTabChips(
-                  selectedIndex: _selectedTabIndex,
-                  onTabSelected: (index) {
-                    setState(() => _selectedTabIndex = index);
-                  },
-                  primaryColor: _schoolColor,
+              // 3. Category Filter Chips
+              AcademicTabChips(
+                selectedIndex: _selectedTabIndex,
+                onTabSelected: (index) {
+                  setState(() => _selectedTabIndex = index);
+                },
+                primaryColor: _schoolColor,
+              ),
+              const SizedBox(height: 18),
+
+              // 4. Dynamic Sections based on selected tab
+              if (_selectedTabIndex == 0) ...[
+                // All Overview / Jadwal Pelajaran
+                AcademicScheduleSection(
+                  onCalendarTap: () => _showCalendarNotice(context),
                 ),
                 const SizedBox(height: 18),
-
-                // 4. Dynamic Sections based on selected tab
-                if (_selectedTabIndex == 0) ...[
-                  // All Overview / Jadwal Pelajaran
-                  AcademicScheduleSection(
-                    onCalendarTap: () => _showCalendarNotice(context),
-                  ),
-                  const SizedBox(height: 18),
-                  AcademicTasksSection(
-                    onViewAllTap: () => setState(() => _selectedTabIndex = 1),
-                  ),
-                  const SizedBox(height: 18),
-                  AcademicSubjectsGrid(
-                    onViewAllTap: () => setState(() => _selectedTabIndex = 2),
-                  ),
-                ] else if (_selectedTabIndex == 1) ...[
-                  // Tugas & PR
-                  AcademicTasksSection(
-                    onViewAllTap: () {},
-                  ),
-                ] else if (_selectedTabIndex == 2) ...[
-                  // Nilai & Ujian
-                  AcademicSubjectsGrid(
-                    onViewAllTap: () {},
-                  ),
-                ] else if (_selectedTabIndex == 3) ...[
-                  // Materi / Modul
-                  AcademicSubjectsGrid(
-                    onViewAllTap: () {},
-                  ),
-                ],
-                const SizedBox(height: 18),
-
-                // 5. Bimbingan Konseling (BK) Card
-                AcademicCounselingCard(
-                  onBookTap: () => _showCounselingBookingModal(context),
+                AcademicTasksSection(
+                  onViewAllTap: () => setState(() => _selectedTabIndex = 1),
                 ),
+                const SizedBox(height: 18),
+                AcademicSubjectsGrid(
+                  onViewAllTap: () => setState(() => _selectedTabIndex = 2),
+                ),
+              ] else if (_selectedTabIndex == 1) ...[
+                // Tugas & PR
+                AcademicTasksSection(onViewAllTap: () {}),
+              ] else if (_selectedTabIndex == 2) ...[
+                // Nilai & Ujian
+                AcademicSubjectsGrid(onViewAllTap: () {}),
+              ] else if (_selectedTabIndex == 3) ...[
+                // Materi / Modul
+                AcademicSubjectsGrid(onViewAllTap: () {}),
               ],
-            ),
+              const SizedBox(height: 18),
+
+              // 5. Bimbingan Konseling (BK) Card
+              AcademicCounselingCard(
+                onBookTap: () => _showCounselingBookingModal(context),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 
   void _showReportModal(BuildContext context) {
@@ -161,7 +158,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
             const SizedBox(height: 18),
             Row(
               children: [
-                const Icon(Icons.verified_rounded, color: Color(0xFF007D55), size: 24),
+                const Icon(
+                  Icons.verified_rounded,
+                  color: Color(0xFF007D55),
+                  size: 24,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Rapor Digital Resmi',
@@ -191,7 +192,10 @@ class _AcademicScreenState extends State<AcademicScreen> {
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.picture_as_pdf_rounded, color: Color(0xFF2563EB)),
+                child: const Icon(
+                  Icons.picture_as_pdf_rounded,
+                  color: Color(0xFF2563EB),
+                ),
               ),
               title: Text(
                 'Rapor_Semester_Ganjil_2025.pdf',
@@ -205,7 +209,10 @@ class _AcademicScreenState extends State<AcademicScreen> {
                 style: GoogleFonts.plusJakartaSans(fontSize: 11.5),
               ),
               trailing: IconButton(
-                icon: const Icon(Icons.download_rounded, color: Color(0xFF003366)),
+                icon: const Icon(
+                  Icons.download_rounded,
+                  color: Color(0xFF003366),
+                ),
                 onPressed: () {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -261,7 +268,11 @@ class _AcademicScreenState extends State<AcademicScreen> {
             const SizedBox(height: 18),
             Row(
               children: [
-                const Icon(Icons.support_agent_rounded, color: Color(0xFF0284C7), size: 24),
+                const Icon(
+                  Icons.support_agent_rounded,
+                  color: Color(0xFF0284C7),
+                  size: 24,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Janji Temu Konseling (BK)',
@@ -291,7 +302,9 @@ class _AcademicScreenState extends State<AcademicScreen> {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('✓ Permintaan janji temu BK berhasil dikirim.'),
+                      content: Text(
+                        '✓ Permintaan janji temu BK berhasil dikirim.',
+                      ),
                       backgroundColor: Color(0xFF007D55),
                     ),
                   );

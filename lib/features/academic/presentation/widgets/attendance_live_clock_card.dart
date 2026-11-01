@@ -1,4 +1,5 @@
-﻿import 'dart:async';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,13 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 class AttendanceLiveClockCard extends StatefulWidget {
   final String schoolName;
 
-  const AttendanceLiveClockCard({
-    super.key,
-    required this.schoolName,
-  });
+  const AttendanceLiveClockCard({super.key, required this.schoolName});
 
   @override
-  State<AttendanceLiveClockCard> createState() => _AttendanceLiveClockCardState();
+  State<AttendanceLiveClockCard> createState() =>
+      _AttendanceLiveClockCardState();
 }
 
 class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
@@ -39,7 +38,15 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
   }
 
   String _formatLiveDate(DateTime dt) {
-    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const days = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
     const months = [
       'Januari',
       'Februari',
@@ -52,7 +59,7 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
       'September',
       'Oktober',
       'November',
-      'Desember'
+      'Desember',
     ];
     final dayName = days[dt.weekday - 1];
     final monthName = months[dt.month - 1];
@@ -110,7 +117,10 @@ class _AttendanceLiveClockCardState extends State<AttendanceLiveClockCard> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 3.5,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF007D55).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),

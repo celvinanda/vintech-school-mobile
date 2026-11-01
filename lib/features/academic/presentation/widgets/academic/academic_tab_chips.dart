@@ -18,7 +18,11 @@ class AcademicTabChips extends StatelessWidget {
 
   static const List<_TabItem> _tabs = [
     _TabItem(title: 'Jadwal Pelajaran', icon: Icons.schedule_rounded),
-    _TabItem(title: 'Tugas & PR', icon: Icons.assignment_outlined, badgeCount: 3),
+    _TabItem(
+      title: 'Tugas & PR',
+      icon: Icons.assignment_outlined,
+      badgeCount: 3,
+    ),
     _TabItem(title: 'Nilai & Ujian', icon: Icons.insights_rounded),
     _TabItem(title: 'Materi / Modul', icon: Icons.auto_stories_outlined),
   ];
@@ -48,12 +52,17 @@ class AcademicTabChips extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? primaryColor : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: isSelected ? primaryColor : const Color(0xFFE2E8F0),
+                      color: isSelected
+                          ? primaryColor
+                          : const Color(0xFFE2E8F0),
                       width: 1,
                     ),
                     boxShadow: isSelected
@@ -72,23 +81,34 @@ class AcademicTabChips extends StatelessWidget {
                       Icon(
                         tab.icon,
                         size: 16,
-                        color: isSelected ? Colors.white : const Color(0xFF64748B),
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF64748B),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         tab.title,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12.5,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFF475569),
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF475569),
                         ),
                       ),
                       if (tab.badgeCount != null) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 1.5,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.white : const Color(0xFFEF4444),
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFFEF4444),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -118,9 +138,5 @@ class _TabItem {
   final IconData icon;
   final int? badgeCount;
 
-  const _TabItem({
-    required this.title,
-    required this.icon,
-    this.badgeCount,
-  });
+  const _TabItem({required this.title, required this.icon, this.badgeCount});
 }

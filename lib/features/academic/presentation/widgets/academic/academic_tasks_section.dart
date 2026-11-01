@@ -7,10 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AcademicTasksSection extends StatelessWidget {
   final VoidCallback onViewAllTap;
 
-  const AcademicTasksSection({
-    super.key,
-    required this.onViewAllTap,
-  });
+  const AcademicTasksSection({super.key, required this.onViewAllTap});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +31,10 @@ class AcademicTasksSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF2F2),
                       borderRadius: BorderRadius.circular(10),
@@ -58,7 +58,10 @@ class AcademicTasksSection extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -99,7 +102,9 @@ class AcademicTasksSection extends StatelessWidget {
             onAction: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Membuka lembar pengumpulan tugas Fisika Terapan...'),
+                  content: Text(
+                    'Membuka lembar pengumpulan tugas Fisika Terapan...',
+                  ),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -121,7 +126,9 @@ class AcademicTasksSection extends StatelessWidget {
             onAction: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Mengunduh kisi-kisi PTS Matematika Peminatan...'),
+                  content: Text(
+                    'Mengunduh kisi-kisi PTS Matematika Peminatan...',
+                  ),
                   duration: Duration(seconds: 2),
                 ),
               );
@@ -197,7 +204,10 @@ class AcademicTasksSection extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2.5,
+                ),
                 decoration: BoxDecoration(
                   color: chipBg,
                   borderRadius: BorderRadius.circular(10),
@@ -232,7 +242,11 @@ class AcademicTasksSection extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.event_outlined, size: 13, color: Color(0xFF64748B)),
+              const Icon(
+                Icons.event_outlined,
+                size: 13,
+                color: Color(0xFF64748B),
+              ),
               const SizedBox(width: 4),
               Text(
                 'Tenggat: $deadline',
@@ -275,7 +289,9 @@ class AcademicTasksSection extends StatelessWidget {
               value: progress,
               minHeight: 6,
               backgroundColor: const Color(0xFFE2E8F0),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF007D55)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF007D55),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -300,7 +316,9 @@ class AcademicTasksSection extends StatelessWidget {
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFF003366), width: 1.2),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
@@ -378,7 +396,11 @@ class AcademicTasksSection extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.event_outlined, size: 13, color: Color(0xFF64748B)),
+              const Icon(
+                Icons.event_outlined,
+                size: 13,
+                color: Color(0xFF64748B),
+              ),
               const SizedBox(width: 4),
               Text(
                 deadline,

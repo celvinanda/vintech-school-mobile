@@ -7,10 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AcademicSubjectsGrid extends StatelessWidget {
   final VoidCallback onViewAllTap;
 
-  const AcademicSubjectsGrid({
-    super.key,
-    required this.onViewAllTap,
-  });
+  const AcademicSubjectsGrid({super.key, required this.onViewAllTap});
 
   static const List<_SubjectItem> _subjects = [
     _SubjectItem(
@@ -76,7 +73,10 @@ class AcademicSubjectsGrid extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -160,7 +160,10 @@ class AcademicSubjectsGrid extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 1.5,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(6),

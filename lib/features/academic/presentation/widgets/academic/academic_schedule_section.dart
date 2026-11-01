@@ -7,10 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AcademicScheduleSection extends StatelessWidget {
   final VoidCallback onCalendarTap;
 
-  const AcademicScheduleSection({
-    super.key,
-    required this.onCalendarTap,
-  });
+  const AcademicScheduleSection({super.key, required this.onCalendarTap});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +61,10 @@ class AcademicScheduleSection extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -168,13 +168,13 @@ class AcademicScheduleSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Left color accent bar
-              Container(
-                width: 5,
-                color: accentColor,
-              ),
+              Container(width: 5, color: accentColor),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -187,7 +187,9 @@ class AcademicScheduleSection extends StatelessWidget {
                               Icon(
                                 Icons.access_time_rounded,
                                 size: 14,
-                                color: isCurrent ? accentColor : const Color(0xFF64748B),
+                                color: isCurrent
+                                    ? accentColor
+                                    : const Color(0xFF64748B),
                               ),
                               const SizedBox(width: 5),
                               Text(
@@ -195,13 +197,18 @@ class AcademicScheduleSection extends StatelessWidget {
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: isCurrent ? accentColor : const Color(0xFF475569),
+                                  color: isCurrent
+                                      ? accentColor
+                                      : const Color(0xFF475569),
                                 ),
                               ),
                             ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: statusBgColor,
                               borderRadius: BorderRadius.circular(12),
@@ -269,11 +276,16 @@ class AcademicScheduleSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(
+                                color: const Color(0xFFE2E8F0),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,

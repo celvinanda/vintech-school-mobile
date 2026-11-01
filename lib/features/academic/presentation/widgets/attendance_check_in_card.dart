@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -77,9 +77,13 @@ class AttendanceCheckInCard extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6.5,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF007D55).withValues(alpha: 0.12),
+                                color: const Color(0xFF007D55)
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -158,7 +162,10 @@ class AttendanceCheckInCard extends StatelessWidget {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6.5,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE0E3E5),
                                 borderRadius: BorderRadius.circular(12),
@@ -257,7 +264,11 @@ class AttendanceCheckInCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                icon: const Icon(Icons.note_alt_rounded, size: 18, color: Color(0xFF565E74)),
+                icon: const Icon(
+                  Icons.note_alt_rounded,
+                  size: 18,
+                  color: Color(0xFF565E74),
+                ),
                 label: Text(
                   'Ajukan Izin atau Sakit',
                   style: GoogleFonts.plusJakartaSans(
@@ -328,7 +339,9 @@ class AttendanceCheckInCard extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF004AC6),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text('OK, Mengerti'),
                 ),
@@ -350,7 +363,12 @@ class AttendanceCheckInCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,7 +410,11 @@ class AttendanceCheckInCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 20, color: Color(0xFF004AC6)),
+                  const Icon(
+                    Icons.info_outline_rounded,
+                    size: 20,
+                    color: Color(0xFF004AC6),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -423,7 +445,9 @@ class AttendanceCheckInCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF004AC6),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: const Text('Lanjutkan Pengisian'),
               ),

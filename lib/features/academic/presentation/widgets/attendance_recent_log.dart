@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../data/models/attendance_model.dart';
 
 /// Card 5: Recent Attendance Log / Riwayat Presensi Terbaru (Google Stitch Design)
@@ -7,10 +8,7 @@ import '../../data/models/attendance_model.dart';
 class AttendanceRecentLog extends StatelessWidget {
   final List<AttendanceModel> personalRecords;
 
-  const AttendanceRecentLog({
-    super.key,
-    required this.personalRecords,
-  });
+  const AttendanceRecentLog({super.key, required this.personalRecords});
 
   @override
   Widget build(BuildContext context) {
@@ -43,30 +41,38 @@ class AttendanceRecentLog extends StatelessWidget {
 
           // List of recent items
           if (personalRecords.isNotEmpty)
-            ...personalRecords.map((item) => _RecentItemTile(
-                  dayDate: item.date,
-                  statusBadge: item.statusDisplay,
-                  statusColor: item.status == 'HADIR'
-                      ? const Color(0xFF007D55)
-                      : (item.status == 'IZIN'
+            ...personalRecords.map(
+              (item) => _RecentItemTile(
+                dayDate: item.date,
+                statusBadge: item.statusDisplay,
+                statusColor: item.status == 'HADIR'
+                    ? const Color(0xFF007D55)
+                    : (item.status == 'IZIN'
                           ? const Color(0xFF004AC6)
-                          : (item.status == 'SAKIT' ? const Color(0xFFD97706) : const Color(0xFFBA1A1A))),
-                  statusBg: item.status == 'HADIR'
-                      ? const Color(0xFF007D55).withValues(alpha: 0.12)
-                      : (item.status == 'IZIN'
+                          : (item.status == 'SAKIT'
+                                ? const Color(0xFFD97706)
+                                : const Color(0xFFBA1A1A))),
+                statusBg: item.status == 'HADIR'
+                    ? const Color(0xFF007D55).withValues(alpha: 0.12)
+                    : (item.status == 'IZIN'
                           ? const Color(0xFF004AC6).withValues(alpha: 0.10)
                           : (item.status == 'SAKIT'
-                              ? const Color(0xFFD97706).withValues(alpha: 0.12)
-                              : const Color(0xFFBA1A1A).withValues(alpha: 0.10))),
-                  details: item.notes.isNotEmpty ? item.notes : 'Presensi tercatat di sistem',
-                  icon: item.status == 'HADIR'
-                      ? Icons.check_rounded
-                      : (item.status == 'IZIN'
+                                ? const Color(0xFFD97706)
+                                      .withValues(alpha: 0.12)
+                                : const Color(0xFFBA1A1A)
+                                      .withValues(alpha: 0.10))),
+                details: item.notes.isNotEmpty
+                    ? item.notes
+                    : 'Presensi tercatat di sistem',
+                icon: item.status == 'HADIR'
+                    ? Icons.check_rounded
+                    : (item.status == 'IZIN'
                           ? Icons.info_outline_rounded
                           : (item.status == 'SAKIT'
-                              ? Icons.healing_rounded
-                              : Icons.cancel_outlined)),
-                ))
+                                ? Icons.healing_rounded
+                                : Icons.cancel_outlined)),
+              ),
+            )
           else ...[
             // Stitch Default Item 1: Hari Ini
             const _RecentItemTile(
@@ -153,10 +159,7 @@ class _RecentItemTile extends StatelessWidget {
           Container(
             width: 38,
             height: 38,
-            decoration: BoxDecoration(
-              color: statusBg,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: statusBg, shape: BoxShape.circle),
             child: Icon(icon, color: statusColor, size: 19),
           ),
           const SizedBox(width: 12),
@@ -176,7 +179,10 @@ class _RecentItemTile extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2.5,
+                      ),
                       decoration: BoxDecoration(
                         color: statusBg,
                         borderRadius: BorderRadius.circular(6),

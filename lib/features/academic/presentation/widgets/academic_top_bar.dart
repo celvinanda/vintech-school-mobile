@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vintech_school_mobile/features/home/presentation/widgets/top_bar/top_bar_emblem.dart';
+
 import '../../../auth/data/models/user_model.dart';
 
 /// Top Bar Akademik Modular & Cerdas
@@ -98,11 +99,7 @@ class AcademicTopBar extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.star_rounded,
-                  size: 13,
-                  color: schoolColor,
-                ),
+                Icon(Icons.star_rounded, size: 13, color: schoolColor),
                 const SizedBox(width: 3),
                 Text(
                   '$gpa',

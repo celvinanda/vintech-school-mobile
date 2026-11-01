@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -97,9 +97,13 @@ class AcademicHeroCard extends StatelessWidget {
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 3.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF004AC6).withValues(alpha: 0.10),
+                          color: const Color(0xFF004AC6)
+                              .withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -147,9 +151,13 @@ class AcademicHeroCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2.5,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF007D55).withValues(alpha: 0.12),
+                                  color: const Color(0xFF007D55)
+                                      .withValues(alpha: 0.12),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -199,7 +207,10 @@ class AcademicHeroCard extends StatelessWidget {
 
                   // Peringkat Kelas Banner
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF2F4F6),
                       borderRadius: BorderRadius.circular(12),
