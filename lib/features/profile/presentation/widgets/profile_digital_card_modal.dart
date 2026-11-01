@@ -19,11 +19,19 @@ class ProfileDigitalCardModal extends StatelessWidget {
   });
 
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
+  bool get _isParent => profile.activeSchool?.isParent == true;
   String get _schoolName => (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA').toUpperCase();
-  String get _nis => profile.user.cleanIdentifier;
-  String get _nisn => student?.nisn ?? (profile.activeSchool?.isStudent == true ? '0081234501' : '-');
-  String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
-  String get _cardTitle => profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL';
+  String get _nis => _isParent
+      ? (student?.nis ?? profile.primaryChild?.nis ?? profile.user.cleanIdentifier)
+      : profile.user.cleanIdentifier;
+  String get _nisn => student?.nisn ?? (profile.activeSchool?.isStudent == true ? '0081234501' : (_isParent ? (profile.primaryChild?.nisn ?? '-') : '-'));
+  String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? (_isParent ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat') : 'Kelas X-IPA-1');
+  String get _cardTitle => _isParent
+      ? 'KARTU PELAJAR DIGITAL (ANAK TERIKAT)'
+      : (profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL');
+  String get _studentFullName => _isParent
+      ? (student?.fullName ?? profile.primaryChild?.fullName ?? profile.user.fullName)
+      : profile.user.fullName;
 
   String get _initials {
     final name = profile.user.fullName.trim();
@@ -155,7 +163,7 @@ class ProfileDigitalCardModal extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     Text(
-                      profile.user.fullName,
+                      _studentFullName,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,

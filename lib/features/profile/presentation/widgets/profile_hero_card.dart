@@ -263,8 +263,152 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                     ),
                     const SizedBox(height: 14),
 
-                    // 2-Column ID Info Box
-                    Container(
+                    if (_isParent) ...[
+                      // Linked Child Card Container (Stitch Design)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: widget.schoolColor.withValues(alpha: 0.12),
+                                    border: Border.all(
+                                      color: widget.schoolColor.withValues(alpha: 0.25),
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.school_rounded,
+                                      color: widget.schoolColor,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Siswa Terikat (Anak Anda)',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        widget.student?.fullName ??
+                                            widget.profile.primaryChild?.fullName ??
+                                            'Aditya Pratama',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF0F172A),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: widget.schoolColor.withValues(alpha: 0.10),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    _classroomName,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: widget.schoolColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'NIS: ',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    Text(
+                                      _nis,
+                                      style: GoogleFonts.jetBrainsMono(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    InkWell(
+                                      onTap: _copyNis,
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(2),
+                                        child: Icon(
+                                          _isNisCopied ? Icons.check_rounded : Icons.copy_rounded,
+                                          size: 13,
+                                          color: _isNisCopied
+                                              ? const Color(0xFF007D55)
+                                              : const Color(0xFF94A3B8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'NISN: ',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 11,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    Text(
+                                      _nisn,
+                                      style: GoogleFonts.jetBrainsMono(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      // 2-Column ID Info Box (Standard Student / Teacher)
+                      Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
@@ -347,6 +491,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                         ],
                       ),
                     ),
+                    ],
                     const SizedBox(height: 14),
 
                     // Dual Action Buttons
@@ -360,7 +505,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                             },
                             icon: const Icon(Icons.badge_rounded, size: 17),
                             label: Text(
-                              _isStaffOrTeacher ? 'Kartu ID Pegawai Digital' : 'Kartu Pelajar Digital',
+                              _isParent ? 'Lihat Kartu Pelajar Anak' : (_isStaffOrTeacher ? 'Kartu ID Pegawai Digital' : 'Kartu Pelajar Digital'),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w700,

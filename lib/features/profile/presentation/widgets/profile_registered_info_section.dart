@@ -28,13 +28,18 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   });
 
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
+  bool get _isParent => profile.activeSchool?.isParent == true;
   String get _classroomName => student?.classroomName ?? profile.activeSchool?.classroomName ?? 'X-IPA-1';
   String get _effectiveParentName => student?.parentName ?? parentName;
   String get _effectiveParentPhone => student?.parentPhone ?? parentPhone;
 
   Future<void> _launchWa(BuildContext context) async {
     HapticFeedback.lightImpact();
-    final uri = Uri.parse('https://wa.me/$homeroomTeacherPhone?text=Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.');
+    final childName = student?.fullName ?? profile.primaryChild?.fullName ?? 'Aditya';
+    final greeting = _isParent
+        ? 'Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
+        : 'Halo%20Ibu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.';
+    final uri = Uri.parse('https://wa.me/$homeroomTeacherPhone?text=$greeting');
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -72,7 +77,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Informasi Terdaftar',
+            _isParent ? 'Saluran Komunikasi Sekolah' : 'Informasi Terdaftar',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -125,7 +130,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isStaffOrTeacher ? 'Kepala Sekolah / Pimpinan' : 'Wali Kelas ($_classroomName)',
+                              _isStaffOrTeacher ? 'Kepala Sekolah / Pimpinan' : (_isParent ? 'Wali Kelas Anak ($_classroomName)' : 'Wali Kelas ($_classroomName)'),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w500,
@@ -182,7 +187,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // 2. Orang Tua / TU Cardlet
+                // 2. Orang Tua / BK / TU Cardlet
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -194,13 +199,19 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 19,
-                        backgroundColor: const Color(0xFFE2E8F0),
+                        backgroundColor: _isParent
+                            ? const Color(0xFFFEF3C7)
+                            : const Color(0xFFE2E8F0),
                         child: Text(
-                          _isStaffOrTeacher ? 'TU' : 'OT',
+                          _isStaffOrTeacher
+                              ? 'TU'
+                              : (_isParent ? 'BK' : 'OT'),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
-                            color: const Color(0xFF475569),
+                            color: _isParent
+                                ? const Color(0xFFD97706)
+                                : const Color(0xFF475569),
                           ),
                         ),
                       ),
@@ -210,7 +221,11 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _isStaffOrTeacher ? 'Layanan Tata Usaha & SDM' : 'Orang Tua / Wali Siswa',
+                              _isStaffOrTeacher
+                                  ? 'Layanan Tata Usaha & SDM'
+                                  : (_isParent
+                                      ? 'Bimbingan Konseling (BK)'
+                                      : 'Orang Tua / Wali Siswa'),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w500,
@@ -219,7 +234,11 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                             ),
                             const SizedBox(height: 1),
                             Text(
-                              _isStaffOrTeacher ? 'Kantor Tata Usaha SMAN 1' : _effectiveParentName,
+                              _isStaffOrTeacher
+                                  ? 'Kantor Tata Usaha SMAN 1'
+                                  : (_isParent
+                                      ? 'Bpk. Hendra, S.Psi'
+                                      : _effectiveParentName),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -229,7 +248,11 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              _isStaffOrTeacher ? '021-3456789' : _effectiveParentPhone,
+                              _isStaffOrTeacher
+                                  ? '021-3456789'
+                                  : (_isParent
+                                      ? 'Konsultasi Perkembangan Siswa'
+                                      : _effectiveParentPhone),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 color: const Color(0xFF64748B),
@@ -239,30 +262,44 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         ),
                       ),
                       InkWell(
-                        onTap: () => _launchParentCall(context),
+                        onTap: () {
+                          if (_isParent) {
+                            HapticFeedback.lightImpact();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Membuka kontak konseling Guru BK via WhatsApp...'),
+                                backgroundColor: Color(0xFF007D55),
+                              ),
+                            );
+                          } else {
+                            _launchParentCall(context);
+                          }
+                        },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEFF6FF),
+                            color: _isParent ? const Color(0xFFFFFBEB) : const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                            border: Border.all(
+                              color: _isParent ? const Color(0xFFFDE68A) : const Color(0xFFBFDBFE),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.call_rounded,
+                              Icon(
+                                _isParent ? Icons.support_agent_rounded : Icons.call_rounded,
                                 size: 13,
-                                color: Color(0xFF004AC6),
+                                color: _isParent ? const Color(0xFFD97706) : const Color(0xFF004AC6),
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Hubungi',
+                                _isParent ? 'Konsultasi' : 'Hubungi',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF004AC6),
+                                  color: _isParent ? const Color(0xFFD97706) : const Color(0xFF004AC6),
                                 ),
                               ),
                             ],
@@ -290,7 +327,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                 // 4. Nomor Telepon / WA Siswa
                 _buildInfoTile(
                   icon: Icons.phone_android_rounded,
-                  label: 'Nomor Telepon / WhatsApp',
+                  label: _isParent ? 'Nomor HP Orang Tua Terdaftar' : 'Nomor Telepon / WhatsApp',
                   value: profile.user.phone.isNotEmpty
                       ? profile.user.phone
                       : '+62 812-3456-7890',

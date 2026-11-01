@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 18),
             Text(
-              'Bagikan QR Profil Siswa',
+              profile.activeSchool?.isParent == true ? 'Bagikan QR Profil Wali Murid' : 'Bagikan QR Profil Siswa',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -119,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Pindai QR ini untuk verifikasi absensi atau gerbang perpustakaan sekolah.',
+              profile.activeSchool?.isParent == true ? 'Pindai QR ini untuk verifikasi saat penjemputan siswa atau kunjungan wali murid.' : 'Pindai QR ini untuk verifikasi absensi atau gerbang perpustakaan sekolah.',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: const Color(0xFF64748B),
@@ -338,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
 
               // 5. Academic Files & Documents
-              const ProfileAcademicServicesSection(),
+              ProfileAcademicServicesSection(isParent: profile.activeSchool?.isParent == true),
               const SizedBox(height: 16),
 
               // 6. Switch School (if multi-school membership)
@@ -370,7 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () => _confirmLogout(context),
                   icon: const Icon(Icons.logout_rounded, size: 18),
                   label: Text(
-                    'Keluar dari Akun',
+                    profile.activeSchool?.isParent == true ? 'Keluar dari Akun Wali Murid' : 'Keluar dari Akun',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
