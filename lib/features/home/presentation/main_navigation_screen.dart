@@ -43,13 +43,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   // agar TIDAK memicu setState() ataupun me-rebuild widget tree utama saat user scrolling.
   final ValueNotifier<bool> _isNavBarVisible = ValueNotifier<bool>(true);
   BackgroundSyncService? _bgSyncService;
-  late final List<ScrollController> _scrollControllers;
+  late List<ScrollController> _scrollControllers;
   late List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    _scrollControllers = List.generate(5, (_) => ScrollController());
+    _scrollControllers = List.generate(_tabCount, (_) => ScrollController());
     _buildPages();
 
     // Load home dashboard (0ms Hive + Background Cloud Sync)
@@ -94,91 +94,158 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   /// Menggunakan strategi Deferred First-Mount: Hanya memuat Tab 0 pada startup.
   /// Tab 1-4 hanya dimuat saat pertama kali dikunjungi dan di-cache permanen di GPU memory.
   void _buildPages() {
-    _pages = [
-      RepaintBoundary(
-        child: _isStaffOrTeacher
-            ? TeacherDashboardView(
-                profile: widget.profile,
-                scrollController: _scrollControllers[0],
-                onNavigateTab: _handleTabTap,
+    if (_isParent) {
+      // Sajian 4-Tab Khusus Orang Tua: [0: Beranda, 1: Presensi, 2: Tagihan SPP, 3: Profil]
+      _pages = [
+        RepaintBoundary(
+          child: StudentDashboardView(
+            profile: widget.profile,
+            scrollController: _scrollControllers[0],
+            onNavigateTab: _handleTabTap,
+          ),
+        ),
+        _activatedTabs.contains(1)
+            ? RepaintBoundary(
+                child: AttendanceScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[1],
+                ),
               )
-            : StudentDashboardView(
-                profile: widget.profile,
-                scrollController: _scrollControllers[0],
-                onNavigateTab: _handleTabTap,
-              ),
-      ),
-      _activatedTabs.contains(1)
-          ? RepaintBoundary(
-              child: AttendanceScreen(
-                profile: widget.profile,
-                scrollController: _scrollControllers[1],
-              ),
-            )
-          : const SizedBox.shrink(),
-      _activatedTabs.contains(2)
-          ? RepaintBoundary(
-              child: AcademicScreen(
-                profile: widget.profile,
-                scrollController: _scrollControllers[2],
-              ),
-            )
-          : const SizedBox.shrink(),
-      _activatedTabs.contains(3)
-          ? RepaintBoundary(
-              child: BillingScreen(
-                profile: widget.profile,
-                scrollController: _scrollControllers[3],
-              ),
-            )
-          : const SizedBox.shrink(),
-      _activatedTabs.contains(4)
-          ? RepaintBoundary(
-              child: ProfileScreen(
-                profile: widget.profile,
-                scrollController: _scrollControllers[4],
-              ),
-            )
-          : const SizedBox.shrink(),
-    ];
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(2)
+            ? RepaintBoundary(
+                child: BillingScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[2],
+                ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(3)
+            ? RepaintBoundary(
+                child: ProfileScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[3],
+                ),
+              )
+            : const SizedBox.shrink(),
+      ];
+    } else {
+      // Sajian 5-Tab Standar Siswa / Guru: [0: Beranda, 1: Presensi, 2: Akademik, 3: Tagihan SPP, 4: Profil]
+      _pages = [
+        RepaintBoundary(
+          child: _isStaffOrTeacher
+              ? TeacherDashboardView(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[0],
+                  onNavigateTab: _handleTabTap,
+                )
+              : StudentDashboardView(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[0],
+                  onNavigateTab: _handleTabTap,
+                ),
+        ),
+        _activatedTabs.contains(1)
+            ? RepaintBoundary(
+                child: AttendanceScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[1],
+                ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(2)
+            ? RepaintBoundary(
+                child: AcademicScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[2],
+                ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(3)
+            ? RepaintBoundary(
+                child: BillingScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[3],
+                ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(4)
+            ? RepaintBoundary(
+                child: ProfileScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[4],
+                ),
+              )
+            : const SizedBox.shrink(),
+      ];
+    }
   }
 
   void _activateTab(int index) {
     if (!_activatedTabs.contains(index)) {
       _activatedTabs.add(index);
-      switch (index) {
-        case 1:
-          _pages[1] = RepaintBoundary(
-            child: AttendanceScreen(
-              profile: widget.profile,
-              scrollController: _scrollControllers[1],
-            ),
-          );
-          break;
-        case 2:
-          _pages[2] = RepaintBoundary(
-            child: AcademicScreen(
-              profile: widget.profile,
-              scrollController: _scrollControllers[2],
-            ),
-          );
-          break;
-        case 3:
-          _pages[3] = RepaintBoundary(
-            child: BillingScreen(
-              profile: widget.profile,
-              scrollController: _scrollControllers[3],
-            ),
-          );
-          break;
-        case 4:
-          _pages[4] = RepaintBoundary(
-            child: ProfileScreen(
-              profile: widget.profile,
-              scrollController: _scrollControllers[4],
-            ),
-          );
-          break;
+      if (_isParent) {
+        switch (index) {
+          case 1:
+            _pages[1] = RepaintBoundary(
+              child: AttendanceScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[1],
+              ),
+            );
+            break;
+          case 2:
+            _pages[2] = RepaintBoundary(
+              child: BillingScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[2],
+              ),
+            );
+            break;
+          case 3:
+            _pages[3] = RepaintBoundary(
+              child: ProfileScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[3],
+              ),
+            );
+            break;
+        }
+      } else {
+        switch (index) {
+          case 1:
+            _pages[1] = RepaintBoundary(
+              child: AttendanceScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[1],
+              ),
+            );
+            break;
+          case 2:
+            _pages[2] = RepaintBoundary(
+              child: AcademicScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[2],
+              ),
+            );
+            break;
+          case 3:
+            _pages[3] = RepaintBoundary(
+              child: BillingScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[3],
+              ),
+            );
+            break;
+          case 4:
+            _pages[4] = RepaintBoundary(
+              child: ProfileScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[4],
+              ),
+            );
+            break;
+        }
       }
     }
   }
@@ -187,6 +254,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   void didUpdateWidget(MainNavigationScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.profile != oldWidget.profile) {
+      if (_scrollControllers.length != _tabCount) {
+        for (final controller in _scrollControllers) {
+          controller.dispose();
+        }
+        _scrollControllers = List.generate(_tabCount, (_) => ScrollController());
+      }
+      if (_currentIndex >= _tabCount) {
+        _currentIndex = 0;
+      }
       _buildPages();
     }
   }
@@ -204,17 +280,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
 
   bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
+  bool get _isParent => widget.profile.activeSchool?.isParent == true;
+  int get _tabCount => _isParent ? 4 : 5;
 
   /// Smart Reselect & Tab Switching:
   /// - Jika tab lain ditekan: Aktifkan tab (jika belum pernah dibuka), pindah tab & tampilkan bar navigasi.
   /// - Jika tab yang sedang aktif ditekan kembali: Memicu animasi smooth Scroll-to-Top!
   void _handleTabTap(int index) {
-    if (index == _currentIndex) {
-      _scrollToTop(index);
+    int targetIndex = index;
+    // Pemetaan tab jika akun Orang Tua memicu navigasi dari kartu dashboard:
+    // Tab 3 (SPP) dipetakan ke Tab 2 pada 4-tab bar
+    // Tab 4 (Profil) dipetakan ke Tab 3 pada 4-tab bar
+    if (_isParent) {
+      if (index == 3) {
+        targetIndex = 2;
+      } else if (index == 4) {
+        targetIndex = 3;
+      } else if (targetIndex >= 4) {
+        targetIndex = 3;
+      }
+    }
+
+    if (targetIndex == _currentIndex) {
+      _scrollToTop(targetIndex);
     } else {
-      _activateTab(index);
+      _activateTab(targetIndex);
       setState(() {
-        _currentIndex = index;
+        _currentIndex = targetIndex;
       });
       _isNavBarVisible.value = true;
     }
@@ -399,6 +491,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 onTap: _handleTabTap,
                 schoolColor: _schoolColor,
                 isStaffOrTeacher: _isStaffOrTeacher,
+                isParent: _isParent,
                 pendingOutboxCount: pendingOutbox,
                 unpaidInvoiceCount: unpaidInvoiceCount,
                 isFloating: true,

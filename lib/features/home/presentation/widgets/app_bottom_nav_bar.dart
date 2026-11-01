@@ -14,6 +14,7 @@ class AppBottomNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
   final Color schoolColor;
   final bool isStaffOrTeacher;
+  final bool isParent;
   final int pendingOutboxCount;
   final int unpaidInvoiceCount;
   final bool isFloating;
@@ -24,6 +25,7 @@ class AppBottomNavBar extends StatelessWidget {
     required this.onTap,
     required this.schoolColor,
     this.isStaffOrTeacher = false,
+    this.isParent = false,
     this.pendingOutboxCount = 0,
     this.unpaidInvoiceCount = 0,
     this.isFloating = true,
@@ -63,7 +65,8 @@ class AppBottomNavBar extends StatelessWidget {
           return LayoutBuilder(
             builder: (context, constraints) {
               final barWidth = constraints.maxWidth;
-              final tabWidth = barWidth / 5;
+              final tabCount = isParent ? 4 : 5;
+              final tabWidth = barWidth / tabCount;
               final activeX = (animatedIndex + 0.5) * tabWidth;
 
               return RepaintBoundary(
@@ -94,47 +97,82 @@ class AppBottomNavBar extends StatelessWidget {
                       right: 0,
                       height: 68.0,
                       child: Row(
-                        children: [
-                          _buildTabItem(
-                            index: 0,
-                            currentIndex: currentIndex,
-                            icon: Icons.home_outlined,
-                            selectedIcon: Icons.home_rounded,
-                            label: 'Beranda',
-                          ),
-                          _buildTabItem(
-                            index: 1,
-                            currentIndex: currentIndex,
-                            icon: Icons.checklist_outlined,
-                            selectedIcon: Icons.checklist_rounded,
-                            label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
-                            badgeCount: pendingOutboxCount,
-                            badgeColor: const Color(0xFFD97706),
-                          ),
-                          _buildTabItem(
-                            index: 2,
-                            currentIndex: currentIndex,
-                            icon: Icons.school_outlined,
-                            selectedIcon: Icons.school_rounded,
-                            label: 'Akademik',
-                          ),
-                          _buildTabItem(
-                            index: 3,
-                            currentIndex: currentIndex,
-                            icon: Icons.account_balance_wallet_outlined,
-                            selectedIcon: Icons.account_balance_wallet_rounded,
-                            label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
-                            badgeCount: unpaidInvoiceCount,
-                            badgeColor: const Color(0xFFDC2626),
-                          ),
-                          _buildTabItem(
-                            index: 4,
-                            currentIndex: currentIndex,
-                            icon: Icons.person_outline_rounded,
-                            selectedIcon: Icons.person_rounded,
-                            label: 'Profil',
-                          ),
-                        ],
+                        children: isParent
+                            ? [
+                                _buildTabItem(
+                                  index: 0,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.home_outlined,
+                                  selectedIcon: Icons.home_rounded,
+                                  label: 'Beranda',
+                                ),
+                                _buildTabItem(
+                                  index: 1,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.checklist_outlined,
+                                  selectedIcon: Icons.checklist_rounded,
+                                  label: 'Presensi',
+                                  badgeCount: pendingOutboxCount,
+                                  badgeColor: const Color(0xFFD97706),
+                                ),
+                                _buildTabItem(
+                                  index: 2,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  selectedIcon: Icons.account_balance_wallet_rounded,
+                                  label: 'Tagihan SPP',
+                                  badgeCount: unpaidInvoiceCount,
+                                  badgeColor: const Color(0xFFDC2626),
+                                ),
+                                _buildTabItem(
+                                  index: 3,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.person_outline_rounded,
+                                  selectedIcon: Icons.person_rounded,
+                                  label: 'Profil',
+                                ),
+                              ]
+                            : [
+                                _buildTabItem(
+                                  index: 0,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.home_outlined,
+                                  selectedIcon: Icons.home_rounded,
+                                  label: 'Beranda',
+                                ),
+                                _buildTabItem(
+                                  index: 1,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.checklist_outlined,
+                                  selectedIcon: Icons.checklist_rounded,
+                                  label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
+                                  badgeCount: pendingOutboxCount,
+                                  badgeColor: const Color(0xFFD97706),
+                                ),
+                                _buildTabItem(
+                                  index: 2,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.school_outlined,
+                                  selectedIcon: Icons.school_rounded,
+                                  label: 'Akademik',
+                                ),
+                                _buildTabItem(
+                                  index: 3,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  selectedIcon: Icons.account_balance_wallet_rounded,
+                                  label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
+                                  badgeCount: unpaidInvoiceCount,
+                                  badgeColor: const Color(0xFFDC2626),
+                                ),
+                                _buildTabItem(
+                                  index: 4,
+                                  currentIndex: currentIndex,
+                                  icon: Icons.person_outline_rounded,
+                                  selectedIcon: Icons.person_rounded,
+                                  label: 'Profil',
+                                ),
+                              ],
                       ),
                     ),
                   ],
