@@ -1,3 +1,5 @@
+import '../../../academic/data/models/student_model.dart';
+
 class UserModel {
   final int id;
   final String username;
@@ -118,6 +120,7 @@ class ActiveSchoolModel {
     if (isAdmin) return 'KARTU ADMINISTRATOR';
     if (isPrincipal) return 'KARTU KEPALA SEKOLAH';
     if (isTeacher) return 'KARTU TENAGA PENDIDIK';
+    if (isParent) return 'KARTU WALI MURID';
     return 'KARTU PELAJAR DIGITAL';
   }
 
@@ -248,13 +251,18 @@ class UserProfileResponse {
   final ActiveSchoolModel? activeSchool;
   final List<SchoolMembershipModel> memberships;
   final AuthTokenModel? auth;
+  final List<StudentModel> children;
 
   UserProfileResponse({
     required this.user,
     this.activeSchool,
     required this.memberships,
     this.auth,
+    this.children = const [],
   });
+
+  /// Mengambil data anak pertama/utama jika pengguna adalah akun Orang Tua
+  StudentModel? get primaryChild => children.isNotEmpty ? children.first : null;
 
   factory UserProfileResponse.fromJson(Map<String, dynamic> json) {
     return UserProfileResponse(
@@ -268,6 +276,9 @@ class UserProfileResponse {
       auth: json['auth'] != null
           ? AuthTokenModel.fromJson(json['auth'] as Map<String, dynamic>)
           : null,
+      children: (json['children'] as List<dynamic>? ?? [])
+          .map((c) => StudentModel.fromJson(c as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -276,5 +287,6 @@ class UserProfileResponse {
         if (activeSchool != null) 'active_school': activeSchool!.toJson(),
         'memberships': memberships.map((m) => m.toJson()).toList(),
         if (auth != null) 'auth': auth!.toJson(),
+        'children': children.map((c) => c.toJson()).toList(),
       };
 }

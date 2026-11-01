@@ -88,6 +88,18 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  bool get _isParentAccount => _usernameController.text.trim().startsWith('ortu.');
+
+  String get _parentLinkedStudentInfo {
+    final u = _usernameController.text.trim();
+    if (u == 'ortu.aditya') {
+      return 'Terikat dengan: Aditya Pratama Putra (NIS: 20261001, Kelas X-IPA-1)';
+    } else if (u == 'ortu.dewi') {
+      return 'Terikat dengan 2 Siswa: Nabila Azzahra (XI-IPA-1) & Rizky Ramadhan (XII-IPS-1)';
+    }
+    return 'Terikat otomatis dengan profil & data akademik putra/putri Anda.';
+  }
+
   void _fillAccount(String username, String password) {
     FocusScope.of(context).unfocus();
     setState(() {
@@ -791,6 +803,52 @@ class _LoginScreenState extends State<LoginScreen>
                                 ],
                               ),
 
+                              if (_isParentAccount) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFFBEB),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFFDE68A)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.family_restroom_rounded,
+                                        color: Color(0xFFD97706),
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Akun Orang Tua Terverifikasi',
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF92400E),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              _parentLinkedStudentInfo,
+                                              style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w500,
+                                                color: const Color(0xFFB45309),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+
                               const SizedBox(height: 22),
 
                               // Primary CTA Button (Masuk ke Akun)
@@ -1079,6 +1137,32 @@ class _LoginScreenState extends State<LoginScreen>
 
           const SizedBox(height: 14),
 
+          // Orang Tua (Wali Murid)
+          _buildRoleHeader('👨‍👩‍👦 Akun Orang Tua (Wali Murid):'),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildDemoChip(
+                label: 'Wali Murid (Aditya)',
+                username: 'ortu.aditya',
+                password: 'ortu123',
+                color: const Color(0xFFD97706),
+                subtitle: 'Siswa: Aditya Pratama (X-IPA-1)',
+              ),
+              _buildDemoChip(
+                label: 'Wali Murid (2 Siswa)',
+                username: 'ortu.dewi',
+                password: 'ortu123',
+                color: const Color(0xFF7C3AED),
+                subtitle: 'Siswa: Nabila & Rizky',
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
           // Guru
           _buildRoleHeader('👨‍🏫 Akun Guru (Tenaga Pendidik):'),
           const SizedBox(height: 6),
@@ -1145,6 +1229,7 @@ class _LoginScreenState extends State<LoginScreen>
     required String username,
     required String password,
     required Color color,
+    String? subtitle,
   }) {
     final isSelected = _usernameController.text == username;
 
@@ -1163,26 +1248,46 @@ class _LoginScreenState extends State<LoginScreen>
               width: isSelected ? 1.5 : 1.0,
             ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? color : const Color(0xFF191C1E),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11.5,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? color : const Color(0xFF191C1E),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Padding(
+                  padding: const EdgeInsets.only(left: 13),
+                  child: Text(
+                    subtitle,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 9.5,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? color.withValues(alpha: 0.85) : const Color(0xFF74777F),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

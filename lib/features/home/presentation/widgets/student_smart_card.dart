@@ -15,8 +15,13 @@ class StudentSmartCard extends StatelessWidget {
     required this.schoolColor,
   });
 
-  String get _cleanNis => profile.user.cleanIdentifier;
-  String get _nisn => _cleanNis.isNotEmpty ? '008$_cleanNis' : '0082914820';
+  bool get _isParent => profile.activeSchool?.isParent == true;
+  String get _cleanNis => _isParent && profile.primaryChild != null
+      ? profile.primaryChild!.nis
+      : profile.user.cleanIdentifier;
+  String get _nisn => _isParent && profile.primaryChild?.nisn != null
+      ? profile.primaryChild!.nisn!
+      : (_cleanNis.isNotEmpty ? '008$_cleanNis' : '0082914820');
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +93,7 @@ class StudentSmartCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'KARTU PELAJAR DIGITAL',
+                            profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFFCBD5E1),
                               fontSize: 10.5,
