@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/network/background_sync_service.dart';
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
@@ -317,7 +318,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         for (final controller in _scrollControllers) {
           controller.dispose();
         }
-        _scrollControllers = List.generate(_tabCount, (_) => ScrollController());
+        _scrollControllers = List.generate(
+          _tabCount,
+          (_) => ScrollController(),
+        );
       }
       if (_currentIndex >= _tabCount) {
         _currentIndex = 0;
@@ -336,20 +340,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.dispose();
   }
 
-  Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
+  Color get _schoolColor =>
+      AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
 
-  bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
+  bool get _isStaffOrTeacher =>
+      widget.profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => widget.profile.activeSchool?.isParent == true;
-  bool get _isStudent => widget.profile.activeSchool?.isStudent == true || (!_isStaffOrTeacher && !_isParent);
+  bool get _isStudent =>
+      widget.profile.activeSchool?.isStudent == true ||
+      (!_isStaffOrTeacher && !_isParent);
   int get _tabCount => _isStaffOrTeacher ? 5 : 4;
 
   void _openBillingScreen() {
     Navigator.of(context).push(
-      SmoothWelcomePageRoute(
-        child: BillingScreen(
-          profile: widget.profile,
-        ),
-      ),
+      SmoothWelcomePageRoute(child: BillingScreen(profile: widget.profile)),
     );
   }
 
@@ -409,7 +413,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       } else if (notification is ScrollEndNotification) {
         // Jika berhenti di ujung atas atau ujung bawah layar, pastikan bar muncul
         if (notification.metrics.pixels <= 30.0 ||
-            notification.metrics.pixels >= notification.metrics.maxScrollExtent - 24.0) {
+            notification.metrics.pixels >=
+                notification.metrics.maxScrollExtent - 24.0) {
           if (!_isNavBarVisible.value) {
             _isNavBarVisible.value = true;
           }
@@ -436,7 +441,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
 
     final now = DateTime.now();
-    if (_lastBackPressTime == null || now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+    if (_lastBackPressTime == null ||
+        now.difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
       _lastBackPressTime = now;
       HapticFeedback.selectionClick();
 
@@ -445,7 +451,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               const SizedBox(width: 10),
               Text(
                 'Tekan sekali lagi untuk keluar dari aplikasi',
@@ -494,74 +504,79 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           backgroundColor: AppTheme.backgroundLight,
           extendBody: true,
           body: Column(
-          children: [
-            // 1. BASE TOP BAR TERPADU (Wadah Statis Permanen - Bebas Kedip/Flicker)
-            AppBaseTopBar(
-              currentIndex: _currentIndex,
-              profile: widget.profile,
-              schoolColor: _schoolColor,
-              isStaffOrTeacher: _isStaffOrTeacher,
-            ),
-
-            // 2. Transisi Konten Halus Bebas Rebuild
-            Expanded(
-              child: NotificationListener<ScrollNotification>(
-                onNotification: _onScrollNotification,
-                child: FadeIndexedStack(
-                  index: _currentIndex,
-                  duration: const Duration(milliseconds: 200),
-                  children: _pages,
-                ),
-              ),
-            ),
-          ],
-        ),
-        // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
-        // Perubahan status hide/show atau update badge tagihan/outbox HANYA
-        // merender ulang bilah navigasi tanpa menyentuh IndexedStack atau halaman aktif.
-        bottomNavigationBar: ValueListenableBuilder<bool>(
-          valueListenable: _isNavBarVisible,
-          builder: (context, isVisible, child) {
-            final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-            final isKeyboardVisible = bottomInset > 0;
-            final isEffectiveVisible = isVisible && !isKeyboardVisible;
-
-            return AnimatedSlide(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              offset: isEffectiveVisible ? Offset.zero : const Offset(0, 1.35),
-              child: IgnorePointer(
-                ignoring: !isEffectiveVisible,
-                child: child,
-              ),
-            );
-          },
-          child: Builder(
-            builder: (context) {
-              final billingState = context.watch<BillingCubit>().state;
-              final unpaidInvoiceCount = billingState is BillingLoaded
-                  ? billingState.invoices.where((inv) => !inv.isPaid).length
-                  : 0;
-              final pendingOutbox = context.watch<LocalStorage>().hive.totalPendingOutbox;
-
-              return AppBottomNavBar(
+            children: [
+              // 1. BASE TOP BAR TERPADU (Wadah Statis Permanen - Bebas Kedip/Flicker)
+              AppBaseTopBar(
                 currentIndex: _currentIndex,
-                onTap: _handleTabTap,
+                profile: widget.profile,
                 schoolColor: _schoolColor,
                 isStaffOrTeacher: _isStaffOrTeacher,
-                isParent: _isParent,
-                isStudent: _isStudent,
-                pendingOutboxCount: pendingOutbox,
-                unpaidInvoiceCount: unpaidInvoiceCount,
-                isFloating: true,
+              ),
+
+              // 2. Transisi Konten Halus Bebas Rebuild
+              Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: _onScrollNotification,
+                  child: FadeIndexedStack(
+                    index: _currentIndex,
+                    duration: const Duration(milliseconds: 200),
+                    children: _pages,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // Isolasi Bottom Navigation Bar dengan ValueListenableBuilder & Builder:
+          // Perubahan status hide/show atau update badge tagihan/outbox HANYA
+          // merender ulang bilah navigasi tanpa menyentuh IndexedStack atau halaman aktif.
+          bottomNavigationBar: ValueListenableBuilder<bool>(
+            valueListenable: _isNavBarVisible,
+            builder: (context, isVisible, child) {
+              final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+              final isKeyboardVisible = bottomInset > 0;
+              final isEffectiveVisible = isVisible && !isKeyboardVisible;
+
+              return AnimatedSlide(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                offset: isEffectiveVisible
+                    ? Offset.zero
+                    : const Offset(0, 1.35),
+                child: IgnorePointer(
+                  ignoring: !isEffectiveVisible,
+                  child: child,
+                ),
               );
             },
+            child: Builder(
+              builder: (context) {
+                final billingState = context.watch<BillingCubit>().state;
+                final unpaidInvoiceCount = billingState is BillingLoaded
+                    ? billingState.invoices.where((inv) => !inv.isPaid).length
+                    : 0;
+                final pendingOutbox = context
+                    .watch<LocalStorage>()
+                    .hive
+                    .totalPendingOutbox;
+
+                return AppBottomNavBar(
+                  currentIndex: _currentIndex,
+                  onTap: _handleTabTap,
+                  schoolColor: _schoolColor,
+                  isStaffOrTeacher: _isStaffOrTeacher,
+                  isParent: _isParent,
+                  isStudent: _isStudent,
+                  pendingOutboxCount: pendingOutbox,
+                  unpaidInvoiceCount: unpaidInvoiceCount,
+                  isFloating: true,
+                );
+              },
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 /// Transisi Halus (Smooth Crossfade & Micro-Scale) untuk perpindahan tab:
@@ -601,17 +616,11 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
     );
 
     _fadeAnimation = Tween<double>(begin: 0.20, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
 
     _scaleAnimation = Tween<double>(begin: 0.992, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
   }
 
@@ -636,10 +645,7 @@ class _FadeIndexedStackState extends State<FadeIndexedStack>
       opacity: _fadeAnimation,
       child: ScaleTransition(
         scale: _scaleAnimation,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: widget.children,
-        ),
+        child: IndexedStack(index: _currentIndex, children: widget.children),
       ),
     );
   }

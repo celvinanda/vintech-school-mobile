@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vintech_school_mobile/core/storage/local_storage.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
+
 import '../../data/models/school_dashboard_model.dart';
 import '../school_profile_screen.dart';
 import '../student_notifications_screen.dart';
@@ -107,9 +108,7 @@ class HomeTopBar extends StatelessWidget {
           const SizedBox(width: 8),
 
           // 3. Smart Offline & Cloud Sync Status (Hanya tampil jika ada data pending di Hive)
-          TopBarNetworkStatus(
-            pendingSyncCount: pendingOutbox,
-          ),
+          TopBarNetworkStatus(pendingSyncCount: pendingOutbox),
 
           // 4. Smart Notification Bell Action
           TopBarNotificationAction(

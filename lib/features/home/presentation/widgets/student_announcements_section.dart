@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../data/models/school_dashboard_model.dart';
 import '../../logic/home_cubit.dart';
 import '../../logic/home_state.dart';
@@ -65,15 +66,19 @@ class StudentAnnouncementsSection extends StatelessWidget {
 
               // Announcement Feed Cards
               if (items.isNotEmpty)
-                ...items.map((ann) => AnnouncementCardItem(
-                      categoryBadge: ann.isPinned ? 'PENTING' : 'INFORMASI',
-                      isImportant: ann.isPinned,
-                      timestamp: ann.createdAt.length >= 10 ? ann.createdAt.substring(0, 10) : ann.createdAt,
-                      author: ann.audienceDisplay,
-                      title: ann.title,
-                      snippet: ann.content,
-                      attachmentLabel: 'Lampiran_${ann.audienceDisplay}.pdf',
-                    ))
+                ...items.map(
+                  (ann) => AnnouncementCardItem(
+                    categoryBadge: ann.isPinned ? 'PENTING' : 'INFORMASI',
+                    isImportant: ann.isPinned,
+                    timestamp: ann.createdAt.length >= 10
+                        ? ann.createdAt.substring(0, 10)
+                        : ann.createdAt,
+                    author: ann.audienceDisplay,
+                    title: ann.title,
+                    snippet: ann.content,
+                    attachmentLabel: 'Lampiran_${ann.audienceDisplay}.pdf',
+                  ),
+                )
               else ...[
                 // Default Stitch Card 1
                 const AnnouncementCardItem(
@@ -82,8 +87,7 @@ class StudentAnnouncementsSection extends StatelessWidget {
                   timestamp: 'Hari ini, 09:00 WIB',
                   author: 'Kurikulum',
                   title: 'Jadwal Penilaian Tengah Semester (PTS) Genap 2026',
-                  snippet:
-                      'Pelaksanaan PTS Genap akan dimulai tanggal 16 Maret secara hybrid menggunakan tablet/smartphone sekolah.',
+                  snippet: 'Pelaksanaan PTS Genap akan dimulai tanggal 16 Maret secara hybrid menggunakan tablet/smartphone sekolah.',
                   attachmentLabel: 'Jadwal_PTS_Genap.pdf (1.2 MB)',
                 ),
                 const SizedBox(height: 10),
@@ -94,8 +98,7 @@ class StudentAnnouncementsSection extends StatelessWidget {
                   timestamp: 'Kemarin, 14:30 WIB',
                   author: 'Kesiswaan',
                   title: 'Pendaftaran Ekstrakurikuler Robotika & Coding Club',
-                  snippet:
-                      'Pendaftaran dibuka untuk siswa kelas X & XI melalui portal Vintech hingga akhir pekan ini. Kuota terbatas 30 peserta.',
+                  snippet: 'Pendaftaran dibuka untuk siswa kelas X & XI melalui portal Vintech hingga akhir pekan ini. Kuota terbatas 30 peserta.',
                   attachmentLabel: 'Sisa Kuota: 8 Siswa',
                   isQuota: true,
                 ),
@@ -154,9 +157,14 @@ class AnnouncementCardItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 2.5,
+                ),
                 decoration: BoxDecoration(
-                  color: isImportant ? const Color(0xFFFFDAD6) : const Color(0xFFDBE1FF),
+                  color: isImportant
+                      ? const Color(0xFFFFDAD6)
+                      : const Color(0xFFDBE1FF),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -164,7 +172,9 @@ class AnnouncementCardItem extends StatelessWidget {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
-                    color: isImportant ? const Color(0xFF93000A) : const Color(0xFF00174B),
+                    color: isImportant
+                        ? const Color(0xFF93000A)
+                        : const Color(0xFF00174B),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -206,7 +216,9 @@ class AnnouncementCardItem extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    isQuota ? Icons.group_add_rounded : Icons.attachment_rounded,
+                    isQuota
+                        ? Icons.group_add_rounded
+                        : Icons.attachment_rounded,
                     size: 15,
                     color: const Color(0xFF565E74),
                   ),

@@ -122,9 +122,7 @@ class _ServiceButton extends StatelessWidget {
                     color: bgColor,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Center(
-                    child: Icon(icon, color: iconColor, size: 22),
-                  ),
+                  child: Center(child: Icon(icon, color: iconColor, size: 22)),
                 ),
                 const SizedBox(height: 7),
                 Text(

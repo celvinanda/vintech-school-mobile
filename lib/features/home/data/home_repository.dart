@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_response.dart';
@@ -36,7 +37,9 @@ class HomeRepository {
         return envelope.data!;
       }
       throw ApiException(
-        envelope.message.isNotEmpty ? envelope.message : 'Gagal memuat dashboard',
+        envelope.message.isNotEmpty
+            ? envelope.message
+            : 'Gagal memuat dashboard',
       );
     } on DioException catch (e) {
       // Offline-First Fallback: Gunakan data Hive lokal jika jaringan terputus

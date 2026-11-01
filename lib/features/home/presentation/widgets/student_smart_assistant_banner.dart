@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../../core/storage/local_storage.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../../billing/logic/billing_cubit.dart';
@@ -80,7 +81,8 @@ class StudentSmartAssistantBanner extends StatelessWidget {
         badgeBg: const Color(0xFFEFF6FF),
         icon: Icons.menu_book_rounded,
         title: 'Kegiatan Belajar Mengajar',
-        message: 'Fokus dan tertib di kelas ${profile.activeSchool?.classroomName ?? "X-IPA-1"}. Cek jadwal & materi pelajaran berkala.',
+        message:
+            'Fokus dan tertib di kelas ${profile.activeSchool?.classroomName ?? "X-IPA-1"}. Cek jadwal & materi pelajaran berkala.',
         actionLabel: 'Jadwal Hari Ini',
         onAction: onAcademicTap,
       );
@@ -94,7 +96,8 @@ class StudentSmartAssistantBanner extends StatelessWidget {
         badgeBg: const Color(0xFFEFF6FF),
         icon: Icons.receipt_long_rounded,
         title: 'Tagihan SPP Belum Lunas',
-        message: 'Terdapat $unpaidInvoices tagihan SPP aktif. Pembayaran dapat dilakukan via Virtual Account & QRIS.',
+        message:
+            'Terdapat $unpaidInvoices tagihan SPP aktif. Pembayaran dapat dilakukan via Virtual Account & QRIS.',
         actionLabel: 'Lihat Tagihan',
         onAction: onBillingTap,
       );
@@ -124,10 +127,7 @@ class StudentSmartAssistantBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFFE2E8F0),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -143,7 +143,10 @@ class StudentSmartAssistantBanner extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4.5,
+                  ),
                   decoration: BoxDecoration(
                     color: ctx.badgeBg,
                     borderRadius: BorderRadius.circular(10),
@@ -209,7 +212,10 @@ class StudentSmartAssistantBanner extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: schoolColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(10),

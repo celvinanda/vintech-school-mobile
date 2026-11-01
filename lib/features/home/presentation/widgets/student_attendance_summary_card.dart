@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../logic/home_cubit.dart';
 import '../../logic/home_state.dart';
 
@@ -10,10 +11,7 @@ import '../../logic/home_state.dart';
 class StudentAttendanceSummaryCard extends StatelessWidget {
   final Function(int tabIndex) onNavigateTab;
 
-  const StudentAttendanceSummaryCard({
-    super.key,
-    required this.onNavigateTab,
-  });
+  const StudentAttendanceSummaryCard({super.key, required this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +76,10 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 3.5,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF007D55).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -100,13 +101,29 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                 // 4 Stat Capsules Row
                 Row(
                   children: [
-                    _StatCapsule(label: 'Hadir', count: '$present', color: const Color(0xFF007D55)),
+                    _StatCapsule(
+                      label: 'Hadir',
+                      count: '$present',
+                      color: const Color(0xFF007D55),
+                    ),
                     const SizedBox(width: 8),
-                    _StatCapsule(label: 'Izin', count: '$izin', color: const Color(0xFF004AC6)),
+                    _StatCapsule(
+                      label: 'Izin',
+                      count: '$izin',
+                      color: const Color(0xFF004AC6),
+                    ),
                     const SizedBox(width: 8),
-                    _StatCapsule(label: 'Sakit', count: '$sakit', color: const Color(0xFFD97706)),
+                    _StatCapsule(
+                      label: 'Sakit',
+                      count: '$sakit',
+                      color: const Color(0xFFD97706),
+                    ),
                     const SizedBox(width: 8),
-                    _StatCapsule(label: 'Alpa', count: '$alpa', color: const Color(0xFFBA1A1A)),
+                    _StatCapsule(
+                      label: 'Alpa',
+                      count: '$alpa',
+                      color: const Color(0xFFBA1A1A),
+                    ),
                   ],
                 ),
 
@@ -123,11 +140,15 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF4EDEA3).withValues(alpha: 0.35),
+                          color: const Color(0xFF4EDEA3)
+                              .withValues(alpha: 0.35),
                         ),
                       ),
                       child: Row(

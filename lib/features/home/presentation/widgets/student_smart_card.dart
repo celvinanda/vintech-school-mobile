@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../auth/data/models/user_model.dart';
 
 /// Komponen Digital Student Smart Card (Hero Bento Section)
@@ -93,7 +94,8 @@ class StudentSmartCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL',
+                            profile.activeSchool?.cardBadgeTitle ??
+                                'KARTU PELAJAR DIGITAL',
                             style: GoogleFonts.plusJakartaSans(
                               color: const Color(0xFFCBD5E1),
                               fontSize: 10.5,
@@ -104,12 +106,17 @@ class StudentSmartCard extends StatelessWidget {
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 3.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF007D55).withValues(alpha: 0.25),
+                          color: const Color(0xFF007D55)
+                              .withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF6FFBBE).withValues(alpha: 0.45),
+                            color: const Color(0xFF6FFBBE)
+                                .withValues(alpha: 0.45),
                             width: 0.8,
                           ),
                         ),
@@ -181,7 +188,10 @@ class StudentSmartCard extends StatelessWidget {
 
                       // Contactless NFC Tag Status
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
@@ -282,7 +292,10 @@ class StudentSmartCard extends StatelessWidget {
                             },
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6.5,
+                              ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
@@ -343,7 +356,11 @@ class StudentSmartCard extends StatelessWidget {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded, color: Color(0xFF565E74), size: 20),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF565E74),
+                      size: 20,
+                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),

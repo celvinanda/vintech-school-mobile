@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../academic/logic/attendance_cubit.dart';
 import '../../../academic/presentation/widgets/academic_top_bar.dart';
 import '../../../academic/presentation/widgets/attendance_top_bar.dart';
@@ -10,7 +11,6 @@ import '../../../billing/logic/billing_cubit.dart';
 import '../../../billing/logic/billing_state.dart';
 import '../../../billing/presentation/widgets/billing_top_bar.dart';
 import '../../../profile/presentation/settings_screen.dart';
-import '../../../profile/presentation/widgets/profile_digital_card_modal.dart';
 import '../../../profile/presentation/widgets/profile_top_bar.dart';
 import '../../logic/home_cubit.dart';
 import '../../logic/home_state.dart';
@@ -33,9 +33,7 @@ class AppBaseTopBar extends StatelessWidget {
   final VoidCallback? onAttendanceRefresh;
   final VoidCallback? onAcademicReportTap;
   final VoidCallback? onBillingRefresh;
-  final VoidCallback? onProfileDigitalCardTap;
   final VoidCallback? onProfileSettingsTap;
-  final VoidCallback? onProfileShareQrTap;
 
   const AppBaseTopBar({
     super.key,
@@ -48,9 +46,7 @@ class AppBaseTopBar extends StatelessWidget {
     this.onAttendanceRefresh,
     this.onAcademicReportTap,
     this.onBillingRefresh,
-    this.onProfileDigitalCardTap,
     this.onProfileSettingsTap,
-    this.onProfileShareQrTap,
   });
 
   void _handleSchoolTap(BuildContext context) {
@@ -60,9 +56,7 @@ class AppBaseTopBar extends StatelessWidget {
     }
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => SchoolProfileScreen(profile: profile),
-      ),
+      MaterialPageRoute(builder: (_) => SchoolProfileScreen(profile: profile)),
     );
   }
 
@@ -115,7 +109,11 @@ class AppBaseTopBar extends StatelessWidget {
             const SizedBox(height: 18),
             Row(
               children: [
-                const Icon(Icons.verified_rounded, color: Color(0xFF007D55), size: 24),
+                const Icon(
+                  Icons.verified_rounded,
+                  color: Color(0xFF007D55),
+                  size: 24,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Rapor Digital Resmi',
@@ -145,7 +143,10 @@ class AppBaseTopBar extends StatelessWidget {
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.picture_as_pdf_rounded, color: Color(0xFF2563EB)),
+                child: const Icon(
+                  Icons.picture_as_pdf_rounded,
+                  color: Color(0xFF2563EB),
+                ),
               ),
               title: Text(
                 'Rapor_Semester_Genap_2026.pdf',
@@ -178,94 +179,15 @@ class AppBaseTopBar extends StatelessWidget {
     );
   }
 
-  void _handleDigitalCardTap(BuildContext context) {
-    if (onProfileDigitalCardTap != null) {
-      onProfileDigitalCardTap!();
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (_) => ProfileDigitalCardModal(
-        profile: profile,
-        schoolColor: schoolColor,
-      ),
-    );
-  }
-
   void _handleSettingsTap(BuildContext context) {
     if (onProfileSettingsTap != null) {
       onProfileSettingsTap!();
       return;
     }
     HapticFeedback.selectionClick();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => SettingsScreen(profile: profile),
-      ),
-    );
-  }
-
-  void _handleShareQrTap(BuildContext context) {
-    if (onProfileShareQrTap != null) {
-      onProfileShareQrTap!();
-      return;
-    }
-    HapticFeedback.selectionClick();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Bagikan QR Profil Siswa',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Pindai QR ini untuk verifikasi absensi atau gerbang perpustakaan sekolah.',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12.5,
-                color: const Color(0xFF64748B),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Icon(Icons.qr_code_2_rounded, size: 160, color: schoolColor),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => SettingsScreen(profile: profile)));
   }
 
   @override
@@ -299,10 +221,8 @@ class AppBaseTopBar extends StatelessWidget {
                 duration: const Duration(milliseconds: 180),
                 switchInCurve: Curves.easeOutCubic,
                 switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) => FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
                 child: KeyedSubtree(
                   key: ValueKey<int>(currentIndex),
                   child: _buildInnerTopBar(context),
@@ -316,7 +236,9 @@ class AppBaseTopBar extends StatelessWidget {
   }
 
   bool get _isParent => profile.activeSchool?.isParent == true;
-  bool get _isStudent => profile.activeSchool?.isStudent == true || (!isStaffOrTeacher && !_isParent);
+  bool get _isStudent =>
+      profile.activeSchool?.isStudent == true ||
+      (!isStaffOrTeacher && !_isParent);
 
   Widget _buildInnerTopBar(BuildContext context) {
     if (_isParent) {
@@ -366,13 +288,16 @@ class AppBaseTopBar extends StatelessWidget {
   Widget _buildHomeTopBar(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
-        final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
+        final announcements = state is HomeLoaded
+            ? state.dashboard.announcements
+            : null;
         return HomeTopBar(
           profile: profile,
           schoolColor: schoolColor,
           announcements: announcements,
           onSchoolTap: () => _handleSchoolTap(context),
-          onNotificationTap: () => _handleNotificationTap(context, announcements),
+          onNotificationTap: () =>
+              _handleNotificationTap(context, announcements),
         );
       },
     );
@@ -387,7 +312,9 @@ class AppBaseTopBar extends StatelessWidget {
         if (onAttendanceRefresh != null) {
           onAttendanceRefresh!();
         } else {
-          context.read<AttendanceCubit>().loadAttendances(forceRefreshMeta: true);
+          context.read<AttendanceCubit>().loadAttendances(
+            forceRefreshMeta: true,
+          );
         }
       },
     );
@@ -429,9 +356,7 @@ class AppBaseTopBar extends StatelessWidget {
     return ProfileTopBar(
       profile: profile,
       schoolColor: schoolColor,
-      onDigitalCardTap: () => _handleDigitalCardTap(context),
       onSettingsTap: () => _handleSettingsTap(context),
-      onShareQrTap: () => _handleShareQrTap(context),
     );
   }
 }

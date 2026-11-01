@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import '../logic/home_cubit.dart';
@@ -48,7 +49,9 @@ class StudentDashboardView extends StatelessWidget {
         child: SingleChildScrollView(
           controller: scrollController,
           key: const PageStorageKey('student_dashboard_scroll_view'),
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -78,10 +81,7 @@ class StudentDashboardView extends StatelessWidget {
                 const SizedBox(height: 18),
 
                 // Bento 1: Digital Student Smart Card
-                StudentSmartCard(
-                  profile: profile,
-                  schoolColor: _schoolColor,
-                ),
+                StudentSmartCard(profile: profile, schoolColor: _schoolColor),
 
                 const SizedBox(height: 18),
 
@@ -94,9 +94,7 @@ class StudentDashboardView extends StatelessWidget {
                 const SizedBox(height: 18),
 
                 // Bento 3: Attendance Summary Card
-                StudentAttendanceSummaryCard(
-                  onNavigateTab: onNavigateTab,
-                ),
+                StudentAttendanceSummaryCard(onNavigateTab: onNavigateTab),
 
                 const SizedBox(height: 20),
 

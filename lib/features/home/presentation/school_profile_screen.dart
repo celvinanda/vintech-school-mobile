@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../auth/data/models/user_model.dart';
 import '../logic/home_cubit.dart';
@@ -135,7 +136,10 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
             Center(
               child: Container(
                 margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF004AC6).withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(20),
@@ -174,7 +178,10 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                     ),
                     content: Text(
                       '✓ Info institusi sekolah berhasil disalin ke papan klip!',
-                      style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 );
@@ -630,8 +637,12 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                     tabs[index],
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF434655),
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF434655),
                     ),
                   ),
                 ),
@@ -868,20 +879,17 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
 
               _buildMisiItem(
                 number: '1',
-                text:
-                    'Pembelajaran vokasi berbasis proyek industri nyata kolaboratif bersama mentor industri bersertifikasi.',
+                text: 'Pembelajaran vokasi berbasis proyek industri nyata kolaboratif bersama mentor industri bersertifikasi.',
               ),
               const SizedBox(height: 6),
               _buildMisiItem(
                 number: '2',
-                text:
-                    'Pembinaan kepemimpinan karakter berdaya juang mandiri, beretika profesional, dan berwawasan entrepreneur.',
+                text: 'Pembinaan kepemimpinan karakter berdaya juang mandiri, beretika profesional, dan berwawasan entrepreneur.',
               ),
               const SizedBox(height: 6),
               _buildMisiItem(
                 number: '3',
-                text:
-                    'Akselerasi penguasaan teknologi terdepan (AI, Cloud Computing, Cyber Security, dan Product Design) sejak dini.',
+                text: 'Akselerasi penguasaan teknologi terdepan (AI, Cloud Computing, Cyber Security, dan Product Design) sejak dini.',
               ),
             ],
           ),
@@ -1082,16 +1090,16 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
   // =========================================================================
   Widget _buildTabPendidikDanStaf() {
     final filteredTeachers = _teachersData.where((teacher) {
-      final nameMatches = _teacherSearchQuery.isEmpty ||
-          teacher['name']
-              .toString()
-              .toLowerCase()
-              .contains(_teacherSearchQuery.toLowerCase()) ||
-          teacher['subject']
-              .toString()
-              .toLowerCase()
-              .contains(_teacherSearchQuery.toLowerCase());
-      final catMatches = _selectedTeacherCategory == 'all' ||
+      final nameMatches =
+          _teacherSearchQuery.isEmpty ||
+          teacher['name'].toString().toLowerCase().contains(
+            _teacherSearchQuery.toLowerCase(),
+          ) ||
+          teacher['subject'].toString().toLowerCase().contains(
+            _teacherSearchQuery.toLowerCase(),
+          );
+      final catMatches =
+          _selectedTeacherCategory == 'all' ||
           teacher['category'] == _selectedTeacherCategory;
       return nameMatches && catMatches;
     }).toList();
@@ -1317,8 +1325,9 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: (teacher['avatarColor'] as Color)
-                            .withValues(alpha: 0.10),
+                        color: (teacher['avatarColor'] as Color).withValues(
+                          alpha: 0.10,
+                        ),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -1458,8 +1467,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
           iconBg: const Color(0xFFE0E7FF),
           code: 'DKV',
           title: 'Desain Komunikasi Visual',
-          desc:
-              'Fokus: UI/UX Product Design, 3D Animation & Video Production',
+          desc: 'Fokus: UI/UX Product Design, 3D Animation & Video Production',
           tags: ['Figma UX', 'Blender 3D', 'After Effects', 'Branding'],
         ),
         const SizedBox(height: 10),
@@ -1654,10 +1662,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
             runSpacing: 4,
             children: tags.map((tag) {
               return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF2F4F6),
                   borderRadius: BorderRadius.circular(6),
@@ -1878,8 +1883,7 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
               _buildContactItem(
                 icon: Icons.location_on_rounded,
                 title: 'Alamat Kampus',
-                subtitle:
-                    'Jl. Pendidikan Raya No. 45, Kesamben, Kab. Blitar, Jawa Timur',
+                subtitle: 'Jl. Pendidikan Raya No. 45, Kesamben, Kab. Blitar, Jawa Timur',
               ),
               const SizedBox(height: 12),
               _buildContactItem(

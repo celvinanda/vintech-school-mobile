@@ -11,14 +11,12 @@ class ProfileHeroCard extends StatefulWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
   final VoidCallback onOpenDigitalCard;
-  final VoidCallback onShareProfile;
   final StudentModel? student;
   const ProfileHeroCard({
     super.key,
     required this.profile,
     required this.schoolColor,
     required this.onOpenDigitalCard,
-    required this.onShareProfile,
     this.student,
   });
   @override

@@ -1,4 +1,3 @@
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +18,7 @@ import 'widgets/profile_registered_info_section.dart';
 
 /// Halaman Profil & Akun Siswa selaras 1:1 dengan Google Stitch Design ("Profil Siswa").
 /// Mengimplementasikan arsitektur modular Bento Grid:
-/// 1. Top Header App Bar & Settings ([ProfileHeaderBar])
+/// 1. Top Header App Bar & Settings ([ProfileTopBar])
 /// 2. Profile Hero Bento Card ([ProfileHeroCard] - Foto, NIS/NISN, Kartu Digital)
 /// 3. Quick Academic Capsules ([ProfileAcademicMetricsCapsules] - IPK 88.5, Hadir 96%, Bebas SPP)
 /// 4. Kontak & Data Terdaftar ([ProfileRegisteredInfoSection] - Wali Kelas WA, Orang Tua Call, Domisili)
@@ -166,117 +165,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showShareQrModal(BuildContext context) {
-    HapticFeedback.selectionClick();
-    final targetIdentifier = profile.activeSchool?.isParent == true
-        ? (_student?.nis ??
-              profile.primaryChild?.nis ??
-              profile.user.cleanIdentifier)
-        : profile.user.cleanIdentifier;
-    final shareUrl =
-        'https://school.vintech.cloud/profile/verify?tenant=${profile.activeSchool?.code ?? "VNT"}&id=$targetIdentifier';
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              profile.activeSchool?.isParent == true
-                  ? 'Bagikan QR Profil Wali Murid'
-                  : 'Bagikan QR Profil Siswa',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              profile.activeSchool?.isParent == true
-                  ? 'Pindai QR ini untuk verifikasi saat penjemputan siswa atau kunjungan wali murid.'
-                  : 'Pindai QR ini untuk verifikasi absensi atau gerbang perpustakaan sekolah.',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                color: const Color(0xFF64748B),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: QrImageView(
-                data: shareUrl,
-                version: QrVersions.auto,
-                size: 140.0,
-                eyeStyle: QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: _schoolColor,
-                ),
-                dataModuleStyle: const QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: shareUrl));
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          '✓ Tautan verifikasi profil tersalin ke clipboard!',
-                        ),
-                        backgroundColor: Color(0xFF007D55),
-                      ),
-                    );
-                  }
-                },
-                icon: const Icon(Icons.share_rounded, size: 16),
-                label: const Text('Salin Tautan Profil'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF004AC6),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showSwitchSchoolDialog(BuildContext context) {
     final memberships = profile.memberships;
     if (memberships.length <= 1) {
@@ -401,7 +289,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 schoolColor: _schoolColor,
                 student: _student,
                 onOpenDigitalCard: () => _showDigitalCard(context),
-                onShareProfile: () => _showShareQrModal(context),
               ),
               const SizedBox(height: 16),
               // 3. Quick Academic Capsules

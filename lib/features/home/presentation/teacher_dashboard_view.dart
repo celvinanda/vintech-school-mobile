@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../academic/presentation/attendance_entry_sheet.dart';
 import '../../auth/data/models/user_model.dart';
@@ -19,7 +20,8 @@ class TeacherDashboardView extends StatelessWidget {
     this.scrollController,
   });
 
-  Color get _schoolColor => AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
+  Color get _schoolColor =>
+      AppTheme.parseHexColor(profile.activeSchool?.primaryColor);
 
   String get _cleanNip => profile.user.cleanIdentifier;
 
@@ -33,7 +35,9 @@ class TeacherDashboardView extends StatelessWidget {
         child: SingleChildScrollView(
           controller: scrollController,
           key: const PageStorageKey('teacher_dashboard_scroll_view'),
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -115,7 +119,8 @@ class TeacherDashboardView extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    profile.activeSchool?.cardBadgeTitle ?? 'KARTU TENAGA PENDIDIK',
+                    profile.activeSchool?.cardBadgeTitle ??
+                        'KARTU TENAGA PENDIDIK',
                     style: GoogleFonts.plusJakartaSans(
                       color: Colors.white.withAlpha(190),
                       fontSize: 11,
@@ -136,7 +141,9 @@ class TeacherDashboardView extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  (profile.activeSchool?.isAdmin == true) ? 'ADMIN AKTIF' : 'GURU AKTIF',
+                  (profile.activeSchool?.isAdmin == true)
+                      ? 'ADMIN AKTIF'
+                      : 'GURU AKTIF',
                   style: GoogleFonts.plusJakartaSans(
                     color: const Color(0xFF93C5FD),
                     fontSize: 10,
@@ -170,10 +177,7 @@ class TeacherDashboardView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Container(
-            height: 1,
-            color: Colors.white.withAlpha(25),
-          ),
+          Container(height: 1, color: Colors.white.withAlpha(25)),
           const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,7 +242,11 @@ class TeacherDashboardView extends StatelessWidget {
               color: _schoolColor.withAlpha(25),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.edit_calendar_rounded, color: _schoolColor, size: 22),
+            child: Icon(
+              Icons.edit_calendar_rounded,
+              color: _schoolColor,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -282,7 +290,10 @@ class TeacherDashboardView extends StatelessWidget {
                 builder: (_) => const AttendanceEntrySheet(),
               );
             },
-            child: const Text('Input', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Input',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),

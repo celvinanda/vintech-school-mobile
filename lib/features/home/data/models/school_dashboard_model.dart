@@ -30,14 +30,14 @@ class AnnouncementModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'content': content,
-        'audience': audience,
-        'audience_display': audienceDisplay,
-        'is_pinned': isPinned,
-        'created_at': createdAt,
-      };
+    'id': id,
+    'title': title,
+    'content': content,
+    'audience': audience,
+    'audience_display': audienceDisplay,
+    'is_pinned': isPinned,
+    'created_at': createdAt,
+  };
 }
 
 class AttendanceTodaySummary {
@@ -72,14 +72,14 @@ class AttendanceTodaySummary {
   }
 
   Map<String, dynamic> toJson() => {
-        'date': date,
-        'present_count': presentCount,
-        'izin_count': izinCount,
-        'sakit_count': sakitCount,
-        'alpa_count': alpaCount,
-        'recorded_count': recordedCount,
-        'attendance_rate': attendanceRate,
-      };
+    'date': date,
+    'present_count': presentCount,
+    'izin_count': izinCount,
+    'sakit_count': sakitCount,
+    'alpa_count': alpaCount,
+    'recorded_count': recordedCount,
+    'attendance_rate': attendanceRate,
+  };
 }
 
 class SchoolDashboardModel {
@@ -115,7 +115,8 @@ class SchoolDashboardModel {
     final branding = json['branding'] as Map<String, dynamic>? ?? {};
     final summary = json['summary'] as Map<String, dynamic>? ?? {};
     final att = summary['attendance_today'] as Map<String, dynamic>? ?? {};
-    final rawAnnouncements = json['recent_announcements'] as List<dynamic>? ?? [];
+    final rawAnnouncements =
+        json['recent_announcements'] as List<dynamic>? ?? [];
 
     return SchoolDashboardModel(
       id: json['id'] as String? ?? '',
@@ -130,27 +131,27 @@ class SchoolDashboardModel {
       currentAcademicYear: summary['current_academic_year'] as String? ?? '',
       attendanceToday: AttendanceTodaySummary.fromJson(att),
       announcements: rawAnnouncements
-          .map((a) => AnnouncementModel.fromJson(Map<String, dynamic>.from(a as Map)))
+          .map(
+            (a) =>
+                AnnouncementModel.fromJson(Map<String, dynamic>.from(a as Map)),
+          )
           .toList(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'code': code,
-        'name': name,
-        'level_display': levelDisplay,
-        'branding': {
-          'primary_color': primaryColor,
-          'logo_url': logoUrl,
-        },
-        'summary': {
-          'total_students': totalStudents,
-          'total_teachers': totalTeachers,
-          'total_classrooms': totalClassrooms,
-          'current_academic_year': currentAcademicYear,
-          'attendance_today': attendanceToday.toJson(),
-        },
-        'recent_announcements': announcements.map((a) => a.toJson()).toList(),
-      };
+    'id': id,
+    'code': code,
+    'name': name,
+    'level_display': levelDisplay,
+    'branding': {'primary_color': primaryColor, 'logo_url': logoUrl},
+    'summary': {
+      'total_students': totalStudents,
+      'total_teachers': totalTeachers,
+      'total_classrooms': totalClassrooms,
+      'current_academic_year': currentAcademicYear,
+      'attendance_today': attendanceToday.toJson(),
+    },
+    'recent_announcements': announcements.map((a) => a.toJson()).toList(),
+  };
 }

@@ -51,11 +51,17 @@ class TopBarNotificationAction extends StatelessWidget {
                     right: 4,
                     child: unreadCount > 1
                         ? Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: badgeColor,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                             child: Text(
                               '$unreadCount',
@@ -72,7 +78,10 @@ class TopBarNotificationAction extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: badgeColor,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                   ),

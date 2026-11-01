@@ -173,28 +173,40 @@ class ProfileAcademicServicesSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: Column(
                 children: [
-                  // 1. E-Rapor Digital
-                  _buildServiceTile(
-                    context: context,
-                    icon: Icons.description_outlined,
-                    iconColor: const Color(0xFF004AC6),
-                    iconBg: const Color(0xFFEFF6FF),
-                    title: isParent
-                        ? 'E-Rapor Digital Anak Semester Ganjil'
-                        : 'E-Rapor Semester Ganjil 2025/2026',
-                    subtitle: isParent
-                        ? 'PDF • 2.4 MB • Terverifikasi Kepala Sekolah'
-                        : 'PDF • 2.4 MB • Terverifikasi',
-                    trailing: const Icon(
-                      Icons.download_rounded,
-                      color: Color(0xFF004AC6),
-                      size: 20,
+                  if (isParent) ...[
+                    // 1. E-Rapor Digital Anak (Khusus Orang Tua)
+                    _buildServiceTile(
+                      context: context,
+                      icon: Icons.description_outlined,
+                      iconColor: const Color(0xFF004AC6),
+                      iconBg: const Color(0xFFEFF6FF),
+                      title: 'E-Rapor Digital Anak Semester Ganjil',
+                      subtitle: 'PDF • 2.4 MB • Terverifikasi Kepala Sekolah',
+                      trailing: const Icon(
+                        Icons.download_rounded,
+                        color: Color(0xFF004AC6),
+                        size: 20,
+                      ),
+                      onTap: () => _downloadReport(context),
                     ),
-                    onTap: () => _downloadReport(context),
-                  ),
-                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                  if (!isParent) ...[
-                    // Surat Keterangan Aktif (Khusus Siswa)
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    // 2. Izin Sakit Online Anak
+                    _buildServiceTile(
+                      context: context,
+                      icon: Icons.edit_calendar_rounded,
+                      iconColor: const Color(0xFF7C3AED),
+                      iconBg: const Color(0xFFF5F3FF),
+                      title: 'Pengajuan Dispensasi / Izin Sakit Siswa',
+                      subtitle: 'Form Permohonan Izin Siswa Online',
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF94A3B8),
+                        size: 20,
+                      ),
+                      onTap: () => _showLeavePermissionDialog(context),
+                    ),
+                  ] else ...[
+                    // Layanan Dokumen Administrasi Siswa (E-Rapor terpusat di Tab Akademik)
                     _buildServiceTile(
                       context: context,
                       icon: Icons.verified_outlined,
@@ -210,30 +222,21 @@ class ProfileAcademicServicesSection extends StatelessWidget {
                       onTap: () => _showCertificateNotice(context),
                     ),
                     const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                  ],
-                  // Layanan Kesiswaan: Izin Sakit Online (Ortu) / Dapodik (Siswa)
-                  _buildServiceTile(
-                    context: context,
-                    icon: isParent
-                        ? Icons.edit_calendar_rounded
-                        : Icons.badge_outlined,
-                    iconColor: const Color(0xFF7C3AED),
-                    iconBg: const Color(0xFFF5F3FF),
-                    title: isParent
-                        ? 'Pengajuan Dispensasi / Izin Sakit Siswa'
-                        : 'Data Pokok Pendidikan (Dapodik)',
-                    subtitle: isParent
-                        ? 'Form Permohonan Izin Siswa Online'
-                        : 'Sinkronisasi Data Kemdikbud RI',
-                    trailing: const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Color(0xFF94A3B8),
-                      size: 20,
+                    _buildServiceTile(
+                      context: context,
+                      icon: Icons.badge_outlined,
+                      iconColor: const Color(0xFF7C3AED),
+                      iconBg: const Color(0xFFF5F3FF),
+                      title: 'Data Pokok Pendidikan (Dapodik)',
+                      subtitle: 'Sinkronisasi Data Kemdikbud RI',
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF94A3B8),
+                        size: 20,
+                      ),
+                      onTap: () => _showDapodikNotice(context),
                     ),
-                    onTap: isParent
-                        ? () => _showLeavePermissionDialog(context)
-                        : () => _showDapodikNotice(context),
-                  ),
+                  ],
                 ],
               ),
             ),
