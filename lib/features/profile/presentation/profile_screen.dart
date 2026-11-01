@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _tuitionStatus = 'Lunas';
   String _tuitionMonth = 'November';
   UserProfileResponse get profile {
-    final authState = context.watch<AuthCubit>().state;
+    final authState = context.read<AuthCubit>().state;
     if (authState is Authenticated) {
       return authState.profile;
     }
@@ -378,6 +378,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Register subscription to AuthCubit inside build tree
+    context.watch<AuthCubit>();
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
       body: RefreshIndicator(
