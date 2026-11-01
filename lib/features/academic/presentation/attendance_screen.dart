@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_or_error_view.dart';
@@ -8,7 +7,6 @@ import '../../auth/data/models/user_model.dart';
 import '../data/models/attendance_model.dart';
 import '../logic/attendance_cubit.dart';
 import '../logic/attendance_state.dart';
-import 'attendance_entry_sheet.dart';
 import 'widgets/attendance_check_in_card.dart';
 import 'widgets/attendance_live_clock_card.dart';
 import 'widgets/attendance_metrics_card.dart';
@@ -152,32 +150,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           return const SizedBox.shrink();
         },
       ),
-      floatingActionButton: _canRecordAttendance
-          ? FloatingActionButton.extended(
-              backgroundColor: _schoolColor,
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                  ),
-                  builder: (_) => const AttendanceEntrySheet(),
-                );
-              },
-              icon: const Icon(Icons.add_task_rounded, color: Colors.white),
-              label: Text(
-                'Input Presensi',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            )
-          : null,
     );
   }
 
