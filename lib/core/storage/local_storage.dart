@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
+import '../constants/app_constants.dart';
 import 'hive_cache_service.dart';
 
 /// Layanan Penyimpanan Lokal Hibrida Terpadu (Enterprise Hybrid Storage).
@@ -41,7 +41,7 @@ class LocalStorage {
 
   static Future<LocalStorage> init({
     FlutterSecureStorage? secureStorageOverride,
-    PackageInfo? packageInfoOverride,
+    String? currentVersionOverride,
   }) async {
     final secureStorage = secureStorageOverride ??
         const FlutterSecureStorage(
@@ -56,15 +56,8 @@ class LocalStorage {
     final prefs = results[0] as SharedPreferences;
     final hive = results[1] as HiveCacheService;
 
-    // 1. Ekstraksi Versi Aplikasi untuk Deteksi Pembaruan (package_info_plus)
-    String currentVersion = '1.0.0+1';
-    try {
-      final info = packageInfoOverride ?? await PackageInfo.fromPlatform();
-      currentVersion = '${info.version}+${info.buildNumber}';
-    } catch (_) {
-      // Fallback aman untuk platform yang belum terdaftar atau lingkungan pengujian
-    }
-
+    // 1. Ekstraksi Versi Aplikasi untuk Deteksi Pembaruan (Version-Aware Tracking)
+    final currentVersion = currentVersionOverride ?? AppConstants.appVersion;
     final lastSeenVersion = prefs.getString(_keyLastAppVersion);
     final bool isReturning = (lastSeenVersion != null && lastSeenVersion == currentVersion);
 

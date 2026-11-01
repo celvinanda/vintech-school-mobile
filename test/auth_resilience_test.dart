@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vintech_school_mobile/core/network/api_response.dart';
 import 'package:vintech_school_mobile/core/storage/hive_cache_service.dart';
@@ -70,15 +69,7 @@ void main() {
     });
     FlutterSecureStorage.setMockInitialValues({});
 
-    PackageInfo.setMockInitialValues(
-      appName: 'Vintech School',
-      packageName: 'cloud.vintech.school',
-      version: '2.4.0',
-      buildNumber: '10',
-      buildSignature: '',
-    );
-
-    final storage = await LocalStorage.init();
+    final storage = await LocalStorage.init(currentVersionOverride: '2.4.0+1');
 
     // 1. Token terbaca mulus
     expect(storage.getToken(), 'legacy-plain-jwt-token-xyz');
@@ -97,15 +88,8 @@ void main() {
     // Skenario 1: First Launch (Belum pernah tersimpan versi)
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
-    PackageInfo.setMockInitialValues(
-      appName: 'Vintech School',
-      packageName: 'cloud.vintech.school',
-      version: '2.4.0',
-      buildNumber: '1',
-      buildSignature: '',
-    );
 
-    final storageFirstLaunch = await LocalStorage.init();
+    final storageFirstLaunch = await LocalStorage.init(currentVersionOverride: '2.4.0+1');
     expect(storageFirstLaunch.isReturningUser(), isFalse,
         reason: 'Pengguna baru harus mendapatkan sambutan branding penuh');
 
@@ -113,20 +97,12 @@ void main() {
     await storageFirstLaunch.markUserVisited();
 
     // Skenario 2: Returning Daily User (Versi sama persis)
-    final storageDailyUser = await LocalStorage.init();
+    final storageDailyUser = await LocalStorage.init(currentVersionOverride: '2.4.0+1');
     expect(storageDailyUser.isReturningUser(), isTrue,
         reason: 'Pengguna harian mendapatkan dwell cepat (~400ms) bebas pajak waktu');
 
     // Skenario 3: Post-Update Launch (Aplikasi diperbarui dari toko aplikasi)
-    PackageInfo.setMockInitialValues(
-      appName: 'Vintech School',
-      packageName: 'cloud.vintech.school',
-      version: '2.5.0',
-      buildNumber: '2',
-      buildSignature: '',
-    );
-
-    final storagePostUpdate = await LocalStorage.init();
+    final storagePostUpdate = await LocalStorage.init(currentVersionOverride: '2.5.0+2');
     expect(storagePostUpdate.isReturningUser(), isFalse,
         reason: 'Setelah update aplikasi, pengguna disajikan branding penuh & pembaruan versi');
   });
