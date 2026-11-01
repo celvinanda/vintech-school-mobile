@@ -30,11 +30,14 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
   bool _isNisCopied = false;
 
   bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
-  String get _nis => widget.profile.user.cleanIdentifier;
-  String get _nisn => widget.student?.nisn ?? (widget.profile.activeSchool?.isStudent == true ? '0081234501' : '-');
-  String get _classroomName => widget.student?.classroomName ?? widget.profile.activeSchool?.classroomName ?? 'Kelas X-IPA-1';
+  bool get _isParent => widget.profile.activeSchool?.isParent == true;
+  String get _nis => _isParent
+      ? (widget.student?.nis ?? widget.profile.primaryChild?.nis ?? widget.profile.user.cleanIdentifier)
+      : widget.profile.user.cleanIdentifier;
+  String get _nisn => widget.student?.nisn ?? (widget.profile.activeSchool?.isStudent == true ? '0081234501' : (_isParent ? (widget.profile.primaryChild?.nisn ?? '-') : '-'));
+  String get _classroomName => widget.student?.classroomName ?? widget.profile.activeSchool?.classroomName ?? (_isParent ? (widget.profile.primaryChild?.classroomName ?? 'Siswa Terikat') : 'Kelas X-IPA-1');
   String get _schoolName => widget.profile.activeSchool?.schoolName ?? 'SMA Negeri 1 Nusantara Jakarta';
-  String get _roleLabel => widget.profile.activeSchool?.roleDisplayLabel ?? 'Siswa Aktif';
+  String get _roleLabel => widget.profile.activeSchool?.roleDisplayLabel ?? (_isParent ? 'Wali Murid' : 'Siswa Aktif');
 
   String get _initials {
     final name = widget.profile.user.fullName.trim();
@@ -275,7 +278,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _isStaffOrTeacher ? 'NIP / ID Pegawai' : 'NIS / Induk',
+                                  _isStaffOrTeacher ? 'NIP / ID Pegawai' : (_isParent ? 'NIS Anak' : 'NIS / Induk'),
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w500,
@@ -322,7 +325,7 @@ class _ProfileHeroCardState extends State<ProfileHeroCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _isStaffOrTeacher ? 'Status Jabatan' : 'NISN Nasional',
+                                  _isStaffOrTeacher ? 'Status Jabatan' : (_isParent ? 'NISN Anak' : 'NISN Nasional'),
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w500,

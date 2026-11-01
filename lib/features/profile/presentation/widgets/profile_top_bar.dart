@@ -29,8 +29,11 @@ class ProfileTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final school = profile.activeSchool;
     final isStudent = school?.isStudent == true;
-    final roleLabel = isStudent ? 'Siswa Aktif' : 'Tenaga Pendidik';
-    final classroom = school?.classroomName ?? 'Kelas X-IPA-1';
+    final isParent = school?.isParent == true;
+    final roleLabel = school?.roleDisplayLabel ?? (isStudent ? 'Siswa Aktif' : (isParent ? 'Wali Murid' : 'Tenaga Pendidik'));
+    final classroom = isParent
+        ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat')
+        : (school?.classroomName ?? 'Kelas X-IPA-1');
 
     return RepaintBoundary(
       child: Row(

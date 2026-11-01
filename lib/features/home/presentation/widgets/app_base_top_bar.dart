@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -315,72 +315,123 @@ class AppBaseTopBar extends StatelessWidget {
     );
   }
 
+  bool get _isParent => profile.activeSchool?.isParent == true;
+  bool get _isStudent => profile.activeSchool?.isStudent == true || (!isStaffOrTeacher && !_isParent);
+
   Widget _buildInnerTopBar(BuildContext context) {
-    switch (currentIndex) {
-      case 0:
-        return BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
-            return HomeTopBar(
-              profile: profile,
-              schoolColor: schoolColor,
-              announcements: announcements,
-              onSchoolTap: () => _handleSchoolTap(context),
-              onNotificationTap: () => _handleNotificationTap(context, announcements),
-            );
-          },
-        );
-      case 1:
-        return AttendanceTopBar(
+    if (_isParent) {
+      switch (currentIndex) {
+        case 0:
+          return _buildHomeTopBar(context);
+        case 1:
+          return _buildAttendanceTopBar(context);
+        case 2:
+          return _buildBillingTopBar(context);
+        case 3:
+          return _buildProfileTopBar(context);
+        default:
+          return const SizedBox.shrink();
+      }
+    } else if (_isStudent) {
+      switch (currentIndex) {
+        case 0:
+          return _buildHomeTopBar(context);
+        case 1:
+          return _buildAttendanceTopBar(context);
+        case 2:
+          return _buildAcademicTopBar(context);
+        case 3:
+          return _buildProfileTopBar(context);
+        default:
+          return const SizedBox.shrink();
+      }
+    } else {
+      switch (currentIndex) {
+        case 0:
+          return _buildHomeTopBar(context);
+        case 1:
+          return _buildAttendanceTopBar(context);
+        case 2:
+          return _buildAcademicTopBar(context);
+        case 3:
+          return _buildBillingTopBar(context);
+        case 4:
+          return _buildProfileTopBar(context);
+        default:
+          return const SizedBox.shrink();
+      }
+    }
+  }
+
+  Widget _buildHomeTopBar(BuildContext context) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        final announcements = state is HomeLoaded ? state.dashboard.announcements : null;
+        return HomeTopBar(
           profile: profile,
           schoolColor: schoolColor,
-          isStudent: !isStaffOrTeacher,
+          announcements: announcements,
+          onSchoolTap: () => _handleSchoolTap(context),
+          onNotificationTap: () => _handleNotificationTap(context, announcements),
+        );
+      },
+    );
+  }
+
+  Widget _buildAttendanceTopBar(BuildContext context) {
+    return AttendanceTopBar(
+      profile: profile,
+      schoolColor: schoolColor,
+      isStudent: _isStudent,
+      onRefresh: () {
+        if (onAttendanceRefresh != null) {
+          onAttendanceRefresh!();
+        } else {
+          context.read<AttendanceCubit>().loadAttendances(forceRefreshMeta: true);
+        }
+      },
+    );
+  }
+
+  Widget _buildAcademicTopBar(BuildContext context) {
+    return AcademicTopBar(
+      profile: profile,
+      schoolColor: schoolColor,
+      onReportTap: () => _handleReportTap(context),
+      gpa: 88.6,
+      academicPeriod: 'Semester Genap 2025/2026',
+    );
+  }
+
+  Widget _buildBillingTopBar(BuildContext context) {
+    return BlocBuilder<BillingCubit, BillingState>(
+      builder: (context, state) {
+        final unpaidCount = state is BillingLoaded
+            ? state.invoices.where((i) => !i.isPaid).length
+            : 0;
+        return BillingTopBar(
+          profile: profile,
+          schoolColor: schoolColor,
+          unpaidCount: unpaidCount,
           onRefresh: () {
-            if (onAttendanceRefresh != null) {
-              onAttendanceRefresh!();
+            if (onBillingRefresh != null) {
+              onBillingRefresh!();
             } else {
-              context.read<AttendanceCubit>().loadAttendances(forceRefreshMeta: true);
+              context.read<BillingCubit>().loadInvoices();
             }
           },
         );
-      case 2:
-        return AcademicTopBar(
-          profile: profile,
-          schoolColor: schoolColor,
-          onReportTap: () => _handleReportTap(context),
-          gpa: 88.6,
-          academicPeriod: 'Semester Genap 2025/2026',
-        );
-      case 3:
-        return BlocBuilder<BillingCubit, BillingState>(
-          builder: (context, state) {
-            final unpaidCount = state is BillingLoaded
-                ? state.invoices.where((i) => !i.isPaid).length
-                : 0;
-            return BillingTopBar(
-              profile: profile,
-              schoolColor: schoolColor,
-              unpaidCount: unpaidCount,
-              onRefresh: () {
-                if (onBillingRefresh != null) {
-                  onBillingRefresh!();
-                } else {
-                  context.read<BillingCubit>().loadInvoices();
-                }
-              },
-            );
-          },
-        );
-      case 4:
-        return ProfileTopBar(
-          profile: profile,
-          schoolColor: schoolColor,
-          onDigitalCardTap: () => _handleDigitalCardTap(context),
-          onSettingsTap: () => _handleSettingsTap(context),
-          onShareQrTap: () => _handleShareQrTap(context),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
+      },
+    );
+  }
+
+  Widget _buildProfileTopBar(BuildContext context) {
+    return ProfileTopBar(
+      profile: profile,
+      schoolColor: schoolColor,
+      onDigitalCardTap: () => _handleDigitalCardTap(context),
+      onSettingsTap: () => _handleSettingsTap(context),
+      onShareQrTap: () => _handleShareQrTap(context),
+    );
   }
 }

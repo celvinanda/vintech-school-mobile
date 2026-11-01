@@ -27,7 +27,8 @@ class AttendanceTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final school = profile.activeSchool;
     final schoolName = school?.name ?? 'Vintech School';
-    final roleLabel = isStudent ? 'Presensi Siswa' : 'Presensi Pendidik';
+    final isParent = school?.isParent == true;
+    final roleLabel = isParent ? 'Kehadiran Anak' : (isStudent ? 'Presensi Siswa' : 'Presensi Pendidik');
 
     return RepaintBoundary(
       child: Row(

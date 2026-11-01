@@ -102,6 +102,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             profile: widget.profile,
             scrollController: _scrollControllers[0],
             onNavigateTab: _handleTabTap,
+            onOpenBilling: () => _handleTabTap(2),
           ),
         ),
         _activatedTabs.contains(1)
@@ -138,6 +139,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             profile: widget.profile,
             scrollController: _scrollControllers[0],
             onNavigateTab: _handleTabTap,
+            onOpenBilling: _openBillingScreen,
           ),
         ),
         _activatedTabs.contains(1)
@@ -341,43 +343,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   bool get _isStudent => widget.profile.activeSchool?.isStudent == true || (!_isStaffOrTeacher && !_isParent);
   int get _tabCount => _isStaffOrTeacher ? 5 : 4;
 
+  void _openBillingScreen() {
+    Navigator.of(context).push(
+      SmoothWelcomePageRoute(
+        child: BillingScreen(
+          profile: widget.profile,
+        ),
+      ),
+    );
+  }
+
   /// Smart Reselect & Tab Switching:
   /// - Jika tab lain ditekan: Aktifkan tab (jika belum pernah dibuka), pindah tab & tampilkan bar navigasi.
   /// - Jika tab yang sedang aktif ditekan kembali: Memicu animasi smooth Scroll-to-Top!
   void _handleTabTap(int index) {
-    // 1. Jika Siswa meminta navigasi ke SPP (index 3 dari dashboard bento/quick service),
-    // buka BillingScreen sebagai layar penuh (full-page route) dengan tombol kembali:
-    if (_isStudent && index == 3) {
-      Navigator.of(context).push(
-        SmoothWelcomePageRoute(
-          child: BillingScreen(
-            profile: widget.profile,
-          ),
-        ),
-      );
-      return;
-    }
+    if (index < 0 || index >= _tabCount) return;
 
-    int targetIndex = index;
-    // 2. Pemetaan tab jika akun Orang Tua memicu navigasi dari kartu dashboard:
-    // Tab 3 (SPP) dipetakan ke Tab 2 pada 4-tab bar
-    // Tab 4 (Profil) dipetakan ke Tab 3 pada 4-tab bar
-    if (_isParent) {
-      if (index == 3) {
-        targetIndex = 2;
-      } else if (index == 4) {
-        targetIndex = 3;
-      } else if (targetIndex >= 4) {
-        targetIndex = 3;
-      }
-    }
-
-    if (targetIndex == _currentIndex) {
-      _scrollToTop(targetIndex);
+    if (index == _currentIndex) {
+      _scrollToTop(index);
     } else {
-      _activateTab(targetIndex);
+      _activateTab(index);
       setState(() {
-        _currentIndex = targetIndex;
+        _currentIndex = index;
       });
       _isNavBarVisible.value = true;
     }

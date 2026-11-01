@@ -19,12 +19,14 @@ import 'widgets/student_smart_card.dart';
 class StudentDashboardView extends StatelessWidget {
   final UserProfileResponse profile;
   final Function(int tabIndex) onNavigateTab;
+  final VoidCallback? onOpenBilling;
   final ScrollController? scrollController;
 
   const StudentDashboardView({
     super.key,
     required this.profile,
     required this.onNavigateTab,
+    this.onOpenBilling,
     this.scrollController,
   });
 
@@ -70,7 +72,7 @@ class StudentDashboardView extends StatelessWidget {
                   schoolColor: _schoolColor,
                   onAttendanceTap: () => onNavigateTab(1),
                   onAcademicTap: () => onNavigateTab(2),
-                  onBillingTap: () => onNavigateTab(3),
+                  onBillingTap: onOpenBilling ?? () => onNavigateTab(2),
                 ),
 
                 const SizedBox(height: 18),
@@ -86,6 +88,7 @@ class StudentDashboardView extends StatelessWidget {
                 // Bento 2: Quick Service 4-Grid Action Buttons
                 StudentQuickServices(
                   onNavigateTab: onNavigateTab,
+                  onOpenBilling: onOpenBilling,
                 ),
 
                 const SizedBox(height: 18),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -6,10 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 /// Selaras 1:1 dengan Google Stitch Dashboard
 class StudentQuickServices extends StatelessWidget {
   final Function(int tabIndex) onNavigateTab;
+  final VoidCallback? onOpenBilling;
 
   const StudentQuickServices({
     super.key,
     required this.onNavigateTab,
+    this.onOpenBilling,
   });
 
   @override
@@ -34,7 +36,11 @@ class StudentQuickServices extends StatelessWidget {
           bgColor: const Color(0xFF004AC6).withValues(alpha: 0.10),
           onTap: () {
             HapticFeedback.selectionClick();
-            onNavigateTab(3);
+            if (onOpenBilling != null) {
+              onOpenBilling!();
+            } else {
+              onNavigateTab(2);
+            }
           },
         ),
         const SizedBox(width: 10),

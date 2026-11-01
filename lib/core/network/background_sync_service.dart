@@ -122,17 +122,20 @@ class BackgroundSyncService with WidgetsBindingObserver {
       }
 
       final isStudent = profile.activeSchool?.isStudent == true;
+      final isParent = profile.activeSchool?.isParent == true;
       final isStaff = profile.activeSchool?.isStaffOrTeacher == true;
-      final cleanId = profile.user.cleanIdentifier;
+      final cleanId = isParent
+          ? (profile.primaryChild?.nis ?? profile.user.cleanIdentifier)
+          : profile.user.cleanIdentifier;
 
       await Future.wait([
         homeCubit.loadDashboard(),
         attendanceCubit.loadAttendances(
-          studentNis: isStudent ? cleanId : null,
+          studentNis: (isStudent || isParent) ? cleanId : null,
           isStaff: isStaff,
         ),
         billingCubit.loadInvoices(
-          studentNis: isStudent ? cleanId : null,
+          studentNis: (isStudent || isParent) ? cleanId : null,
           silent: true,
         ),
       ]);

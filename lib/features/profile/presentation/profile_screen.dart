@@ -50,7 +50,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadLiveStudentData() async {
-    if (profile.activeSchool?.isStudent != true) return;
+    if (profile.activeSchool?.isStudent != true) {
+      if (profile.activeSchool?.isParent == true && profile.primaryChild != null) {
+        setState(() => _student = profile.primaryChild);
+      }
+      return;
+    }
     try {
       final repo = context.read<AcademicRepository>();
       final st = await repo.getStudentByNis(profile.user.cleanIdentifier);

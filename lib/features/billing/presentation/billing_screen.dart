@@ -44,8 +44,11 @@ class _BillingScreenState extends State<BillingScreen> {
   String _selectedFilter = 'UNPAID'; // 'UNPAID', 'PAID', 'ALL'
 
   bool get _isStudent => widget.profile.activeSchool?.isStudent == true;
+  bool get _isParent => widget.profile.activeSchool?.isParent == true;
   Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
-  String get _cleanNis => widget.profile.user.cleanIdentifier;
+  String get _cleanNis => _isParent
+      ? (widget.profile.primaryChild?.nis ?? widget.profile.user.cleanIdentifier)
+      : widget.profile.user.cleanIdentifier;
 
   @override
   void initState() {
@@ -56,7 +59,7 @@ class _BillingScreenState extends State<BillingScreen> {
   void _fetchInvoices() {
     context.read<BillingCubit>().loadInvoices(
           filter: 'ALL', // Ambil semua dari backend/Hive agar counter tabs selalu akurat
-          studentNis: _isStudent ? _cleanNis : null,
+          studentNis: (_isStudent || _isParent) ? _cleanNis : null,
         );
   }
 
