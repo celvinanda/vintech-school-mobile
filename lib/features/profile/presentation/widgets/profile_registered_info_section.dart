@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../parent_edit_profile_screen.dart';
@@ -31,7 +32,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile.activeSchool?.isParent == true;
   String get _classroomName =>
-      student?.classroomName ?? profile.activeSchool?.classroomName ?? 'X-IPA-1';
+      student?.classroomName ??
+      profile.activeSchool?.classroomName ??
+      'X-IPA-1';
   String get _effectiveParentName => student?.parentName ?? parentName;
   String get _effectiveParentPhone => student?.parentPhone ?? parentPhone;
 
@@ -53,7 +56,13 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
 
   String get _homeroomInitials {
     final clean = _effectiveHomeroomName
-        .replaceAll(RegExp(r'^(Dra\.|Dr\.|Drs\.|Bpk\.|Ibu\.|H\.|Hj\.)\s*', caseSensitive: false), '')
+        .replaceAll(
+          RegExp(
+            r'^(Dra\.|Dr\.|Drs\.|Bpk\.|Ibu\.|H\.|Hj\.)\s*',
+            caseSensitive: false,
+          ),
+          '',
+        )
         .trim();
     if (clean.isEmpty) return 'WK';
     final parts = clean.split(RegExp(r'\s+'));
@@ -106,31 +115,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
         ? 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
         : 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.';
     final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
-    final cleanPhone = rawPhone.startsWith('0') ? '62${rawPhone.substring(1)}' : rawPhone;
-    final uri = Uri.parse('https://wa.me/$cleanPhone?text=$greeting');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Membuka kontak WhatsApp Wali Kelas...')),
-        );
-      }
-    }
-  }
-
-  Future<void> _launchBkConsultation(BuildContext context) async {
-    HapticFeedback.lightImpact();
-    final childName =
-        student?.fullName ?? profile.primaryChild?.fullName ?? 'Anak Kami';
-    final greeting =
-        'Halo%20Layanan%20BK%20atau%20Konseling%20Sekolah,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).%20Saya%20ingin%20berkonsultasi%20terkait%20perkembangan%20belajar%20anak.';
-    final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
     final cleanPhone = rawPhone.startsWith('0')
         ? '62${rawPhone.substring(1)}'
-        : (rawPhone.isNotEmpty ? rawPhone : '6281200000000');
+        : rawPhone;
     final uri = Uri.parse('https://wa.me/$cleanPhone?text=$greeting');
     try {
       if (await canLaunchUrl(uri)) {
@@ -139,7 +126,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Membuka kontak konseling Guru BK via WhatsApp...')),
+          const SnackBar(
+            content: Text('Membuka kontak WhatsApp Wali Kelas...'),
+          ),
         );
       }
     }
@@ -147,7 +136,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
 
   Future<void> _launchParentCall(BuildContext context) async {
     HapticFeedback.lightImpact();
-    final cleanPhone = parentPhone.replaceAll(RegExp(r'\D'), '');
+    final cleanPhone = _effectiveParentPhone.replaceAll(RegExp(r'\D'), '');
     final uri = Uri.parse('tel:$cleanPhone');
     try {
       if (await canLaunchUrl(uri)) {
@@ -156,7 +145,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Menghubungi nomor telepon orang tua...')),
+          const SnackBar(
+            content: Text('Menghubungi nomor telepon orang tua...'),
+          ),
         );
       }
     }
@@ -168,54 +159,15 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                _isParent ? 'Saluran Komunikasi Sekolah' : 'Informasi Terdaftar',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF0F172A),
-                ),
-              ),
-              if (_isParent)
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ParentEditProfileScreen(
-                          profile: profile,
-                          student: student,
-                        ),
-                      ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.edit_rounded, size: 13, color: Color(0xFF004AC6)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Ubah Kontak TU',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF004AC6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+          Text(
+            _isParent ? 'Kontak & Informasi Terdaftar' : 'Informasi Terdaftar',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
           ),
           const SizedBox(height: 10),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -231,6 +183,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
               ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Wali Kelas Cardlet
                 Container(
@@ -263,8 +216,8 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                               _isStaffOrTeacher
                                   ? 'Kepala Sekolah / Pimpinan'
                                   : (_isParent
-                                      ? 'Wali Kelas Anak ($_classroomName)'
-                                      : 'Wali Kelas ($_classroomName)'),
+                                        ? 'Wali Kelas Anak'
+                                        : 'Wali Kelas ($_classroomName)'),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w500,
@@ -291,8 +244,10 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         onTap: () => _launchWa(context),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFECFDF5),
                             borderRadius: BorderRadius.circular(8),
@@ -308,7 +263,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Chat',
+                                'Chat WA',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
@@ -322,149 +277,99 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-
-                // 2. Orang Tua / BK / TU Cardlet
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 19,
-                        backgroundColor: _isParent
-                            ? const Color(0xFFFEF3C7)
-                            : const Color(0xFFE2E8F0),
-                        child: Text(
-                          _isStaffOrTeacher
-                              ? 'TU'
-                              : (_isParent ? 'BK' : 'OT'),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: _isParent
-                                ? const Color(0xFFD97706)
-                                : const Color(0xFF475569),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _isStaffOrTeacher
-                                  ? 'Layanan Tata Usaha & SDM'
-                                  : (_isParent
-                                      ? 'Bimbingan Konseling (BK)'
-                                      : 'Orang Tua / Wali Siswa'),
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              _isStaffOrTeacher
-                                  ? 'Kantor Tata Usaha SMAN 1'
-                                  : (_isParent
-                                      ? 'Bpk. Hendra, S.Psi'
-                                      : _effectiveParentName),
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _isStaffOrTeacher
-                                  ? '021-3456789'
-                                  : (_isParent
-                                      ? 'Konsultasi Perkembangan Siswa'
-                                      : _effectiveParentPhone),
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
-                                color: const Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () {
-                          if (_isParent) {
-                            _launchBkConsultation(context);
-                          } else {
-                            _launchParentCall(context);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _isParent
-                                ? const Color(0xFFFFFBEB)
-                                : const Color(0xFFEFF6FF),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: _isParent
-                                  ? const Color(0xFFFDE68A)
-                                  : const Color(0xFFBFDBFE),
+                if (!_isParent) ...[
+                  const SizedBox(height: 10),
+                  // Orang Tua Cardlet (khusus akun Siswa)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 19,
+                          backgroundColor: Color(0xFFE2E8F0),
+                          child: Text(
+                            'OT',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF475569),
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                _isParent
-                                    ? Icons.support_agent_rounded
-                                    : Icons.call_rounded,
-                                size: 13,
-                                color: _isParent
-                                    ? const Color(0xFFD97706)
-                                    : const Color(0xFF004AC6),
-                              ),
-                              const SizedBox(width: 4),
                               Text(
-                                _isParent ? 'Konsultasi' : 'Hubungi',
+                                'Orang Tua / Wali Siswa',
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11.5,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                _effectiveParentName,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: _isParent
-                                      ? const Color(0xFFD97706)
-                                      : const Color(0xFF004AC6),
+                                  color: const Color(0xFF0F172A),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
+                        InkWell(
+                          onTap: () => _launchParentCall(context),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFBFDBFE),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.call_rounded,
+                                  size: 13,
+                                  color: Color(0xFF004AC6),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Hubungi',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF004AC6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 14),
-
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 const SizedBox(height: 12),
-
-                // 3. Email Terdaftar
-                _buildInfoTile(
-                  icon: Icons.mail_outline_rounded,
-                  label: _isParent ? 'Email Orang Tua Terdaftar' : 'Email Siswa',
-                  value: _effectiveEmail,
-                ),
-                const SizedBox(height: 10),
-
-                // 4. Nomor Telepon / WA
+                // Data Kontak & Domisili Terdaftar
                 _buildInfoTile(
                   icon: Icons.phone_android_rounded,
                   label: _isParent
@@ -473,13 +378,58 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                   value: _effectiveUserPhone,
                 ),
                 const SizedBox(height: 10),
-
-                // 5. Alamat Domisili
+                _buildInfoTile(
+                  icon: Icons.mail_outline_rounded,
+                  label: _isParent
+                      ? 'Email Orang Tua Terdaftar'
+                      : 'Email Siswa',
+                  value: _effectiveEmail,
+                ),
+                const SizedBox(height: 10),
                 _buildInfoTile(
                   icon: Icons.pin_drop_outlined,
-                  label: _isParent ? 'Alamat Domisili Keluarga' : 'Alamat Domisili',
+                  label: _isParent
+                      ? 'Alamat Domisili Keluarga'
+                      : 'Alamat Domisili',
                   value: _effectiveAddress,
                 ),
+                if (_isParent) ...[
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 42,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ParentEditProfileScreen(
+                              profile: profile,
+                              student: student,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit_note_rounded, size: 18),
+                      label: Text(
+                        'Perbarui Data Kontak & Domisili TU',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF004AC6),
+                        side: const BorderSide(color: Color(0xFFBFDBFE)),
+                        backgroundColor: const Color(0xFFF8FAFC),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

@@ -4,108 +4,106 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Card 5: Academic Files & Document Services (Stitch Design)
 /// Menampilkan E-Rapor Digital PDF, Surat Keterangan Aktif Belajar, dan Sinkronisasi Dapodik Kemdikbud
-  void _showLeavePermissionDialog(BuildContext context) {
-    HapticFeedback.selectionClick();
-    final reasonController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F3FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.edit_calendar_rounded, color: Color(0xFF7C3AED), size: 22),
+void _showLeavePermissionDialog(BuildContext context) {
+  HapticFeedback.selectionClick();
+  final reasonController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F3FF),
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Permohonan Izin Siswa',
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
+            child: const Icon(
+              Icons.edit_calendar_rounded,
+              color: Color(0xFF7C3AED),
+              size: 22,
             ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ajukan surat izin atau keterangan sakit untuk anak Anda langsung ke sistem sekolah:',
-              style: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: const Color(0xFF475569)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonController,
-              maxLines: 3,
-              style: GoogleFonts.plusJakartaSans(fontSize: 13),
-              decoration: InputDecoration(
-                hintText: 'Tuliskan alasan izin (Sakit / Keperluan Keluarga)...',
-                hintStyle: GoogleFonts.plusJakartaSans(fontSize: 12.5, color: const Color(0xFF94A3B8)),
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Permohonan Izin Siswa',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+              ),
             ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Permohonan izin sakit/dispensasi berhasil dikirim ke Wali Kelas!'),
-                  backgroundColor: Color(0xFF007D55),
-                ),
-              );
-            },
-            child: const Text('Kirim Izin'),
           ),
         ],
       ),
-    );
-  }
-
-  void _downloadReceiptNotice(BuildContext context) {
-    HapticFeedback.selectionClick();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✓ Mengunduh Kwitansi Resmi Pembayaran SPP (PDF)...'),
-        backgroundColor: Color(0xFF007D55),
-        duration: Duration(seconds: 2),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ajukan surat izin atau keterangan sakit untuk anak Anda langsung ke sistem sekolah:',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 12.5,
+              color: const Color(0xFF475569),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: reasonController,
+            maxLines: 3,
+            style: GoogleFonts.plusJakartaSans(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'Tuliskan alasan izin (Sakit / Keperluan Keluarga)...',
+              hintStyle: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                color: const Color(0xFF94A3B8),
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              contentPadding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Batal'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF7C3AED),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: () {
+            Navigator.pop(ctx);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  '✓ Permohonan izin sakit/dispensasi berhasil dikirim ke Wali Kelas!',
+                ),
+                backgroundColor: Color(0xFF007D55),
+              ),
+            );
+          },
+          child: const Text('Kirim Izin'),
+        ),
+      ],
+    ),
+  );
+}
 
 class ProfileAcademicServicesSection extends StatelessWidget {
   final bool isParent;
-
-  const ProfileAcademicServicesSection({
-    super.key,
-    this.isParent = false,
-  });
-
+  const ProfileAcademicServicesSection({super.key, this.isParent = false});
   void _downloadReport(BuildContext context) {
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +119,9 @@ class ProfileAcademicServicesSection extends StatelessWidget {
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Membuka Surat Keterangan Aktif Belajar bertanda tangan digital.'),
+        content: Text(
+          'Membuka Surat Keterangan Aktif Belajar bertanda tangan digital.',
+        ),
         duration: Duration(seconds: 2),
       ),
     );
@@ -131,7 +131,9 @@ class ProfileAcademicServicesSection extends StatelessWidget {
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Sinkronisasi status Dapodik terverifikasi aktif di Kemdikbud RI.'),
+        content: Text(
+          'Sinkronisasi status Dapodik terverifikasi aktif di Kemdikbud RI.',
+        ),
         duration: Duration(seconds: 2),
       ),
     );
@@ -144,7 +146,9 @@ class ProfileAcademicServicesSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isParent ? 'Dokumen & Layanan Orang Tua' : 'Berkas & Layanan Akademik',
+            isParent
+                ? 'Dokumen & Layanan Orang Tua'
+                : 'Berkas & Layanan Akademik',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -152,7 +156,6 @@ class ProfileAcademicServicesSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -170,7 +173,7 @@ class ProfileAcademicServicesSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: Column(
                 children: [
-                  // 1. E-Rapor
+                  // 1. E-Rapor Digital
                   _buildServiceTile(
                     context: context,
                     icon: Icons.description_outlined,
@@ -190,34 +193,30 @@ class ProfileAcademicServicesSection extends StatelessWidget {
                     onTap: () => _downloadReport(context),
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-                  // 2. Kwitansi SPP (Ortu) / Surat Keterangan Aktif (Siswa)
-                  _buildServiceTile(
-                    context: context,
-                    icon: isParent ? Icons.receipt_long_rounded : Icons.verified_outlined,
-                    iconColor: const Color(0xFF007D55),
-                    iconBg: const Color(0xFFECFDF5),
-                    title: isParent
-                        ? 'Kwitansi & Riwayat Pembayaran SPP'
-                        : 'Surat Keterangan Aktif Belajar',
-                    subtitle: isParent
-                        ? 'Unduh Bukti Pembayaran Resmi Sekolah'
-                        : 'Tanda Tangan Elektronik Kepala Sekolah',
-                    trailing: Icon(
-                      isParent ? Icons.download_rounded : Icons.chevron_right_rounded,
-                      color: isParent ? const Color(0xFF007D55) : const Color(0xFF94A3B8),
-                      size: 20,
+                  if (!isParent) ...[
+                    // Surat Keterangan Aktif (Khusus Siswa)
+                    _buildServiceTile(
+                      context: context,
+                      icon: Icons.verified_outlined,
+                      iconColor: const Color(0xFF007D55),
+                      iconBg: const Color(0xFFECFDF5),
+                      title: 'Surat Keterangan Aktif Belajar',
+                      subtitle: 'Tanda Tangan Elektronik Kepala Sekolah',
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF94A3B8),
+                        size: 20,
+                      ),
+                      onTap: () => _showCertificateNotice(context),
                     ),
-                    onTap: isParent
-                        ? () => _downloadReceiptNotice(context)
-                        : () => _showCertificateNotice(context),
-                  ),
-                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
-
-                  // 3. Izin Sakit Online (Ortu) / Dapodik (Siswa)
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ],
+                  // Layanan Kesiswaan: Izin Sakit Online (Ortu) / Dapodik (Siswa)
                   _buildServiceTile(
                     context: context,
-                    icon: isParent ? Icons.edit_calendar_rounded : Icons.badge_outlined,
+                    icon: isParent
+                        ? Icons.edit_calendar_rounded
+                        : Icons.badge_outlined,
                     iconColor: const Color(0xFF7C3AED),
                     iconBg: const Color(0xFFF5F3FF),
                     title: isParent

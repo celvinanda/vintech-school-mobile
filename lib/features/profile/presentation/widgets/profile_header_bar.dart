@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../auth/data/models/user_model.dart';
 import '../settings_screen.dart';
 
@@ -9,18 +10,15 @@ import '../settings_screen.dart';
 class ProfileHeaderBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
-
   const ProfileHeaderBar({
     super.key,
     required this.profile,
     required this.schoolColor,
   });
-
   @override
   Widget build(BuildContext context) {
     final schoolName = profile.activeSchool?.schoolName ?? 'Vintech School';
     final isStudent = profile.activeSchool?.isStudent == true;
-
     return RepaintBoundary(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

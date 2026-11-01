@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../auth/data/models/user_model.dart';
+
 import 'package:vintech_school_mobile/features/home/presentation/widgets/top_bar/top_bar_emblem.dart';
 
 /// Top Bar Profil & Identitas Modular & Cerdas
@@ -15,7 +17,6 @@ class ProfileTopBar extends StatelessWidget {
   final VoidCallback onDigitalCardTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onShareQrTap;
-
   const ProfileTopBar({
     super.key,
     required this.profile,
@@ -24,17 +25,19 @@ class ProfileTopBar extends StatelessWidget {
     required this.onSettingsTap,
     required this.onShareQrTap,
   });
-
   @override
   Widget build(BuildContext context) {
     final school = profile.activeSchool;
     final isStudent = school?.isStudent == true;
     final isParent = school?.isParent == true;
-    final roleLabel = school?.roleDisplayLabel ?? (isStudent ? 'Siswa Aktif' : (isParent ? 'Wali Murid' : 'Tenaga Pendidik'));
+    final roleLabel =
+        school?.roleDisplayLabel ??
+        (isStudent
+            ? 'Siswa Aktif'
+            : (isParent ? 'Wali Murid' : 'Tenaga Pendidik'));
     final classroom = isParent
         ? (profile.primaryChild?.classroomName ?? 'Siswa Terikat')
         : (school?.classroomName ?? 'Kelas X-IPA-1');
-
     return RepaintBoundary(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -46,7 +49,6 @@ class ProfileTopBar extends StatelessWidget {
             onTap: onDigitalCardTap,
           ),
           const SizedBox(width: 12),
-
           // 2. Smart Title & Identity Context
           Expanded(
             child: GestureDetector(
@@ -86,7 +88,6 @@ class ProfileTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-
           // 3. QR Quick-Scan Button (Ikon langsung tanpa border circle)
           Material(
             color: Colors.transparent,
@@ -111,7 +112,6 @@ class ProfileTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-
           // 4. Settings Button (Ikon langsung tanpa border circle)
           Material(
             color: Colors.transparent,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
+
 import '../../../core/storage/local_storage.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/update/ota_update_service.dart';
@@ -14,9 +15,7 @@ import '../../auth/presentation/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final UserProfileResponse profile;
-
   const SettingsScreen({super.key, required this.profile});
-
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -26,22 +25,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _hapticEnabled = true;
   bool _devModeEnabled = true;
   bool _isSyncing = false;
-
-  Color get _schoolColor => AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
-
+  Color get _schoolColor =>
+      AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
   Future<void> _triggerManualSync() async {
     final storage = context.read<LocalStorage>();
     final pendingCount = storage.hive.totalPendingOutbox;
     if (pendingCount == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Semua data offline sudah tersinkronisasi sempurna dengan server.'),
+          content: Text(
+            'Semua data offline sudah tersinkronisasi sempurna dengan server.',
+          ),
           backgroundColor: Color(0xFF0F172A),
         ),
       );
       return;
     }
-
     setState(() => _isSyncing = true);
     try {
       final academicRepo = context.read<AcademicRepository>();
@@ -50,7 +49,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _isSyncing = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✓ Berhasil menyinkronkan $synced data presensi ke server!'),
+          content: Text(
+            '✓ Berhasil menyinkronkan $synced data presensi ke server!',
+          ),
           backgroundColor: AppTheme.success,
         ),
       );
@@ -73,11 +74,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Segarkan Cache Offline?',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 17),
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            fontSize: 17,
+          ),
         ),
         content: Text(
           'Tindakan ini akan membersihkan cache modul lokal tanpa mengeluarkan sesi login Anda. Data terbaru akan otomatis dimuat ulang dari server.',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF475569)),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            color: const Color(0xFF475569),
+          ),
         ),
         actions: [
           TextButton(
@@ -87,7 +94,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0F172A),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -113,7 +122,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showHiveInspectorModal() {
     final storage = context.read<LocalStorage>();
     final hive = storage.hive;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -145,7 +153,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: const Color(0xFF7C3AED).withAlpha(20),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.storage_rounded, color: Color(0xFF7C3AED), size: 20),
+                  child: const Icon(
+                    Icons.storage_rounded,
+                    color: Color(0xFF7C3AED),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -186,7 +198,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F172A),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text('Tutup'),
@@ -274,16 +288,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showOtaUpdateModal(BuildContext context) {
     final ota = context.read<OtaUpdateService>();
     final storage = context.read<LocalStorage>();
-
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) {
           final isRestartReady = ota.status == UpdateStatus.restartRequired;
           final isOutdated = ota.status == UpdateStatus.outdated;
-
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
             title: Row(
               children: [
                 Container(
@@ -292,7 +306,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: const Color(0xFF7C3AED).withAlpha(20),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF7C3AED), size: 20),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Color(0xFF7C3AED),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -326,12 +344,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   decoration: BoxDecoration(
                     color: isRestartReady
                         ? const Color(0xFFFFFBEB)
-                        : (isOutdated ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)),
+                        : (isOutdated
+                              ? const Color(0xFFEFF6FF)
+                              : const Color(0xFFF8FAFC)),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: isRestartReady
                           ? const Color(0xFFFDE68A)
-                          : (isOutdated ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0)),
+                          : (isOutdated
+                                ? const Color(0xFFBFDBFE)
+                                : const Color(0xFFE2E8F0)),
                     ),
                   ),
                   child: Column(
@@ -349,17 +371,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: isRestartReady
                                   ? const Color(0xFFD97706)
-                                  : (isOutdated ? const Color(0xFF2563EB) : const Color(0xFF16A34A)),
+                                  : (isOutdated
+                                        ? const Color(0xFF2563EB)
+                                        : const Color(0xFF16A34A)),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               isRestartReady
                                   ? 'SIAP DITERAPKAN'
-                                  : (isOutdated ? 'PATCH TERSEDIA' : 'KODE TERBARU'),
+                                  : (isOutdated
+                                        ? 'PATCH TERSEDIA'
+                                        : 'KODE TERBARU'),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w800,
@@ -384,7 +413,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'Mengunduh patch bytecode (~300 KB)...',
-                          style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFF64748B)),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            color: const Color(0xFF64748B),
+                          ),
                         ),
                       ],
                     ],
@@ -401,7 +433,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD97706),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: () async {
                     await ota.prepareForRestart(storage);
@@ -409,7 +443,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('✓ Sesi tersimpan aman. Silakan muat ulang (restart) aplikasi.'),
+                          content: Text(
+                            '✓ Sesi tersimpan aman. Silakan muat ulang (restart) aplikasi.',
+                          ),
                           backgroundColor: Color(0xFF0F172A),
                         ),
                       );
@@ -422,7 +458,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: ota.isDownloading
                       ? null
@@ -439,7 +477,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0F172A),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: ota.isChecking
                       ? null
@@ -463,12 +503,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (memberships.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Akun Anda saat ini terdaftar pada 1 institusi sekolah.'),
+          content: Text(
+            'Akun Anda saat ini terdaftar pada 1 institusi sekolah.',
+          ),
         ),
       );
       return;
     }
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -502,11 +543,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 12),
             ...memberships.map((m) {
-              final isCurrent = m.schoolCode == widget.profile.activeSchool?.code;
+              final isCurrent =
+                  m.schoolCode == widget.profile.activeSchool?.code;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Material(
-                  color: isCurrent ? _schoolColor.withAlpha(18) : const Color(0xFFF8FAFC),
+                  color: isCurrent
+                      ? _schoolColor.withAlpha(18)
+                      : const Color(0xFFF8FAFC),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                     side: BorderSide(
@@ -516,7 +560,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: _schoolColor.withAlpha(30),
-                      child: Icon(Icons.school_rounded, color: _schoolColor, size: 20),
+                      child: Icon(
+                        Icons.school_rounded,
+                        color: _schoolColor,
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       m.schoolName,
@@ -537,7 +585,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         : () {
                             Navigator.pop(ctx);
                             Navigator.pop(context);
-                            context.read<AuthCubit>().switchSchool(m.schoolCode);
+                            context.read<AuthCubit>().switchSchool(
+                              m.schoolCode,
+                            );
                           },
                   ),
                 ),
@@ -564,7 +614,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         content: Text(
           'Seluruh data sesi login, preferensi, dan database offline di HP ini akan dihapus secara total. Anda akan dialihkan ke halaman login awal.',
-          style: GoogleFonts.plusJakartaSans(fontSize: 13, color: const Color(0xFF475569)),
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            color: const Color(0xFF475569),
+          ),
         ),
         actions: [
           TextButton(
@@ -574,7 +627,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.danger,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () async {
               Navigator.pop(ctx);
@@ -598,7 +653,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final storage = context.read<LocalStorage>();
     final pendingCount = storage.hive.totalPendingOutbox;
     bool clearLocalCache = false;
-
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -635,7 +689,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.cloud_upload_outlined, color: Color(0xFFD97706), size: 20),
+                      const Icon(
+                        Icons.cloud_upload_outlined,
+                        color: Color(0xFFD97706),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -709,12 +767,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               onPressed: () async {
                 Navigator.pop(ctx);
-                await context.read<AuthCubit>().logout(clearLocalCache: clearLocalCache);
+                await context.read<AuthCubit>().logout(
+                  clearLocalCache: clearLocalCache,
+                );
                 if (context.mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
                     (route) => false,
                   );
                 }
@@ -756,9 +814,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
@@ -769,7 +825,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final hive = storage.hive;
     final user = widget.profile.user;
     final school = widget.profile.activeSchool;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -777,7 +832,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0F172A)),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
+            color: Color(0xFF0F172A),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -805,14 +864,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCardContainer(
               children: [
                 SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 2,
+                  ),
                   secondary: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF3B82F6).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.notifications_active_rounded, color: Color(0xFF3B82F6), size: 20),
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Notifikasi & Peringatan',
@@ -824,7 +890,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   subtitle: Text(
                     'Pengingat presensi dan status tagihan sekolah',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   value: _notificationsEnabled,
                   activeTrackColor: _schoolColor,
@@ -834,14 +903,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 2,
+                  ),
                   secondary: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF8B5CF6).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.vibration_rounded, color: Color(0xFF8B5CF6), size: 20),
+                    child: const Icon(
+                      Icons.vibration_rounded,
+                      color: Color(0xFF8B5CF6),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Umpan Balik Getar (Haptic)',
@@ -853,7 +929,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   subtitle: Text(
                     'Sensasi getar saat merekam absensi & navigasi',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   value: _hapticEnabled,
                   activeTrackColor: _schoolColor,
@@ -864,14 +943,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF059669).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.language_rounded, color: Color(0xFF059669), size: 20),
+                    child: const Icon(
+                      Icons.language_rounded,
+                      color: Color(0xFF059669),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Bahasa Tampilan',
@@ -883,10 +969,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   subtitle: Text(
                     'Bahasa Indonesia (Default)',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(6),
@@ -903,9 +995,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 22),
-
             // =================================================================
             // 2. DATA & PENYIMPANAN OFFLINE
             // =================================================================
@@ -913,14 +1003,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCardContainer(
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF7C3AED).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.storage_rounded, color: Color(0xFF7C3AED), size: 20),
+                    child: const Icon(
+                      Icons.storage_rounded,
+                      color: Color(0xFF7C3AED),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Penyimpanan Offline Hive',
@@ -938,7 +1035,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF7C3AED).withAlpha(20),
                       borderRadius: BorderRadius.circular(20),
@@ -955,14 +1055,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD97706).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.outbox_rounded, color: Color(0xFFD97706), size: 20),
+                    child: const Icon(
+                      Icons.outbox_rounded,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Antrean Sinkronisasi (Outbox)',
@@ -988,34 +1095,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : (hive.totalPendingOutbox > 0
-                          ? ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD97706),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              onPressed: _triggerManualSync,
-                              icon: const Icon(Icons.sync_rounded, size: 14),
-                              label: Text(
-                                'Sync',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                            ? ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFD97706),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                              ),
-                            )
-                          : const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 20)),
+                                onPressed: _triggerManualSync,
+                                icon: const Icon(Icons.sync_rounded, size: 14),
+                                label: Text(
+                                  'Sync',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.check_circle_rounded,
+                                color: Color(0xFF16A34A),
+                                size: 20,
+                              )),
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF64748B).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.refresh_rounded, color: Color(0xFF475569), size: 20),
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      color: Color(0xFF475569),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Segarkan Cache Offline',
@@ -1032,14 +1155,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 20,
+                  ),
                   onTap: _confirmClearCache,
                 ),
               ],
             ),
-
             const SizedBox(height: 22),
-
             // =================================================================
             // 3. AKUN & KEAMANAN
             // =================================================================
@@ -1047,14 +1172,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCardContainer(
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: _schoolColor.withAlpha(22),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.school_rounded, color: _schoolColor, size: 20),
+                    child: Icon(
+                      Icons.school_rounded,
+                      color: _schoolColor,
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Institusi Sekolah',
@@ -1086,14 +1218,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF16A34A).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.verified_user_rounded, color: Color(0xFF16A34A), size: 20),
+                    child: const Icon(
+                      Icons.verified_user_rounded,
+                      color: Color(0xFF16A34A),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Partisi Sesi Multi-Tenant',
@@ -1110,13 +1249,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: const Color(0xFF64748B),
                     ),
                   ),
-                  trailing: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
+                  trailing: const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF16A34A),
+                    size: 18,
+                  ),
                 ),
               ],
             ),
-
             const SizedBox(height: 22),
-
             // =================================================================
             // 4. OPSI PENGEMBANG & DIAGNOSTIK (DEVELOPER OPTIONS)
             // =================================================================
@@ -1141,14 +1282,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCardContainer(
               children: [
                 SwitchListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 2,
+                  ),
                   secondary: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEA580C).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.developer_mode_rounded, color: Color(0xFFEA580C), size: 20),
+                    child: const Icon(
+                      Icons.developer_mode_rounded,
+                      color: Color(0xFFEA580C),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Developer Mode',
@@ -1160,7 +1308,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   subtitle: Text(
                     'Menampilkan diagnostik endpoint & database',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
                   value: _devModeEnabled,
                   activeTrackColor: const Color(0xFFEA580C),
@@ -1171,14 +1322,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (_devModeEnabled) ...[
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2563EB).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.dns_rounded, color: Color(0xFF2563EB), size: 20),
+                      child: const Icon(
+                        Icons.dns_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Endpoint Server API',
@@ -1196,7 +1354,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(14),
@@ -1214,14 +1375,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0891B2).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.analytics_outlined, color: Color(0xFF0891B2), size: 20),
+                      child: const Icon(
+                        Icons.analytics_outlined,
+                        color: Color(0xFF0891B2),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Inspeksi Database Hive',
@@ -1238,19 +1406,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF64748B),
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 20,
+                    ),
                     onTap: _showHiveInspectorModal,
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFF4F46E5).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.key_rounded, color: Color(0xFF4F46E5), size: 20),
+                      child: const Icon(
+                        Icons.key_rounded,
+                        color: Color(0xFF4F46E5),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Salin Bearer Auth Token',
@@ -1262,24 +1441,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     subtitle: Text(
                       'Gunakan untuk pengujian cURL / Postman',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFF4F46E5)),
+                      icon: const Icon(
+                        Icons.copy_rounded,
+                        size: 18,
+                        color: Color(0xFF4F46E5),
+                      ),
                       tooltip: 'Salin Token',
                       onPressed: _copyBearerToken,
                     ),
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFF7C3AED).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.bolt_rounded, color: Color(0xFF7C3AED), size: 20),
+                      child: const Icon(
+                        Icons.bolt_rounded,
+                        color: Color(0xFF7C3AED),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Diagnostik Engine Shorebird OTA',
@@ -1296,19 +1489,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF64748B),
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFF94A3B8),
+                      size: 20,
+                    ),
                     onTap: () => _showOtaUpdateModal(context),
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   SwitchListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 2,
+                    ),
                     secondary: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0D9488).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.science_rounded, color: Color(0xFF0D9488), size: 20),
+                      child: const Icon(
+                        Icons.science_rounded,
+                        color: Color(0xFF0D9488),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Simulasi OTA Patch (Dev Test)',
@@ -1320,7 +1524,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     subtitle: Text(
                       'Simulasikan patch baru di emulator untuk menguji alur',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
                     value: ota.isDevSimulated,
                     activeTrackColor: const Color(0xFF0D9488),
@@ -1331,14 +1538,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Container(
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDC2626).withAlpha(20),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.delete_sweep_rounded, color: Color(0xFFDC2626), size: 20),
+                      child: const Icon(
+                        Icons.delete_sweep_rounded,
+                        color: Color(0xFFDC2626),
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Reset Database Lokal (Factory Reset)',
@@ -1350,17 +1564,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     subtitle: Text(
                       'Bersihkan seluruh sesi & data offline di HP',
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                      ),
                     ),
-                    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFFDC2626), size: 20),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 20,
+                    ),
                     onTap: _confirmFactoryReset,
                   ),
                 ],
               ],
             ),
-
             const SizedBox(height: 22),
-
             // =================================================================
             // 5. TENTANG APLIKASI
             // =================================================================
@@ -1368,14 +1587,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCardContainer(
               children: [
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF64748B).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.info_outline_rounded, color: Color(0xFF475569), size: 20),
+                    child: const Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFF475569),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Vintech School Mobile',
@@ -1387,9 +1613,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   subtitle: Text(
                     'Versi 1.1.0 • Clean Modern Architecture',
-                    style: GoogleFonts.plusJakartaSans(fontSize: 11.5, color: const Color(0xFF64748B)),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: const Color(0xFF64748B),
+                    ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF94A3B8),
+                    size: 20,
+                  ),
                   onTap: () {
                     showAboutDialog(
                       context: context,
@@ -1403,21 +1636,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           color: _schoolColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.school_rounded,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                     );
                   },
                 ),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   leading: Container(
                     padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: const Color(0xFF7C3AED).withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.auto_awesome_rounded, color: Color(0xFF7C3AED), size: 20),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Color(0xFF7C3AED),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Pembaruan Kode OTA (Shorebird)',
@@ -1431,47 +1675,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ota.status == UpdateStatus.restartRequired
                         ? 'Patch #${ota.activePatchNumber} siap! Ketuk untuk menerapkan'
                         : (ota.status == UpdateStatus.outdated
-                            ? 'Patch kode baru tersedia • Ketuk untuk mengunduh'
-                            : (ota.status == UpdateStatus.unavailable
-                                ? 'Engine Siap (Production Release Standby)'
-                                : 'Kode Mutakhir • Patch #${ota.activePatchNumber ?? "Base"}')),
+                              ? 'Patch kode baru tersedia • Ketuk untuk mengunduh'
+                              : (ota.status == UpdateStatus.unavailable
+                                    ? 'Engine Siap (Production Release Standby)'
+                                    : 'Kode Mutakhir • Patch #${ota.activePatchNumber ?? "Base"}')),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: ota.status == UpdateStatus.restartRequired
                           ? const Color(0xFFD97706)
                           : (ota.status == UpdateStatus.outdated
-                              ? const Color(0xFF2563EB)
-                              : const Color(0xFF64748B)),
-                      fontWeight: ota.status == UpdateStatus.restartRequired ? FontWeight.w700 : FontWeight.normal,
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFF64748B)),
+                      fontWeight: ota.status == UpdateStatus.restartRequired
+                          ? FontWeight.w700
+                          : FontWeight.normal,
                     ),
                   ),
                   trailing: ota.isChecking || ota.isDownloading
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : (ota.status == UpdateStatus.restartRequired
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFEF3C7),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFFFDE68A)),
-                              ),
-                              child: Text(
-                                'Terapkan',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFFB45309),
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 9,
+                                  vertical: 4,
                                 ),
-                              ),
-                            )
-                          : const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20)),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: const Color(0xFFFDE68A),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Terapkan',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFFB45309),
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color(0xFF94A3B8),
+                                size: 20,
+                              )),
                   onTap: () => _showOtaUpdateModal(context),
                 ),
               ],
             ),
-
             const SizedBox(height: 32),
-
             // =================================================================
             // 6. LOGOUT BUTTON
             // =================================================================
@@ -1498,7 +1755,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 36),
           ],
         ),

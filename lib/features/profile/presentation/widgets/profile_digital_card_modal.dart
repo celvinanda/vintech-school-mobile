@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+
 import '../../../academic/data/models/student_model.dart';
 import '../../../auth/data/models/user_model.dart';
 
@@ -11,20 +12,21 @@ class ProfileDigitalCardModal extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
   final StudentModel? student;
-
   const ProfileDigitalCardModal({
     super.key,
     required this.profile,
     required this.schoolColor,
     this.student,
   });
-
   bool get _isStaffOrTeacher => profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => profile.activeSchool?.isParent == true;
   String get _schoolName =>
-      (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA').toUpperCase();
+      (profile.activeSchool?.schoolName ?? 'SMA NEGERI 1 JAKARTA')
+          .toUpperCase();
   String get _nis => _isParent
-      ? (student?.nis ?? profile.primaryChild?.nis ?? profile.user.cleanIdentifier)
+      ? (student?.nis ??
+            profile.primaryChild?.nis ??
+            profile.user.cleanIdentifier)
       : profile.user.cleanIdentifier;
   String get _nisn =>
       student?.nisn ??
@@ -41,9 +43,10 @@ class ProfileDigitalCardModal extends StatelessWidget {
       ? 'KARTU PELAJAR DIGITAL (ANAK TERIKAT)'
       : (profile.activeSchool?.cardBadgeTitle ?? 'KARTU PELAJAR DIGITAL');
   String get _studentFullName => _isParent
-      ? (student?.fullName ?? profile.primaryChild?.fullName ?? profile.user.fullName)
+      ? (student?.fullName ??
+            profile.primaryChild?.fullName ??
+            profile.user.fullName)
       : profile.user.fullName;
-
   String get _initials {
     final name = (_isParent ? _studentFullName : profile.user.fullName).trim();
     if (name.isEmpty) return 'ST';
@@ -151,7 +154,6 @@ class ProfileDigitalCardModal extends StatelessWidget {
                   ],
                 ),
               ),
-
               // Card Body Content
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -164,7 +166,10 @@ class ProfileDigitalCardModal extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                        border: Border.all(
+                          color: const Color(0xFFE2E8F0),
+                          width: 2,
+                        ),
                       ),
                       child: Center(
                         child: Text(
@@ -178,7 +183,6 @@ class ProfileDigitalCardModal extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-
                     Text(
                       _studentFullName,
                       style: GoogleFonts.plusJakartaSans(
@@ -211,11 +215,13 @@ class ProfileDigitalCardModal extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     // QR Barcode Box (Dynamic Scannable QR Code)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(16),
@@ -229,7 +235,9 @@ class ProfileDigitalCardModal extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFCBD5E1)),
+                              border: Border.all(
+                                color: const Color(0xFFCBD5E1),
+                              ),
                             ),
                             padding: const EdgeInsets.all(4),
                             child: Center(
@@ -263,7 +271,6 @@ class ProfileDigitalCardModal extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     // Action Button: Save to Gallery
                     SizedBox(
                       width: double.infinity,
@@ -275,7 +282,8 @@ class ProfileDigitalCardModal extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                  '✓ Kartu Tanda Pelajar berhasil disimpan ke galeri foto!'),
+                                '✓ Kartu Tanda Pelajar berhasil disimpan ke galeri foto!',
+                              ),
                               backgroundColor: Color(0xFF007D55),
                               duration: Duration(seconds: 2),
                             ),
