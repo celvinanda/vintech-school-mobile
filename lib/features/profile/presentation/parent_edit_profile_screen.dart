@@ -37,6 +37,8 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
   bool _isLoading = false;
   Color get _schoolColor =>
       AppTheme.parseHexColor(widget.profile.activeSchool?.primaryColor);
+  bool get _isStaffOrTeacher =>
+      widget.profile.activeSchool?.isStaffOrTeacher == true;
   StudentModel? get _effectiveStudent =>
       widget.student ?? widget.profile.primaryChild;
   @override
@@ -155,7 +157,9 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Edit Data Orang Tua / Wali',
+              _isStaffOrTeacher
+                  ? 'Edit Data Tenaga Pendidik'
+                  : 'Edit Data Orang Tua / Wali',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -163,7 +167,9 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
               ),
             ),
             Text(
-              'Sinkronisasi Langsung ke Tata Usaha (TU)',
+              _isStaffOrTeacher
+                  ? 'Sinkronisasi Kontak & Domisili Pendidik'
+                  : 'Sinkronisasi Langsung ke Tata Usaha (TU)',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -213,7 +219,9 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Pembaruan Mandiri untuk Tata Usaha (TU)',
+                            _isStaffOrTeacher
+                                ? 'Pembaruan Mandiri Data Pendidik'
+                                : 'Pembaruan Mandiri untuk Tata Usaha (TU)',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,
@@ -222,7 +230,9 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Data kontak, NIK, dan domisili yang Anda simpan di sini akan langsung tercatat di Buku Induk TU sekolah untuk keperluan pendataan Dapodik, komunikasi darurat, surat dispensasi, dan penagihan SPP.',
+                            _isStaffOrTeacher
+                                ? 'Data kontak telepon, email dinas, dan domisili yang Anda perbarui di sini akan tersimpan aman dan digunakan untuk sinkronisasi KBM sekolah serta pendataan Info GTK/Dapodik.'
+                                : 'Data kontak, NIK, dan domisili yang Anda simpan di sini akan langsung tercatat di Buku Induk TU sekolah untuk keperluan pendataan Dapodik, komunikasi darurat, surat dispensasi, dan penagihan SPP.',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11.5,
                               color: const Color(0xFF1E40AF),
@@ -236,67 +246,79 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // BENTO 1: Data Identitas Orang Tua
+              // BENTO 1: Data Identitas
               _buildSectionCard(
-                title: 'Data Identitas Orang Tua / Wali',
+                title: _isStaffOrTeacher
+                    ? 'Data Identitas Pendidik'
+                    : 'Data Identitas Orang Tua / Wali',
                 icon: Icons.person_rounded,
                 iconColor: const Color(0xFF004AC6),
                 children: [
                   _buildTextField(
                     controller: _nameController,
-                    label: 'Nama Lengkap Orang Tua / Wali *',
-                    hintText: 'Contoh: Bpk. Pratama Hendrawan',
+                    label: _isStaffOrTeacher
+                        ? 'Nama Lengkap Beserta Gelar *'
+                        : 'Nama Lengkap Orang Tua / Wali *',
+                    hintText: _isStaffOrTeacher
+                        ? 'Contoh: Siti Nurhaliza, S.Pd.'
+                        : 'Contoh: Bpk. Pratama Hendrawan',
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
-                        return 'Nama orang tua tidak boleh kosong';
+                        return 'Nama tidak boleh kosong';
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Hubungan dengan Siswa',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF475569),
+                  if (!_isStaffOrTeacher) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      'Hubungan dengan Siswa',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF475569),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: ['Ayah Kandung', 'Ibu Kandung', 'Wali Murid'].map(
-                      (rel) {
-                        final isSelected = _relationship == rel;
-                        return ChoiceChip(
-                          label: Text(rel),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) setState(() => _relationship = rel);
-                          },
-                          selectedColor: _schoolColor.withValues(alpha: 0.15),
-                          backgroundColor: const Color(0xFFF1F5F9),
-                          labelStyle: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: isSelected
-                                ? _schoolColor
-                                : const Color(0xFF475569),
-                          ),
-                          side: BorderSide(
-                            color: isSelected
-                                ? _schoolColor
-                                : const Color(0xFFCBD5E1),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: ['Ayah Kandung', 'Ibu Kandung', 'Wali Murid']
+                          .map((rel) {
+                            final isSelected = _relationship == rel;
+                            return ChoiceChip(
+                              label: Text(rel),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() => _relationship = rel);
+                                }
+                              },
+                              selectedColor: _schoolColor.withValues(
+                                alpha: 0.15,
+                              ),
+                              backgroundColor: const Color(0xFFF1F5F9),
+                              labelStyle: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isSelected
+                                    ? _schoolColor
+                                    : const Color(0xFF475569),
+                              ),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? _schoolColor
+                                    : const Color(0xFFCBD5E1),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            );
+                          })
+                          .toList(),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: _nikController,
@@ -374,7 +396,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
               ),
               const SizedBox(height: 16),
               // BENTO 4: Data Siswa Terikat (Terverifikasi TU - Read Only)
-              if (child != null) ...[
+              if (!_isStaffOrTeacher && child != null) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -573,8 +595,12 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                 : const Icon(Icons.save_rounded, size: 18),
             label: Text(
               _isLoading
-                  ? 'Menyinkronkan ke TU...'
-                  : 'Simpan & Sinkronkan ke TU',
+                  ? (_isStaffOrTeacher
+                        ? 'Menyimpan Data Pendidik...'
+                        : 'Menyinkronkan ke TU...')
+                  : (_isStaffOrTeacher
+                        ? 'Simpan Perubahan Data Pendidik'
+                        : 'Simpan & Sinkronkan ke TU'),
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,

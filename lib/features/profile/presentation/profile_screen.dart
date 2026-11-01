@@ -308,6 +308,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // 5. Academic Files & Documents
               ProfileAcademicServicesSection(
                 isParent: profile.activeSchool?.isParent == true,
+                isStaffOrTeacher:
+                    profile.activeSchool?.isStaffOrTeacher == true,
+                profile: profile,
               ),
               const SizedBox(height: 16),
               // 6. Switch School (if multi-school membership)

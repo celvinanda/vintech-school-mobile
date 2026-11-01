@@ -54,6 +54,32 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     return homeroomTeacherPhone;
   }
 
+  String get _effectivePrincipalName {
+    if (profile.activeSchool?.principalName != null &&
+        profile.activeSchool!.principalName!.isNotEmpty) {
+      return profile.activeSchool!.principalName!;
+    }
+    return 'Dr. H. Hendra Wijaya, M.Pd.';
+  }
+
+  String get _principalInitials {
+    final clean = _effectivePrincipalName
+        .replaceAll(
+          RegExp(
+            r'^(Dr\.|Drs\.|Dra\.|Bpk\.|Ibu\.|H\.|Hj\.|Ir\.|Ust\.)\s*',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .trim();
+    if (clean.isEmpty) return 'KS';
+    final parts = clean.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return clean.isNotEmpty ? clean[0].toUpperCase() : 'KS';
+  }
+
   String get _homeroomInitials {
     final clean = _effectiveHomeroomName
         .replaceAll(
@@ -111,9 +137,11 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     HapticFeedback.lightImpact();
     final childName =
         student?.fullName ?? profile.primaryChild?.fullName ?? 'Anak Kami';
-    final greeting = _isParent
-        ? 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
-        : 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.';
+    final greeting = _isStaffOrTeacher
+        ? 'Halo%20Bapak%2FIbu%20Kepala%20Sekolah,%20saya%20${profile.user.fullName}%20(Pendidik%20${profile.activeSchool?.schoolName ?? 'Sekolah'}).'
+        : (_isParent
+              ? 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}%20(Orang%20Tua%20dari%20$childName).'
+              : 'Halo%20Bapak%2FIbu%20Wali%20Kelas,%20saya%20${profile.user.fullName}.');
     final rawPhone = _effectiveHomeroomPhone.replaceAll(RegExp(r'\D'), '');
     final cleanPhone = rawPhone.startsWith('0')
         ? '62${rawPhone.substring(1)}'
@@ -126,8 +154,12 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Membuka kontak WhatsApp Wali Kelas...'),
+          SnackBar(
+            content: Text(
+              _isStaffOrTeacher
+                  ? 'Membuka kontak WhatsApp Kepala Sekolah...'
+                  : 'Membuka kontak WhatsApp Wali Kelas...',
+            ),
           ),
         );
       }
@@ -160,7 +192,11 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _isParent ? 'Kontak & Informasi Terdaftar' : 'Informasi Terdaftar',
+            _isStaffOrTeacher
+                ? 'Informasi Kontak & Dinas Pendidik'
+                : (_isParent
+                      ? 'Kontak & Informasi Terdaftar'
+                      : 'Informasi Terdaftar'),
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
               fontWeight: FontWeight.w700,
@@ -199,7 +235,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                         radius: 19,
                         backgroundColor: const Color(0xFFDBEAFE),
                         child: Text(
-                          _isStaffOrTeacher ? 'HW' : _homeroomInitials,
+                          _isStaffOrTeacher
+                              ? _principalInitials
+                              : _homeroomInitials,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -227,7 +265,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               _isStaffOrTeacher
-                                  ? 'Dr. H. Hendra Wijaya, M.Pd.'
+                                  ? _effectivePrincipalName
                                   : _effectiveHomeroomName,
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
@@ -263,7 +301,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Chat WA',
+                                _isStaffOrTeacher ? 'Chat WA Dinas' : 'Chat WA',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
@@ -277,7 +315,7 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!_isParent) ...[
+                if (!_isParent && !_isStaffOrTeacher) ...[
                   const SizedBox(height: 10),
                   // Orang Tua Cardlet (khusus akun Siswa)
                   Container(
@@ -369,31 +407,57 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                 const SizedBox(height: 14),
                 const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 const SizedBox(height: 12),
-                // Data Kontak & Domisili Terdaftar
+                // Data Pendidik / Kontak & Domisili Terdaftar
+                if (_isStaffOrTeacher &&
+                    profile.activeSchool?.nip != null &&
+                    profile.activeSchool!.nip!.isNotEmpty) ...[
+                  _buildInfoTile(
+                    icon: Icons.badge_outlined,
+                    label: 'NIP / NUPTK Pendidik',
+                    value: profile.activeSchool!.nip!,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                if (_isStaffOrTeacher &&
+                    profile.activeSchool?.specialization != null &&
+                    profile.activeSchool!.specialization!.isNotEmpty) ...[
+                  _buildInfoTile(
+                    icon: Icons.school_outlined,
+                    label: 'Bidang Studi / Mata Pelajaran',
+                    value: profile.activeSchool!.specialization!,
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 _buildInfoTile(
                   icon: Icons.phone_android_rounded,
-                  label: _isParent
-                      ? 'Nomor WhatsApp Orang Tua'
-                      : 'Nomor Telepon / WhatsApp',
+                  label: _isStaffOrTeacher
+                      ? 'Nomor WhatsApp Dinas Pendidik'
+                      : (_isParent
+                            ? 'Nomor WhatsApp Orang Tua'
+                            : 'Nomor Telepon / WhatsApp'),
                   value: _effectiveUserPhone,
                 ),
                 const SizedBox(height: 10),
                 _buildInfoTile(
                   icon: Icons.mail_outline_rounded,
-                  label: _isParent
-                      ? 'Email Orang Tua Terdaftar'
-                      : 'Email Siswa',
+                  label: _isStaffOrTeacher
+                      ? 'Email Resmi Pendidik'
+                      : (_isParent
+                            ? 'Email Orang Tua Terdaftar'
+                            : 'Email Siswa'),
                   value: _effectiveEmail,
                 ),
                 const SizedBox(height: 10),
                 _buildInfoTile(
                   icon: Icons.pin_drop_outlined,
-                  label: _isParent
-                      ? 'Alamat Domisili Keluarga'
-                      : 'Alamat Domisili',
+                  label: _isStaffOrTeacher
+                      ? 'Alamat Domisili Pendidik'
+                      : (_isParent
+                            ? 'Alamat Domisili Keluarga'
+                            : 'Alamat Domisili'),
                   value: _effectiveAddress,
                 ),
-                if (_isParent) ...[
+                if (_isParent || _isStaffOrTeacher) ...[
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
@@ -413,7 +477,9 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
                       },
                       icon: const Icon(Icons.edit_note_rounded, size: 18),
                       label: Text(
-                        'Perbarui Data Kontak & Domisili TU',
+                        _isStaffOrTeacher
+                            ? 'Perbarui Data Kontak Pendidik'
+                            : 'Perbarui Data Kontak & Domisili TU',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,

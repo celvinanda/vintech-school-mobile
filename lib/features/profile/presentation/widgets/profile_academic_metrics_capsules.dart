@@ -56,23 +56,25 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                   iconColor: const Color(0xFF004AC6),
                   iconBg: const Color(0xFFEFF6FF),
                   badgeLabel: _isStaffOrTeacher
-                      ? 'Normal'
+                      ? 'Linier'
                       : (gpa <= 0 ? '-' : gradeLetter),
-                  badgeColor: gpa <= 0
-                      ? const Color(0xFF64748B)
-                      : const Color(0xFF004AC6),
-                  badgeBg: gpa <= 0
-                      ? const Color(0xFFF1F5F9)
-                      : const Color(0xFFDBEAFE),
+                  badgeColor: _isStaffOrTeacher
+                      ? const Color(0xFF004AC6)
+                      : (gpa <= 0
+                            ? const Color(0xFF64748B)
+                            : const Color(0xFF004AC6)),
+                  badgeBg: _isStaffOrTeacher
+                      ? const Color(0xFFDBEAFE)
+                      : (gpa <= 0
+                            ? const Color(0xFFF1F5F9)
+                            : const Color(0xFFDBEAFE)),
                   value: _isStaffOrTeacher
                       ? '24 JP'
                       : (gpa <= 0
                             ? '0'
-                            : (gpa == gpa.roundToDouble()
-                                  ? '${gpa.toInt()}'
-                                  : '$gpa')),
+                            : (gpa == gpa.roundToDouble() ? '' : '')),
                   subtitle: _isStaffOrTeacher
-                      ? 'Jam Mengajar'
+                      ? 'Beban KBM'
                       : (_isParent ? 'Rata Nilai Anak' : 'Rata-rata Nilai'),
                 ),
               ),
@@ -107,24 +109,32 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                       : (_isParent
                             ? Icons.account_balance_wallet_rounded
                             : Icons.verified_rounded),
-                  iconColor: tuitionStatus == 'Belum Lunas'
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFF0F766E),
-                  iconBg: tuitionStatus == 'Belum Lunas'
-                      ? const Color(0xFFFEF2F2)
-                      : const Color(0xFFF0FDFA),
-                  badgeLabel: _isStaffOrTeacher ? 'Binaan' : tuitionStatus,
-                  badgeColor: tuitionStatus == 'Belum Lunas'
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFF0F766E),
-                  badgeBg: tuitionStatus == 'Belum Lunas'
-                      ? const Color(0xFFFEE2E2)
-                      : const Color(0xFFCCFBF1),
+                  iconColor: _isStaffOrTeacher
+                      ? const Color(0xFF0F766E)
+                      : (tuitionStatus == 'Belum Lunas'
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF0F766E)),
+                  iconBg: _isStaffOrTeacher
+                      ? const Color(0xFFF0FDFA)
+                      : (tuitionStatus == 'Belum Lunas'
+                            ? const Color(0xFFFEF2F2)
+                            : const Color(0xFFF0FDFA)),
+                  badgeLabel: _isStaffOrTeacher ? 'Wali Kelas' : tuitionStatus,
+                  badgeColor: _isStaffOrTeacher
+                      ? const Color(0xFF0F766E)
+                      : (tuitionStatus == 'Belum Lunas'
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF0F766E)),
+                  badgeBg: _isStaffOrTeacher
+                      ? const Color(0xFFCCFBF1)
+                      : (tuitionStatus == 'Belum Lunas'
+                            ? const Color(0xFFFEE2E2)
+                            : const Color(0xFFCCFBF1)),
                   value: _isStaffOrTeacher
-                      ? (profile?.activeSchool?.classroomName ?? 'X-IPA-1')
+                      ? (profile?.activeSchool?.classroomName ?? 'XI-IPA-1')
                       : tuitionMonth,
                   subtitle: _isStaffOrTeacher
-                      ? 'Wali Kelas'
+                      ? 'Kelas Binaan'
                       : (_isParent ? 'Tagihan SPP Anak' : 'Status SPP'),
                 ),
               ),
