@@ -4,16 +4,17 @@ color 0A
 cd /d "%~dp0"
 
 echo =======================================================================
-echo   VINTECH SCHOOL - APP RUNNER
+echo   VINTECH SCHOOL - APP RUNNER (XIAOMI & EMULATOR)
 echo =======================================================================
 echo.
 
 set "ADB=%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"
 set "DEVICE_ID="
+set "APK=build\app\outputs\flutter-apk\app-debug.apk"
 
 if not exist "%ADB%" goto :auto_detect
 
-:: 1. Cari perangkat Android aktif (Emulator maupun Perangkat Fisik Xiaomi via USB)
+:: 1. Deteksi perangkat aktif via ADB
 for /f "skip=1 tokens=1,2" %%A in ('"%ADB%" devices') do (
     if "%%B"=="device" (
         set "DEVICE_ID=%%A"
@@ -38,7 +39,24 @@ if not errorlevel 1 (
     "%ADB%" -s %DEVICE_ID% shell input keyevent 111 >nul 2>&1
 )
 
-echo Meluncurkan aplikasi ke %DEVICE_ID%...
+:: Peringatan khusus HP Xiaomi / MIUI
+echo %DEVICE_ID% | findstr /i "emulator" >nul
+if errorlevel 1 (
+    echo [PENTING] Jika muncul pop-up 'Install via USB' di layar HP Xiaomi Anda,
+    echo           segera tekan tombol 'INSTALL' / 'IZINKAN' pada layar HP!
+    echo.
+)
+
+:: Cek apakah APK debug sudah siap (Fast-Launch mode tanpa kompilasi ulang yang berat)
+if exist "%APK%" (
+    echo Menggunakan APK siap pakai untuk hemat RAM dan peluncuran instan...
+    echo Meluncurkan Flutter dengan Hot Reload aktif...
+    call flutter run --use-application-binary="%APK%" -d %DEVICE_ID%
+    goto :done
+)
+
+:: Jika APK belum ada, jalankan flutter run standar
+echo Membangun dan meluncurkan aplikasi ke %DEVICE_ID%...
 call flutter run -d %DEVICE_ID%
 
 :done
