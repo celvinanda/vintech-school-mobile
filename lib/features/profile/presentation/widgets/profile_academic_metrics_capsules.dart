@@ -16,10 +16,10 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
   const ProfileAcademicMetricsCapsules({
     super.key,
     this.profile,
-    this.gpa = 88.5,
-    this.gradeLetter = 'A',
-    this.attendanceRate = 96,
-    this.attendanceRank = 'Top 5',
+    this.gpa = 0.0,
+    this.gradeLetter = '-',
+    this.attendanceRate = 0,
+    this.attendanceRank = '0 Hadir',
     this.tuitionStatus = 'Lunas',
     this.tuitionMonth = 'November',
   });
@@ -55,10 +55,22 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                       : Icons.auto_stories_rounded,
                   iconColor: const Color(0xFF004AC6),
                   iconBg: const Color(0xFFEFF6FF),
-                  badgeLabel: _isStaffOrTeacher ? 'Normal' : gradeLetter,
-                  badgeColor: const Color(0xFF004AC6),
-                  badgeBg: const Color(0xFFDBEAFE),
-                  value: _isStaffOrTeacher ? '24 JP' : '$gpa',
+                  badgeLabel: _isStaffOrTeacher
+                      ? 'Normal'
+                      : (gpa <= 0 ? '-' : gradeLetter),
+                  badgeColor: gpa <= 0
+                      ? const Color(0xFF64748B)
+                      : const Color(0xFF004AC6),
+                  badgeBg: gpa <= 0
+                      ? const Color(0xFFF1F5F9)
+                      : const Color(0xFFDBEAFE),
+                  value: _isStaffOrTeacher
+                      ? '24 JP'
+                      : (gpa <= 0
+                            ? '0'
+                            : (gpa == gpa.roundToDouble()
+                                  ? '${gpa.toInt()}'
+                                  : '$gpa')),
                   subtitle: _isStaffOrTeacher
                       ? 'Jam Mengajar'
                       : (_isParent ? 'Rata Nilai Anak' : 'Rata-rata Nilai'),
@@ -73,9 +85,13 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                   iconBg: const Color(0xFFECFDF5),
                   badgeLabel: _isStaffOrTeacher
                       ? 'Tepat Waktu'
-                      : (_isParent ? '24 Hadir' : attendanceRank),
-                  badgeColor: const Color(0xFF007D55),
-                  badgeBg: const Color(0xFFA7F3D0),
+                      : (attendanceRate <= 0 ? '0 Hadir' : attendanceRank),
+                  badgeColor: attendanceRate <= 0
+                      ? const Color(0xFF64748B)
+                      : const Color(0xFF007D55),
+                  badgeBg: attendanceRate <= 0
+                      ? const Color(0xFFF1F5F9)
+                      : const Color(0xFFA7F3D0),
                   value: _isStaffOrTeacher ? '98%' : '$attendanceRate%',
                   subtitle: _isStaffOrTeacher
                       ? 'Presensi Guru'

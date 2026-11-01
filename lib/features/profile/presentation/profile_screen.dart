@@ -39,8 +39,10 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   StudentModel? _student;
-  int _attendanceRate = 96;
-  String _attendanceRank = '24 Hadir';
+  int _attendanceRate = 0;
+  String _attendanceRank = '0 Hadir';
+  final double _gpa = 0.0;
+  final String _gradeLetter = '-';
   String _tuitionStatus = 'Lunas';
   String _tuitionMonth = 'November';
   UserProfileResponse get profile {
@@ -98,13 +100,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .where((a) => a.status.toUpperCase() == 'HADIR')
             .length;
         final total = attendances.length;
-        final rate = (presentCount / total * 100).round();
+        final rate = total > 0 ? (presentCount / total * 100).round() : 0;
         setState(() {
           _attendanceRate = rate;
           _attendanceRank = '$presentCount Hadir';
         });
+      } else if (mounted) {
+        setState(() {
+          _attendanceRate = 0;
+          _attendanceRank = '0 Hadir';
+        });
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _attendanceRate = 0;
+          _attendanceRank = '0 Hadir';
+        });
+      }
+    }
     // 3. Ambil data Tagihan SPP riil
     try {
       final invoices = await billingRepo.getInvoices(studentNis: targetNis);
@@ -391,6 +405,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // 3. Quick Academic Capsules
               ProfileAcademicMetricsCapsules(
                 profile: profile,
+                gpa: _gpa,
+                gradeLetter: _gradeLetter,
                 attendanceRate: _attendanceRate,
                 attendanceRank: _attendanceRank,
                 tuitionStatus: _tuitionStatus,
