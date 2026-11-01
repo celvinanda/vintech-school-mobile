@@ -12,6 +12,7 @@ class ApiConstants {
   static const String schoolLookup = '/api/v1/schools/lookup/';
   static const String login = '/api/v1/auth/login/';
   static const String me = '/api/v1/auth/me/';
+  static const String editProfile = '/api/v1/auth/profile/edit/';
   static const String switchSchool = '/api/v1/auth/switch-school/';
   static const String deviceToken = '/api/v1/auth/device-token/';
   static const String logout = '/api/v1/auth/logout/';
