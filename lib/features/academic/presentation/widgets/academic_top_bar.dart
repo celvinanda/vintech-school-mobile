@@ -8,7 +8,7 @@ import '../../../auth/data/models/user_model.dart';
 /// Selaras 1:1 dengan tema Top Bar Beranda:
 /// - Kiri: Emblem Ikon Akademik 40x40 dengan gradien warna sekolah
 /// - Tengah: Judul "AKADEMIK & RAPOR" dan konteks Semester / Kelas
-/// - Kanan: Badge IPK Pintar + Tombol Aksi Rapor Digital 40x40 Lingkaran
+/// - Kanan: Badge IPK Pintar + Tombol Aksi Rapor Digital (Ikon langsung tanpa border circle)
 class AcademicTopBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
@@ -115,37 +115,26 @@ class AcademicTopBar extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
-          // 4. Circular Report Action Button (Seragam dengan Lonceng Beranda)
+          // 4. Report Action Button (Bersih langsung icon tanpa border/card circle)
           Material(
-            color: Colors.white,
-            shape: const CircleBorder(),
-            child: InkWell(
+            color: Colors.transparent,
+            child: InkResponse(
               onTap: () {
                 HapticFeedback.selectionClick();
                 onReportTap();
               },
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Center(
+              radius: 20,
+              highlightShape: BoxShape.circle,
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: Center(
                   child: Icon(
                     Icons.description_outlined,
-                    color: Color(0xFF475569),
-                    size: 20,
+                    color: Color(0xFF334155),
+                    size: 23,
                   ),
                 ),
               ),

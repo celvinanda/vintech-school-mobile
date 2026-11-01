@@ -8,7 +8,7 @@ import 'package:vintech_school_mobile/features/home/presentation/widgets/top_bar
 /// Selaras 1:1 dengan tema Top Bar Beranda:
 /// - Kiri: Emblem Ikon Keuangan / Dompet 40x40 dengan gradien warna sekolah
 /// - Tengah: Judul "TAGIHAN SPP & KEUANGAN" dan konteks Siswa / TA
-/// - Kanan: Status Tagihan Unpaid Badge + Tombol Segarkan 40x40 Lingkaran
+/// - Kanan: Status Tagihan Unpaid Badge + Tombol Segarkan (Ikon langsung tanpa border circle)
 class BillingTopBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
@@ -113,37 +113,26 @@ class BillingTopBar extends StatelessWidget {
                 ],
               ),
             ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
 
-          // 4. Circular Refresh / Sync Action Button (Seragam dengan Lonceng Beranda)
+          // 4. Refresh Action Button (Bersih langsung icon tanpa border/card circle)
           Material(
-            color: Colors.white,
-            shape: const CircleBorder(),
-            child: InkWell(
+            color: Colors.transparent,
+            child: InkResponse(
               onTap: () {
                 HapticFeedback.selectionClick();
                 onRefresh();
               },
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Center(
+              radius: 20,
+              highlightShape: BoxShape.circle,
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: Center(
                   child: Icon(
                     Icons.refresh_rounded,
-                    color: Color(0xFF475569),
-                    size: 20,
+                    color: Color(0xFF334155),
+                    size: 23,
                   ),
                 ),
               ),

@@ -8,7 +8,7 @@ import 'package:vintech_school_mobile/features/home/presentation/widgets/top_bar
 /// Selaras 1:1 dengan tema Top Bar Beranda:
 /// - Kiri: Emblem Ikon Siswa 40x40 dengan gradien warna sekolah
 /// - Tengah: Judul "PROFIL & IDENTITAS" dan nama lengkap siswa
-/// - Kanan: Tombol QR Scan + Tombol Pengaturan 40x40 Lingkaran
+/// - Kanan: Tombol QR Scan + Tombol Pengaturan (Ikon langsung tanpa border circle)
 class ProfileTopBar extends StatelessWidget {
   final UserProfileResponse profile;
   final Color schoolColor;
@@ -82,73 +82,51 @@ class ProfileTopBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
 
-          // 3. Circular QR Quick-Scan Button
+          // 3. QR Quick-Scan Button (Ikon langsung tanpa border circle)
           Material(
-            color: Colors.white,
-            shape: const CircleBorder(),
-            child: InkWell(
+            color: Colors.transparent,
+            child: InkResponse(
               onTap: () {
                 HapticFeedback.selectionClick();
                 onShareQrTap();
               },
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Center(
+              radius: 20,
+              highlightShape: BoxShape.circle,
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: Center(
                   child: Icon(
                     Icons.qr_code_2_rounded,
-                    color: Color(0xFF475569),
-                    size: 20,
+                    color: Color(0xFF334155),
+                    size: 23,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
 
-          // 4. Circular Settings Button (Seragam dengan Lonceng Beranda)
+          // 4. Settings Button (Ikon langsung tanpa border circle)
           Material(
-            color: Colors.white,
-            shape: const CircleBorder(),
-            child: InkWell(
+            color: Colors.transparent,
+            child: InkResponse(
               onTap: () {
                 HapticFeedback.selectionClick();
                 onSettingsTap();
               },
-              customBorder: const CircleBorder(),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFECEEF0), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Center(
+              radius: 20,
+              highlightShape: BoxShape.circle,
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: Center(
                   child: Icon(
                     Icons.settings_outlined,
-                    color: Color(0xFF475569),
-                    size: 20,
+                    color: Color(0xFF334155),
+                    size: 23,
                   ),
                 ),
               ),
