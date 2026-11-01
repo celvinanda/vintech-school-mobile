@@ -15,6 +15,7 @@ class AppBottomNavBar extends StatelessWidget {
   final Color schoolColor;
   final bool isStaffOrTeacher;
   final bool isParent;
+  final bool isStudent;
   final int pendingOutboxCount;
   final int unpaidInvoiceCount;
   final bool isFloating;
@@ -26,6 +27,7 @@ class AppBottomNavBar extends StatelessWidget {
     required this.schoolColor,
     this.isStaffOrTeacher = false,
     this.isParent = false,
+    this.isStudent = false,
     this.pendingOutboxCount = 0,
     this.unpaidInvoiceCount = 0,
     this.isFloating = true,
@@ -65,7 +67,8 @@ class AppBottomNavBar extends StatelessWidget {
           return LayoutBuilder(
             builder: (context, constraints) {
               final barWidth = constraints.maxWidth;
-              final tabCount = isParent ? 4 : 5;
+              // Jika Siswa atau Orang Tua: 4 Tab. Jika Guru / Staf: 5 Tab.
+              final tabCount = isStaffOrTeacher ? 5 : 4;
               final tabWidth = barWidth / tabCount;
               final activeX = (animatedIndex + 0.5) * tabWidth;
 
@@ -99,6 +102,7 @@ class AppBottomNavBar extends StatelessWidget {
                       child: Row(
                         children: isParent
                             ? [
+                                // 4 Tab Orang Tua: Beranda, Presensi, Tagihan SPP, Profil
                                 _buildTabItem(
                                   index: 0,
                                   currentIndex: currentIndex,
@@ -132,47 +136,83 @@ class AppBottomNavBar extends StatelessWidget {
                                   label: 'Profil',
                                 ),
                               ]
-                            : [
-                                _buildTabItem(
-                                  index: 0,
-                                  currentIndex: currentIndex,
-                                  icon: Icons.home_outlined,
-                                  selectedIcon: Icons.home_rounded,
-                                  label: 'Beranda',
-                                ),
-                                _buildTabItem(
-                                  index: 1,
-                                  currentIndex: currentIndex,
-                                  icon: Icons.checklist_outlined,
-                                  selectedIcon: Icons.checklist_rounded,
-                                  label: isStaffOrTeacher ? 'Presensi Kelas' : 'Presensi',
-                                  badgeCount: pendingOutboxCount,
-                                  badgeColor: const Color(0xFFD97706),
-                                ),
-                                _buildTabItem(
-                                  index: 2,
-                                  currentIndex: currentIndex,
-                                  icon: Icons.school_outlined,
-                                  selectedIcon: Icons.school_rounded,
-                                  label: 'Akademik',
-                                ),
-                                _buildTabItem(
-                                  index: 3,
-                                  currentIndex: currentIndex,
-                                  icon: Icons.account_balance_wallet_outlined,
-                                  selectedIcon: Icons.account_balance_wallet_rounded,
-                                  label: isStaffOrTeacher ? 'Keuangan' : 'Tagihan SPP',
-                                  badgeCount: unpaidInvoiceCount,
-                                  badgeColor: const Color(0xFFDC2626),
-                                ),
-                                _buildTabItem(
-                                  index: 4,
-                                  currentIndex: currentIndex,
-                                  icon: Icons.person_outline_rounded,
-                                  selectedIcon: Icons.person_rounded,
-                                  label: 'Profil',
-                                ),
-                              ],
+                            : (isStudent || !isStaffOrTeacher)
+                                ? [
+                                    // 4 Tab Siswa: Beranda, Presensi, Akademik, Profil
+                                    // (Tagihan SPP disembunyikan dari bottom bar agar masuk lewat Dashboard)
+                                    _buildTabItem(
+                                      index: 0,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.home_outlined,
+                                      selectedIcon: Icons.home_rounded,
+                                      label: 'Beranda',
+                                    ),
+                                    _buildTabItem(
+                                      index: 1,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.checklist_outlined,
+                                      selectedIcon: Icons.checklist_rounded,
+                                      label: 'Presensi',
+                                      badgeCount: pendingOutboxCount,
+                                      badgeColor: const Color(0xFFD97706),
+                                    ),
+                                    _buildTabItem(
+                                      index: 2,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.school_outlined,
+                                      selectedIcon: Icons.school_rounded,
+                                      label: 'Akademik',
+                                    ),
+                                    _buildTabItem(
+                                      index: 3,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.person_outline_rounded,
+                                      selectedIcon: Icons.person_rounded,
+                                      label: 'Profil',
+                                    ),
+                                  ]
+                                : [
+                                    // 5 Tab Guru / Staf / Admin: Beranda, Presensi Kelas, Akademik, Keuangan, Profil
+                                    _buildTabItem(
+                                      index: 0,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.home_outlined,
+                                      selectedIcon: Icons.home_rounded,
+                                      label: 'Beranda',
+                                    ),
+                                    _buildTabItem(
+                                      index: 1,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.checklist_outlined,
+                                      selectedIcon: Icons.checklist_rounded,
+                                      label: 'Presensi Kelas',
+                                      badgeCount: pendingOutboxCount,
+                                      badgeColor: const Color(0xFFD97706),
+                                    ),
+                                    _buildTabItem(
+                                      index: 2,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.school_outlined,
+                                      selectedIcon: Icons.school_rounded,
+                                      label: 'Akademik',
+                                    ),
+                                    _buildTabItem(
+                                      index: 3,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.account_balance_wallet_outlined,
+                                      selectedIcon: Icons.account_balance_wallet_rounded,
+                                      label: 'Keuangan',
+                                      badgeCount: unpaidInvoiceCount,
+                                      badgeColor: const Color(0xFFDC2626),
+                                    ),
+                                    _buildTabItem(
+                                      index: 4,
+                                      currentIndex: currentIndex,
+                                      icon: Icons.person_outline_rounded,
+                                      selectedIcon: Icons.person_rounded,
+                                      label: 'Profil',
+                                    ),
+                                  ],
                       ),
                     ),
                   ],

@@ -129,21 +129,51 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               )
             : const SizedBox.shrink(),
       ];
-    } else {
-      // Sajian 5-Tab Standar Siswa / Guru: [0: Beranda, 1: Presensi, 2: Akademik, 3: Tagihan SPP, 4: Profil]
+    } else if (_isStudent) {
+      // Sajian 4-Tab Khusus Siswa: [0: Beranda, 1: Presensi, 2: Akademik, 3: Profil]
+      // (Tagihan SPP disembunyikan dari bottom bar agar masuk lewat Dashboard)
       _pages = [
         RepaintBoundary(
-          child: _isStaffOrTeacher
-              ? TeacherDashboardView(
+          child: StudentDashboardView(
+            profile: widget.profile,
+            scrollController: _scrollControllers[0],
+            onNavigateTab: _handleTabTap,
+          ),
+        ),
+        _activatedTabs.contains(1)
+            ? RepaintBoundary(
+                child: AttendanceScreen(
                   profile: widget.profile,
-                  scrollController: _scrollControllers[0],
-                  onNavigateTab: _handleTabTap,
-                )
-              : StudentDashboardView(
-                  profile: widget.profile,
-                  scrollController: _scrollControllers[0],
-                  onNavigateTab: _handleTabTap,
+                  scrollController: _scrollControllers[1],
                 ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(2)
+            ? RepaintBoundary(
+                child: AcademicScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[2],
+                ),
+              )
+            : const SizedBox.shrink(),
+        _activatedTabs.contains(3)
+            ? RepaintBoundary(
+                child: ProfileScreen(
+                  profile: widget.profile,
+                  scrollController: _scrollControllers[3],
+                ),
+              )
+            : const SizedBox.shrink(),
+      ];
+    } else {
+      // Sajian 5-Tab Standar Guru / Staf: [0: Beranda, 1: Presensi Kelas, 2: Akademik, 3: Keuangan, 4: Profil]
+      _pages = [
+        RepaintBoundary(
+          child: TeacherDashboardView(
+            profile: widget.profile,
+            scrollController: _scrollControllers[0],
+            onNavigateTab: _handleTabTap,
+          ),
         ),
         _activatedTabs.contains(1)
             ? RepaintBoundary(
@@ -197,6 +227,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           case 2:
             _pages[2] = RepaintBoundary(
               child: BillingScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[2],
+              ),
+            );
+            break;
+          case 3:
+            _pages[3] = RepaintBoundary(
+              child: ProfileScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[3],
+              ),
+            );
+            break;
+        }
+      } else if (_isStudent) {
+        switch (index) {
+          case 1:
+            _pages[1] = RepaintBoundary(
+              child: AttendanceScreen(
+                profile: widget.profile,
+                scrollController: _scrollControllers[1],
+              ),
+            );
+            break;
+          case 2:
+            _pages[2] = RepaintBoundary(
+              child: AcademicScreen(
                 profile: widget.profile,
                 scrollController: _scrollControllers[2],
               ),
@@ -281,14 +338,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   bool get _isStaffOrTeacher => widget.profile.activeSchool?.isStaffOrTeacher == true;
   bool get _isParent => widget.profile.activeSchool?.isParent == true;
-  int get _tabCount => _isParent ? 4 : 5;
+  bool get _isStudent => widget.profile.activeSchool?.isStudent == true || (!_isStaffOrTeacher && !_isParent);
+  int get _tabCount => _isStaffOrTeacher ? 5 : 4;
 
   /// Smart Reselect & Tab Switching:
   /// - Jika tab lain ditekan: Aktifkan tab (jika belum pernah dibuka), pindah tab & tampilkan bar navigasi.
   /// - Jika tab yang sedang aktif ditekan kembali: Memicu animasi smooth Scroll-to-Top!
   void _handleTabTap(int index) {
+    // 1. Jika Siswa meminta navigasi ke SPP (index 3 dari dashboard bento/quick service),
+    // buka BillingScreen sebagai layar penuh (full-page route) dengan tombol kembali:
+    if (_isStudent && index == 3) {
+      Navigator.of(context).push(
+        SmoothWelcomePageRoute(
+          child: BillingScreen(
+            profile: widget.profile,
+          ),
+        ),
+      );
+      return;
+    }
+
     int targetIndex = index;
-    // Pemetaan tab jika akun Orang Tua memicu navigasi dari kartu dashboard:
+    // 2. Pemetaan tab jika akun Orang Tua memicu navigasi dari kartu dashboard:
     // Tab 3 (SPP) dipetakan ke Tab 2 pada 4-tab bar
     // Tab 4 (Profil) dipetakan ke Tab 3 pada 4-tab bar
     if (_isParent) {
@@ -492,6 +563,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 schoolColor: _schoolColor,
                 isStaffOrTeacher: _isStaffOrTeacher,
                 isParent: _isParent,
+                isStudent: _isStudent,
                 pendingOutboxCount: pendingOutbox,
                 unpaidInvoiceCount: unpaidInvoiceCount,
                 isFloating: true,

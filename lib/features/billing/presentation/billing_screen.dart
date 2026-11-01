@@ -115,6 +115,33 @@ class _BillingScreenState extends State<BillingScreen> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F9FB), // Stitch Surface Background
+        appBar: Navigator.canPop(context)
+            ? AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                scrolledUnderElevation: 0,
+                leading: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Color(0xFF191C1E),
+                    size: 22,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  'Tagihan & Keuangan SPP',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF191C1E),
+                  ),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Container(color: const Color(0xFFECEEF0), height: 1),
+                ),
+              )
+            : null,
         body: RefreshIndicator(
                   color: _schoolColor,
                   onRefresh: () async => _fetchInvoices(),
