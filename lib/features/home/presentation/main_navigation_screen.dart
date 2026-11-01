@@ -389,35 +389,41 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   /// High-Performance Scroll Notification Listener:
-  /// Menggunakan ValueNotifier langsung (tanpa setState) sehingga 0 frame drop / lag saat scrolling.
+  /// Menggunakan ValueNotifier dengan post-frame callback agar tidak menginterupsi siklus layout.
   bool _onScrollNotification(ScrollNotification notification) {
     if (notification.depth == 0) {
+      void setNavVisibility(bool visible) {
+        if (_isNavBarVisible.value != visible) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _isNavBarVisible.value != visible) {
+              _isNavBarVisible.value = visible;
+            }
+          });
+        }
+      }
+
       if (notification is ScrollUpdateNotification) {
         final pixels = notification.metrics.pixels;
         final delta = notification.scrollDelta ?? 0.0;
 
         // 1. Jika dekat posisi teratas (< 30px), selalu tampilkan bar
         if (pixels <= 30.0) {
-          if (!_isNavBarVisible.value) {
-            _isNavBarVisible.value = true;
-          }
+          setNavVisibility(true);
         }
         // 2. Scroll ke bawah terukur (> 8px) dan sudah melewati batas atas (> 80px) -> Sembunyikan bar
         else if (delta > 8.0 && _isNavBarVisible.value && pixels > 80.0) {
-          _isNavBarVisible.value = false;
+          setNavVisibility(false);
         }
         // 3. Scroll ke atas terukur (< -8px) -> Munculkan kembali bar seketika
         else if (delta < -8.0 && !_isNavBarVisible.value) {
-          _isNavBarVisible.value = true;
+          setNavVisibility(true);
         }
       } else if (notification is ScrollEndNotification) {
         // Jika berhenti di ujung atas atau ujung bawah layar, pastikan bar muncul
         if (notification.metrics.pixels <= 30.0 ||
             notification.metrics.pixels >=
                 notification.metrics.maxScrollExtent - 24.0) {
-          if (!_isNavBarVisible.value) {
-            _isNavBarVisible.value = true;
-          }
+          setNavVisibility(true);
         }
       }
     }
