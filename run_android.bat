@@ -8,34 +8,38 @@ echo   VINTECH SCHOOL - APP RUNNER
 echo =======================================================================
 echo.
 
-set ADB="%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"
+set "ADB=%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe"
+set "DEVICE_ID="
 
-:: 1. Periksa apakah Android Emulator (emulator-5554) aktif
-if exist %ADB% (
-    %ADB% devices | findstr /i "emulator-5554" >nul
-    if not errorlevel 1 (
-        echo [TARGET] Android Emulator (emulator-5554) aktif.
-        echo Menonaktifkan pop-up keyboard virtual layar di emulator...
-        %ADB% -s emulator-5554 shell settings put secure show_ime_with_hard_keyboard 0 >nul 2>&1
-        %ADB% -s emulator-5554 shell input keyevent 111 >nul 2>&1
-        echo Menjalankan aplikasi di emulator-5554...
-        call flutter run -d emulator-5554
-        goto :done
-    )
+if not exist "%ADB%" goto :auto_detect
 
-    :: 2. Periksa apakah perangkat fisik Android terhubung via USB
-    %ADB% devices | findstr /i "device$" >nul
-    if not errorlevel 1 (
-        echo [TARGET] Perangkat fisik Android (Xiaomi / USB) terdeteksi.
-        echo Menjalankan aplikasi langsung di perangkat Android...
-        call flutter run -d android
-        goto :done
+:: 1. Cari perangkat Android aktif (Emulator maupun Perangkat Fisik Xiaomi via USB)
+for /f "skip=1 tokens=1,2" %%A in ('"%ADB%" devices') do (
+    if "%%B"=="device" (
+        set "DEVICE_ID=%%A"
+        goto :launch_device
     )
 )
 
-:: 3. Fallback jika tidak ada ADB atau perangkat spesifik
-echo [TARGET] Menjalankan aplikasi Flutter (Auto-Detect)...
+:auto_detect
+echo [TARGET] Tidak ada perangkat ADB terdeteksi, mencoba auto-detect Flutter...
 call flutter run
+goto :done
+
+:launch_device
+echo [TARGET] Perangkat Android terdeteksi: %DEVICE_ID%
+echo.
+
+:: Jika emulator, matikan pop-up keyboard di layar
+echo %DEVICE_ID% | findstr /i "emulator" >nul
+if not errorlevel 1 (
+    echo Menonaktifkan pop-up keyboard virtual di emulator...
+    "%ADB%" -s %DEVICE_ID% shell settings put secure show_ime_with_hard_keyboard 0 >nul 2>&1
+    "%ADB%" -s %DEVICE_ID% shell input keyevent 111 >nul 2>&1
+)
+
+echo Meluncurkan aplikasi ke %DEVICE_ID%...
+call flutter run -d %DEVICE_ID%
 
 :done
 echo.
