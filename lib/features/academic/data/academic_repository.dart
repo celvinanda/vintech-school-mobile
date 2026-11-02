@@ -83,8 +83,16 @@ class AcademicRepository {
   Future<List<StudentModel>> getStudents({
     String? classroomId,
     String? search,
+    bool forceRefresh = false,
   }) async {
     final cacheKey = _stuCacheKey(classroomId, search);
+    if (!forceRefresh) {
+      final cached = getCachedStudents(
+        classroomId: classroomId,
+        search: search,
+      );
+      if (cached != null) return cached;
+    }
     try {
       final response = await _dio.get(
         ApiConstants.students,
@@ -122,23 +130,60 @@ class AcademicRepository {
     }
   }
 
-  Future<StudentModel?> getStudentByNis(String nis) async {
+  Future<StudentModel> _enrichStudentWithHomeroom(StudentModel student) async {
+    if (student.homeroomTeacherName != null &&
+        student.homeroomTeacherName!.trim().isNotEmpty) {
+      return student;
+    }
+    if (student.classroomName != null && student.classroomName!.trim().isNotEmpty) {
+      try {
+        final classrooms = getCachedClassrooms() ?? await getClassrooms();
+        for (final c in classrooms) {
+          if (c.name.trim().toLowerCase() == student.classroomName!.trim().toLowerCase()) {
+            if (c.homeroomTeacher != null && c.homeroomTeacher!.trim().isNotEmpty) {
+              return student.copyWith(
+                homeroomTeacherName: c.homeroomTeacher!.trim(),
+              );
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    return student;
+  }
+
+  Future<StudentModel?> getStudentByNis(
+    String nis, {
+    bool forceRefresh = false,
+  }) async {
     final cleanNis = nis.trim();
     if (cleanNis.isEmpty) return null;
 
-    final allCached = getCachedStudents();
-    if (allCached != null) {
-      for (final s in allCached) {
-        if (s.nis == cleanNis) return s;
+    if (!forceRefresh) {
+      final allCached = getCachedStudents();
+      if (allCached != null) {
+        for (final s in allCached) {
+          if (s.nis == cleanNis) {
+            return await _enrichStudentWithHomeroom(s);
+          }
+        }
       }
     }
 
     try {
-      final list = await getStudents(search: cleanNis);
+      final list = await getStudents(search: cleanNis, forceRefresh: forceRefresh);
+      StudentModel? matched;
       for (final s in list) {
-        if (s.nis == cleanNis) return s;
+        if (s.nis == cleanNis) {
+          matched = s;
+          break;
+        }
       }
-      return list.isNotEmpty ? list.first : null;
+      matched ??= (list.isNotEmpty ? list.first : null);
+      if (matched != null) {
+        return await _enrichStudentWithHomeroom(matched);
+      }
+      return null;
     } catch (_) {
       return null;
     }

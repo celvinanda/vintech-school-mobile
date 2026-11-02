@@ -23,19 +23,50 @@ class StudentModel {
     this.homeroomTeacherPhone,
   });
 
+  StudentModel copyWith({
+    String? id,
+    String? nis,
+    String? nisn,
+    String? fullName,
+    String? gender,
+    String? classroomName,
+    String? parentName,
+    String? parentPhone,
+    String? homeroomTeacherName,
+    String? homeroomTeacherPhone,
+  }) {
+    return StudentModel(
+      id: id ?? this.id,
+      nis: nis ?? this.nis,
+      nisn: nisn ?? this.nisn,
+      fullName: fullName ?? this.fullName,
+      gender: gender ?? this.gender,
+      classroomName: classroomName ?? this.classroomName,
+      parentName: parentName ?? this.parentName,
+      parentPhone: parentPhone ?? this.parentPhone,
+      homeroomTeacherName: homeroomTeacherName ?? this.homeroomTeacherName,
+      homeroomTeacherPhone: homeroomTeacherPhone ?? this.homeroomTeacherPhone,
+    );
+  }
+
   factory StudentModel.fromJson(Map<String, dynamic> json) {
     String? classroomName;
-    String? homeroomTeacherName = json['homeroom_teacher'] as String?;
-    String? homeroomTeacherPhone = json['homeroom_teacher_phone'] as String?;
+    String? homeroomTeacherName = (json['homeroom_teacher'] as String?)?.trim();
+    String? homeroomTeacherPhone = (json['homeroom_teacher_phone'] as String?)?.trim();
 
     final rawClassroom = json['classroom'];
     if (rawClassroom is Map) {
-      classroomName = rawClassroom['name'] as String?;
-      homeroomTeacherName ??= rawClassroom['homeroom_teacher'] as String?;
-      homeroomTeacherPhone ??=
-          rawClassroom['homeroom_teacher_phone'] as String?;
+      classroomName = (rawClassroom['name'] as String?)?.trim();
+      final crTeacher = (rawClassroom['homeroom_teacher'] as String?)?.trim();
+      final crPhone = (rawClassroom['homeroom_teacher_phone'] as String?)?.trim();
+      if (homeroomTeacherName == null || homeroomTeacherName.isEmpty) {
+        homeroomTeacherName = crTeacher;
+      }
+      if (homeroomTeacherPhone == null || homeroomTeacherPhone.isEmpty) {
+        homeroomTeacherPhone = crPhone;
+      }
     } else if (rawClassroom is String) {
-      classroomName = rawClassroom;
+      classroomName = rawClassroom.trim();
     }
 
     return StudentModel(

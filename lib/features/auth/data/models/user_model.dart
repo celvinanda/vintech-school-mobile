@@ -14,6 +14,8 @@ class UserModel {
   final String address;
   final String nis;
   final String nisn;
+  final String homeroomTeacher;
+  final String homeroomTeacherPhone;
 
   UserModel({
     required this.id,
@@ -29,6 +31,8 @@ class UserModel {
     this.address = '',
     this.nis = '',
     this.nisn = '',
+    this.homeroomTeacher = '',
+    this.homeroomTeacherPhone = '',
   });
 
   /// Mengambil NIS atau NIP murni dari format username multi-tenant
@@ -77,6 +81,8 @@ class UserModel {
     String? address,
     String? nis,
     String? nisn,
+    String? homeroomTeacher,
+    String? homeroomTeacherPhone,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -92,6 +98,8 @@ class UserModel {
       address: address ?? this.address,
       nis: nis ?? this.nis,
       nisn: nisn ?? this.nisn,
+      homeroomTeacher: homeroomTeacher ?? this.homeroomTeacher,
+      homeroomTeacherPhone: homeroomTeacherPhone ?? this.homeroomTeacherPhone,
     );
   }
 
@@ -111,6 +119,8 @@ class UserModel {
       address: json['address'] as String? ?? '',
       nis: json['nis'] as String? ?? '',
       nisn: json['nisn'] as String? ?? '',
+      homeroomTeacher: json['homeroom_teacher'] as String? ?? '',
+      homeroomTeacherPhone: json['homeroom_teacher_phone'] as String? ?? '',
     );
   }
 
@@ -128,6 +138,8 @@ class UserModel {
     'address': address,
     'nis': nis,
     'nisn': nisn,
+    'homeroom_teacher': homeroomTeacher,
+    'homeroom_teacher_phone': homeroomTeacherPhone,
   };
 }
 
@@ -147,6 +159,8 @@ class ActiveSchoolModel {
   final String? specialization;
   final String? nis;
   final String? nisn;
+  final String? homeroomTeacher;
+  final String? homeroomTeacherPhone;
 
   ActiveSchoolModel({
     required this.id,
@@ -164,6 +178,8 @@ class ActiveSchoolModel {
     this.specialization,
     this.nis,
     this.nisn,
+    this.homeroomTeacher,
+    this.homeroomTeacherPhone,
   });
 
   bool get isStudent => role == 'STUDENT';
@@ -225,6 +241,8 @@ class ActiveSchoolModel {
       specialization: json['specialization'] as String?,
       nis: json['nis'] as String?,
       nisn: json['nisn'] as String?,
+      homeroomTeacher: json['homeroom_teacher'] as String?,
+      homeroomTeacherPhone: json['homeroom_teacher_phone'] as String?,
     );
   }
 
@@ -244,6 +262,9 @@ class ActiveSchoolModel {
     if (specialization != null) 'specialization': specialization,
     if (nis != null) 'nis': nis,
     if (nisn != null) 'nisn': nisn,
+    if (homeroomTeacher != null) 'homeroom_teacher': homeroomTeacher,
+    if (homeroomTeacherPhone != null)
+      'homeroom_teacher_phone': homeroomTeacherPhone,
   };
 }
 

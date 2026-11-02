@@ -117,6 +117,71 @@ void main() {
     expect(student.initials, 'RP');
   });
 
+  test('Wali Kelas (Homeroom Teacher) synchronization test across User and Student models', () {
+    // 1. StudentModel parses homeroom teacher from root or nested classroom map
+    final s1 = StudentModel.fromJson({
+      'id': 's-1',
+      'nis': '20261001',
+      'full_name': 'Aditya Pratama Putra',
+      'gender': 'L',
+      'homeroom_teacher': '  Drs. Bambang Sutrisno  ',
+      'homeroom_teacher_phone': '08123456789',
+      'classroom': {
+        'id': 'c-1',
+        'name': 'X-IPA-1',
+      },
+    });
+    expect(s1.homeroomTeacherName, 'Drs. Bambang Sutrisno');
+    expect(s1.homeroomTeacherPhone, '08123456789');
+
+    // 2. StudentModel falls back to classroom map if root is empty string
+    final s2 = StudentModel.fromJson({
+      'id': 's-2',
+      'nis': '20261002',
+      'full_name': 'Siti Aisyah',
+      'gender': 'P',
+      'homeroom_teacher': '',
+      'homeroom_teacher_phone': '',
+      'classroom': {
+        'id': 'c-1',
+        'name': 'X-IPA-1',
+        'homeroom_teacher': 'Drs. Bambang Sutrisno',
+        'homeroom_teacher_phone': '08123456789',
+      },
+    });
+    expect(s2.homeroomTeacherName, 'Drs. Bambang Sutrisno');
+    expect(s2.homeroomTeacherPhone, '08123456789');
+
+    // 3. UserModel and ActiveSchoolModel parse homeroom teacher fields
+    final user = UserModel.fromJson({
+      'id': 10,
+      'username': 'siswa',
+      'full_name': 'Aditya Pratama Putra',
+      'email': 'siswa@vintech.cloud',
+      'nis': '20261001',
+      'homeroom_teacher': 'Drs. Bambang Sutrisno',
+      'homeroom_teacher_phone': '08123456789',
+    });
+    expect(user.homeroomTeacher, 'Drs. Bambang Sutrisno');
+    expect(user.homeroomTeacherPhone, '08123456789');
+
+    final activeSchool = ActiveSchoolModel.fromJson({
+      'id': 'sch-1',
+      'code': 'SMAN1',
+      'slug': 'sman-1',
+      'name': 'SMAN 1 Vintech',
+      'level': 'SMA',
+      'role': 'STUDENT',
+      'title': 'Siswa Aktif',
+      'classroom_name': 'X-IPA-1',
+      'nis': '20261001',
+      'homeroom_teacher': 'Drs. Bambang Sutrisno',
+      'homeroom_teacher_phone': '08123456789',
+    });
+    expect(activeSchool.homeroomTeacher, 'Drs. Bambang Sutrisno');
+    expect(activeSchool.homeroomTeacherPhone, '08123456789');
+  });
+
   test('SchoolLookupModel serialization smoke test', () {
     final json = {
       'id': 'test-1',

@@ -42,18 +42,35 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
 
   String get _effectiveHomeroomName {
     if (student?.homeroomTeacherName != null &&
-        student!.homeroomTeacherName!.isNotEmpty) {
-      return student!.homeroomTeacherName!;
+        student!.homeroomTeacherName!.trim().isNotEmpty) {
+      return student!.homeroomTeacherName!.trim();
     }
-    return homeroomTeacherName;
+    if (profile.activeSchool?.homeroomTeacher != null &&
+        profile.activeSchool!.homeroomTeacher!.trim().isNotEmpty) {
+      return profile.activeSchool!.homeroomTeacher!.trim();
+    }
+    if (profile.user.homeroomTeacher.trim().isNotEmpty) {
+      return profile.user.homeroomTeacher.trim();
+    }
+    if (homeroomTeacherName.trim().isNotEmpty && homeroomTeacherName != '-') {
+      return homeroomTeacherName.trim();
+    }
+    return '-';
   }
 
   String get _effectiveHomeroomPhone {
     if (student?.homeroomTeacherPhone != null &&
-        student!.homeroomTeacherPhone!.isNotEmpty) {
-      return student!.homeroomTeacherPhone!;
+        student!.homeroomTeacherPhone!.trim().isNotEmpty) {
+      return student!.homeroomTeacherPhone!.trim();
     }
-    return homeroomTeacherPhone;
+    if (profile.activeSchool?.homeroomTeacherPhone != null &&
+        profile.activeSchool!.homeroomTeacherPhone!.trim().isNotEmpty) {
+      return profile.activeSchool!.homeroomTeacherPhone!.trim();
+    }
+    if (profile.user.homeroomTeacherPhone.trim().isNotEmpty) {
+      return profile.user.homeroomTeacherPhone.trim();
+    }
+    return homeroomTeacherPhone.trim();
   }
 
   String get _effectivePrincipalName {

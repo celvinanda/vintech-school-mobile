@@ -62,12 +62,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  Future<void> _loadLiveStudentData() async {
+  Future<void> _loadLiveStudentData({bool forceRefresh = false}) async {
     final isParent = profile.activeSchool?.isParent == true;
     final isStudent = profile.activeSchool?.isStudent == true;
+    final activeNis = profile.activeSchool?.nis?.trim();
+    final userNis = profile.user.nis.trim();
     final targetNis = isParent
         ? (profile.primaryChild?.nis ?? '')
-        : (isStudent ? profile.user.cleanIdentifier : '');
+        : (isStudent
+            ? (activeNis != null && activeNis.isNotEmpty
+                ? activeNis
+                : (userNis.isNotEmpty ? userNis : profile.user.cleanIdentifier))
+            : '');
     if (targetNis.isEmpty) {
       if (mounted && isParent && profile.primaryChild != null) {
         setState(() => _student = profile.primaryChild);
@@ -78,7 +84,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final billingRepo = context.read<BillingRepository>();
     // 1. Ambil data StudentModel lengkap
     try {
-      final st = await academicRepo.getStudentByNis(targetNis);
+      final st = await academicRepo.getStudentByNis(
+        targetNis,
+        forceRefresh: forceRefresh,
+      );
       if (mounted && st != null) {
         setState(() => _student = st);
       } else if (mounted && isParent && profile.primaryChild != null) {
@@ -162,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     HapticFeedback.lightImpact();
     await Future.wait([
       context.read<AuthCubit>().checkSession(),
-      _loadLiveStudentData(),
+      _loadLiveStudentData(forceRefresh: true),
     ]);
   }
 
@@ -315,7 +324,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
               // 4. Registered Contact & Guardian Information
-              ProfileRegisteredInfoSection(profile: profile, student: _student),
+              ProfileRegisteredInfoSection(
+                profile: profile,
+                student: _student,
+                homeroomTeacherName: _student?.homeroomTeacherName ??
+                    profile.activeSchool?.homeroomTeacher ??
+                    profile.user.homeroomTeacher,
+                homeroomTeacherPhone: _student?.homeroomTeacherPhone ??
+                    profile.activeSchool?.homeroomTeacherPhone ??
+                    profile.user.homeroomTeacherPhone,
+              ),
               const SizedBox(height: 16),
               // 5. Academic Files & Documents
               ProfileAcademicServicesSection(
