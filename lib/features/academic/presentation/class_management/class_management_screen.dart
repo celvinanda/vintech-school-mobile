@@ -250,8 +250,9 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                           top: Radius.circular(24),
                         ),
                       ),
-                      builder: (_) =>
-                          AttendanceEntrySheet(initialStudentNis: student.nisn),
+                      builder: (_) => AttendanceEntrySheet(
+                        initialStudentNis: student.effectiveNis,
+                      ),
                     );
                   },
                 ),

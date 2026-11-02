@@ -9,6 +9,7 @@ class ClassStudentItem {
   final String number;
   final String name;
   final String? roleBadge; // 'Ketua', 'Sekretaris', 'Bendahara', dll
+  final String nis;
   final String nisn;
   final String gender;
   final double attendancePercent;
@@ -23,6 +24,7 @@ class ClassStudentItem {
     required this.number,
     required this.name,
     this.roleBadge,
+    this.nis = '',
     required this.nisn,
     required this.gender,
     required this.attendancePercent,
@@ -32,6 +34,9 @@ class ClassStudentItem {
     this.phone,
     this.parentPhone,
   });
+
+  /// Identifier NIS utama untuk API (fallback ke NISN jika kosong)
+  String get effectiveNis => nis.isNotEmpty ? nis : nisn;
 
   /// Factory untuk memetakan data riil StudentModel & AttendanceModel dari server
   static List<ClassStudentItem> fromRealData({
@@ -68,6 +73,7 @@ class ClassStudentItem {
         number: (index + 1).toString().padLeft(2, '0'),
         name: s.fullName.isNotEmpty ? s.fullName : 'Siswa ',
         roleBadge: role,
+        nis: s.nis,
         nisn: s.nisn?.isNotEmpty == true ? s.nisn! : s.nis,
         gender: s.gender == 'P' ? 'Perempuan' : 'Laki-laki',
         attendancePercent: isAttention ? 82 : (status == 'HADIR' ? 100 : 96),

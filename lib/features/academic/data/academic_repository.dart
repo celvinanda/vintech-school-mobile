@@ -305,9 +305,44 @@ class AcademicRepository {
   Future<List<AttendanceModel>> recordBatchAttendance({
     required List<Map<String, String>> records,
   }) async {
-    final List<AttendanceModel> results = [];
     final schoolCode = _storage.getSchoolCode() ?? 'default';
 
+    // 1. Kirim sekaligus (Batch API) dalam 1 round-trip HTTP berkecepatan tinggi
+    try {
+      final response = await _dio.post(
+        ApiConstants.attendance,
+        data: {'items': records},
+      );
+
+      final envelope = ApiResponse<List<dynamic>>.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => json as List<dynamic>,
+      );
+
+      if (envelope.success && envelope.data != null) {
+        final models = envelope.data!
+            .map(
+              (item) => AttendanceModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
+
+        // Perbarui cache lokal presensi hari ini
+        final cacheKey = _attCacheKey(null, null);
+        final existing = getCachedAttendances() ?? [];
+        final updated = [...models, ...existing];
+        await _storage.cacheAttendances(
+          cacheKey,
+          updated.map((m) => m.toJson()).toList(),
+        );
+
+        return models;
+      }
+    } catch (_) {
+      // Jika terjadi kendala jaringan atau batch endpoint tidak merespons, lakukan fallback
+    }
+
+    // 2. Fallback per item dengan antrean offline Hive Outbox
+    final List<AttendanceModel> results = [];
     for (final item in records) {
       final studentNis = item['student_nis'] ?? '';
       final status = item['status'] ?? 'HADIR';

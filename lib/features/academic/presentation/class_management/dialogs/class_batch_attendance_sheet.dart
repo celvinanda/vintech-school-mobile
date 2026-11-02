@@ -54,7 +54,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
   @override
   void initState() {
     super.initState();
-    _statuses = {for (final s in widget.students) s.nisn: s.status};
+    _statuses = {for (final s in widget.students) s.effectiveNis: s.status};
   }
 
   int get _hadirCount =>
@@ -77,9 +77,10 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
     HapticFeedback.mediumImpact();
 
     final List<Map<String, String>> payload = widget.students.map((s) {
-      final status = _statuses[s.nisn] ?? 'HADIR';
+      final key = s.effectiveNis;
+      final status = _statuses[key] ?? 'HADIR';
       return {
-        'student_nis': s.nisn,
+        'student_nis': key,
         'status': status,
         'notes': 'Presensi Rombel ${widget.classInfo.className}',
       };
@@ -206,7 +207,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                 separatorBuilder: (_, _) => const SizedBox(height: 6),
                 itemBuilder: (context, index) {
                   final s = widget.students[index];
-                  final currentStatus = _statuses[s.nisn] ?? 'HADIR';
+                  final currentStatus = _statuses[s.effectiveNis] ?? 'HADIR';
 
                   return Container(
                     padding: const EdgeInsets.symmetric(
@@ -251,7 +252,9 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                s.nisn,
+                                s.nis.isNotEmpty
+                                    ? 'NIS: ${s.nis}'
+                                    : 'NISN: ${s.nisn}',
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 10,
                                   color: const Color(0xFF64748B),
@@ -266,7 +269,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildStatusPill(
-                              s.nisn,
+                              s.effectiveNis,
                               'H',
                               'HADIR',
                               currentStatus,
@@ -274,7 +277,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                             ),
                             const SizedBox(width: 4),
                             _buildStatusPill(
-                              s.nisn,
+                              s.effectiveNis,
                               'S',
                               'SAKIT',
                               currentStatus,
@@ -282,7 +285,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                             ),
                             const SizedBox(width: 4),
                             _buildStatusPill(
-                              s.nisn,
+                              s.effectiveNis,
                               'I',
                               'IZIN',
                               currentStatus,
@@ -290,7 +293,7 @@ class _ClassBatchAttendanceSheetState extends State<ClassBatchAttendanceSheet> {
                             ),
                             const SizedBox(width: 4),
                             _buildStatusPill(
-                              s.nisn,
+                              s.effectiveNis,
                               'A',
                               'ALPA',
                               currentStatus,
