@@ -105,12 +105,12 @@ class StudentSmartAssistantBanner extends StatelessWidget {
 
     // 5. Sore / Malam Hari: 14:30 - 23:59 (Review Tugas & Rapor)
     return _AssistantContext(
-      badgeText: 'Kilas Akademik',
-      badgeColor: const Color(0xFF7C3AED),
-      badgeBg: const Color(0xFFF5F3FF),
-      icon: Icons.auto_awesome_rounded,
-      title: 'KBM Selesai Hari Ini',
-      message: 'Periksa kesiapan tugas esok hari, pantau capaian nilai rata-rata, dan istirahat yang cukup.',
+      badgeText: 'Live OTA #1 Aktif 🚀',
+      badgeColor: const Color(0xFF0284C7),
+      badgeBg: const Color(0xFFE0F2FE),
+      icon: Icons.bolt_rounded,
+      title: 'Pembaruan OTA Berhasil! ✅',
+      message: 'Aplikasi Anda telah diperbarui ke Patch #1 lewat udara tanpa install APK! Nikmati performa sistem yang lebih segar.',
       actionLabel: 'Rapor Digital',
       onAction: onAcademicTap,
     );

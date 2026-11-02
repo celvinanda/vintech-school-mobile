@@ -36,6 +36,18 @@ class MockAuthRepository implements AuthRepository {
   Future<UserProfileResponse> switchSchool(String schoolCode) => throw UnimplementedError();
 
   @override
+  Future<UserProfileResponse> updateProfile({
+    required String fullName,
+    required String email,
+    required String phone,
+    String? parentRelationship,
+    String? nik,
+    String? occupation,
+    String? emergencyPhone,
+    String? address,
+  }) => throw UnimplementedError();
+
+  @override
   Future<void> logout({bool clearLocalCache = false}) async {}
 }
 

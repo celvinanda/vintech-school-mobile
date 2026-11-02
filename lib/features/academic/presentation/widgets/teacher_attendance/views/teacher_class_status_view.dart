@@ -272,9 +272,9 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
                   child: TeacherClassCard(
                     classInfo: item,
                     schoolColor: widget.schoolColor,
-                    onTap: () async {
+                    onTap: () {
                       HapticFeedback.selectionClick();
-                      await Navigator.push(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClassManagementScreen(
@@ -285,8 +285,7 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
                             schoolColor: widget.schoolColor,
                           ),
                         ),
-                      );
-                      widget.onRefresh();
+                      ).then((_) => widget.onRefresh());
                     },
                     onAction: () {
                       HapticFeedback.selectionClick();
