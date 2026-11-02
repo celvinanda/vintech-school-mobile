@@ -296,7 +296,41 @@ class AcademicRepository {
       }
 
       if (e.error is ApiException) throw e.error as ApiException;
-      throw ApiException('Gagal mencatat presensi: ${e.message}');
+      throw ApiException('Gagal mencatat presensi: ');
     }
+  }
+
+  /// Mencatat presensi secara massal (Batch Attendance) untuk 1 rombel sekaligus
+  /// Didukung penyimpanan antrean offline-first Hive Outbox jika jaringan terputus.
+  Future<List<AttendanceModel>> recordBatchAttendance({
+    required List<Map<String, String>> records,
+  }) async {
+    final List<AttendanceModel> results = [];
+    final schoolCode = _storage.getSchoolCode() ?? 'default';
+
+    for (final item in records) {
+      final studentNis = item['student_nis'] ?? '';
+      final status = item['status'] ?? 'HADIR';
+      final notes = item['notes'] ?? '';
+
+      if (studentNis.isEmpty) continue;
+
+      try {
+        final res = await recordAttendance(
+          studentNis: studentNis,
+          status: status,
+          notes: notes,
+        );
+        results.add(res);
+      } catch (e) {
+        await _storage.hive.enqueueAttendance(
+          schoolCode: schoolCode,
+          studentNis: studentNis,
+          status: status,
+          notes: notes,
+        );
+      }
+    }
+    return results;
   }
 }

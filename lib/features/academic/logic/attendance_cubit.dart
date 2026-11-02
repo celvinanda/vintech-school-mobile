@@ -122,4 +122,23 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       emit(AttendanceError(e.toString()));
     }
   }
+
+  Future<void> recordBatchAttendance({
+    required List<Map<String, String>> records,
+    String? classroomId,
+  }) async {
+    try {
+      await _repository.recordBatchAttendance(records: records);
+      emit(
+        AttendanceActionSuccess('Presensi rombel berhasil dicatat ( siswa)!'),
+      );
+      await loadAttendances(
+        classroomId: classroomId,
+        isStaff: true,
+        forceRefreshMeta: true,
+      );
+    } catch (e) {
+      emit(AttendanceError(e.toString()));
+    }
+  }
 }

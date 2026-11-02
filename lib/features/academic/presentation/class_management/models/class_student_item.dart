@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:vintech_school_mobile/features/academic/data/models/attendance_model.dart';
+import 'package:vintech_school_mobile/features/academic/data/models/student_model.dart';
 import 'package:vintech_school_mobile/features/academic/presentation/widgets/teacher_attendance/models/class_attendance_info.dart';
 
 /// Model representasi data siswa dalam Manajemen Kelas
@@ -30,6 +32,55 @@ class ClassStudentItem {
     this.phone,
     this.parentPhone,
   });
+
+  /// Factory untuk memetakan data riil StudentModel & AttendanceModel dari server
+  static List<ClassStudentItem> fromRealData({
+    required List<StudentModel> students,
+    required List<AttendanceModel> attendances,
+    required ClassAttendanceInfo info,
+  }) {
+    if (students.isEmpty) return generateListForClass(info);
+
+    return List.generate(students.length, (index) {
+      final s = students[index];
+      final matchingAtts = attendances
+          .where((a) => a.studentNis == s.nis)
+          .toList();
+      final latestAtt = matchingAtts.isNotEmpty ? matchingAtts.first : null;
+      final rawStatus = latestAtt?.status.toUpperCase() ?? 'HADIR';
+
+      String status = rawStatus;
+      if (status != 'HADIR' &&
+          status != 'SAKIT' &&
+          status != 'IZIN' &&
+          status != 'DISPENSASI' &&
+          status != 'ALPA') {
+        status = 'HADIR';
+      }
+
+      final isAttention = status == 'ALPA';
+      final role = index == 0
+          ? 'Ketua'
+          : (index == 1 ? 'Sekretaris' : (index == 2 ? 'Bendahara' : null));
+
+      return ClassStudentItem(
+        id: s.id.isNotEmpty ? s.id : 'std_',
+        number: (index + 1).toString().padLeft(2, '0'),
+        name: s.fullName.isNotEmpty ? s.fullName : 'Siswa ',
+        roleBadge: role,
+        nisn: s.nisn?.isNotEmpty == true ? s.nisn! : s.nis,
+        gender: s.gender == 'P' ? 'Perempuan' : 'Laki-laki',
+        attendancePercent: isAttention ? 82 : (status == 'HADIR' ? 100 : 96),
+        status: status,
+        isAttention: isAttention,
+        attentionNote: latestAtt?.notes.isNotEmpty == true
+            ? latestAtt!.notes
+            : (isAttention ? 'Tercatat Alpa • Butuh Perhatian' : null),
+        phone: s.parentPhone,
+        parentPhone: s.parentPhone ?? '0812-9876-5432',
+      );
+    });
+  }
 
   /// Factory untuk menghasilkan data siswa realistis berdasarkan konteks rombel
   static List<ClassStudentItem> generateListForClass(ClassAttendanceInfo info) {

@@ -6,7 +6,11 @@ import 'package:vintech_school_mobile/features/academic/presentation/attendance_
 import 'package:vintech_school_mobile/features/academic/presentation/widgets/teacher_attendance/models/class_attendance_info.dart';
 import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vintech_school_mobile/features/academic/logic/attendance_cubit.dart';
+
 import 'dialogs/add_class_note_dialog.dart';
+import 'dialogs/class_batch_attendance_sheet.dart';
 import 'dialogs/class_switcher_sheet.dart';
 import 'dialogs/manage_officers_sheet.dart';
 import 'dialogs/manage_schedule_piket_sheet.dart';
@@ -65,7 +69,19 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   }
 
   void _loadDataForCurrentClass() {
-    _students = ClassStudentItem.generateListForClass(_currentClass);
+    final cubit = context.read<AttendanceCubit>();
+    final allStudents = cubit.cachedStudents;
+    final matchingStudents = allStudents.where((s) {
+      if (s.classroomName == null || s.classroomName!.isEmpty) return true;
+      return s.classroomName!.toLowerCase() ==
+          _currentClass.className.toLowerCase();
+    }).toList();
+
+    _students = ClassStudentItem.fromRealData(
+      students: matchingStudents,
+      attendances: widget.allRecords,
+      info: _currentClass,
+    );
     final teacherName = widget.profile.user.fullName.isNotEmpty
         ? widget.profile.user.fullName
         : 'Dani Hermawan, S.Kom';
@@ -202,6 +218,45 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                 student.parentPhone ?? '0812-9876-5432',
               ),
               const SizedBox(height: 20),
+              // Aksi Cepat Input Presensi Siswa Terpilih
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.edit_square, size: 18),
+                  label: Text(
+                    'Input Presensi ',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF007D55),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                      ),
+                      builder: (_) =>
+                          AttendanceEntrySheet(initialStudentNis: student.nisn),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -524,14 +579,15 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
         label = 'Mulai Presensi';
         onTap = () {
           HapticFeedback.lightImpact();
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.white,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            builder: (_) => const AttendanceEntrySheet(),
+          ClassBatchAttendanceSheet.show(
+            context,
+            classInfo: _currentClass,
+            students: _students,
+            onSaved: () {
+              setState(() {
+                _loadDataForCurrentClass();
+              });
+            },
           );
         };
         break;
