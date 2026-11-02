@@ -63,8 +63,8 @@ class _LoginScreenState extends State<LoginScreen>
     _entranceController.forward();
 
     // Default demo guru: SMKS Pemuda 1 Kesamben
-    _usernameController.text = 'guru.smkspmd1.eko';
-    _passwordController.text = 'SMKS-PMD1';
+    _usernameController.text = 'ekoprasetyo';
+    _passwordController.text = 'Guru12345!';
 
     // Pastikan keyboard tidak auto-fokus saat layar dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -823,7 +823,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            'Kata sandi awal adalah Kode Sekolah (contoh: SMKS-PMD1)',
+                                            'Autentikasi akun mandiri (Username / NIP / NISN) • Pengaitan sekolah diproses otomatis',
                                             style: GoogleFonts.plusJakartaSans(
                                               fontSize: 11,
                                               color: const Color(0xFF64748B),
@@ -1260,18 +1260,18 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Guru SMKS Pemuda 1 (Eko Prasetyo)',
-                username: 'guru.smkspmd1.eko',
-                password: 'SMKS-PMD1',
+                label: 'Guru Eko Prasetyo (Wali XI-TKJ-1)',
+                username: 'ekoprasetyo',
+                password: 'Guru12345!',
                 color: const Color(0xFF4F46E5),
-                subtitle: 'TKJ • Wali XI-TKJ-1 • Pass: SMKS-PMD1',
+                subtitle: 'NIP: 198506122010011003 • TKJ',
               ),
               _buildDemoChip(
-                label: 'Guru SMKS Pemuda 1 (Rina Wulandari)',
-                username: 'guru.smkspmd1.rina',
-                password: 'SMKS-PMD1',
+                label: 'Guru Rina Wulandari (Wali XII-RPL-1)',
+                username: 'rinawulandari',
+                password: 'Guru12345!',
                 color: const Color(0xFF7C3AED),
-                subtitle: 'RPL • Wali XII-RPL-1 • Pass: SMKS-PMD1',
+                subtitle: 'NIP: 199003252014022005 • RPL',
               ),
               _buildDemoChip(
                 label: 'Guru SMAN 1 Jakarta (Siti Nurhaliza)',
@@ -1307,11 +1307,11 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Siswa SMKS Pemuda 1 (Ahmad Faisal)',
-                username: 'siswa.smkspmd1.20264001',
-                password: 'SMKS-PMD1',
+                label: 'Siswa Ahmad Faisal (XI-TKJ-1)',
+                username: 'ahmadfaisal',
+                password: 'Siswa12345!',
                 color: const Color(0xFF4F46E5),
-                subtitle: 'XI-TKJ-1 • Pass: SMKS-PMD1',
+                subtitle: 'NIS: 20264001 • SMKS Pemuda 1',
               ),
               _buildDemoChip(
                 label: 'Siswa SMAN 1 Jakarta (Aditya)',
@@ -1375,9 +1375,9 @@ class _LoginScreenState extends State<LoginScreen>
               _buildDemoChip(
                 label: 'Admin SMKS Pemuda 1 Kesamben',
                 username: 'celvinanda22',
-                password: 'SMKS-PMD1',
+                password: 'Admin12345!',
                 color: const Color(0xFF4F46E5),
-                subtitle: 'Pass: SMKS-PMD1',
+                subtitle: 'Celvinanda Octiawan',
               ),
               _buildDemoChip(
                 label: 'Admin SMAN 1 Jakarta',
