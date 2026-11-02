@@ -62,9 +62,9 @@ class _LoginScreenState extends State<LoginScreen>
 
     _entranceController.forward();
 
-    // Default demo student
-    _usernameController.text = 'siswa.sman1jkt.20261001';
-    _passwordController.text = 'siswa123';
+    // Default demo guru: SMKS Pemuda 1 Kesamben
+    _usernameController.text = 'guru.smkspmd1.eko';
+    _passwordController.text = 'SMKS-PMD1';
 
     // Pastikan keyboard tidak auto-fokus saat layar dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -700,7 +700,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: const Color(0xFF191C1E),
                                       ),
                                       decoration: InputDecoration(
-                                        hintText: 'NIP, Email, Username, atau NISN',
+                                        hintText:
+                                            'NIP, Email, Username, atau NISN',
                                         hintStyle: GoogleFonts.plusJakartaSans(
                                           fontSize: 13.5,
                                           color: const Color(0xFF737686),
@@ -807,8 +808,34 @@ class _LoginScreenState extends State<LoginScreen>
                                       },
                                     ),
                                   ),
+                                  const SizedBox(height: 6),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.info_outline_rounded,
+                                          size: 13,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            'Kata sandi awal adalah Kode Sekolah (contoh: SMKS-PMD1)',
+                                            style: GoogleFonts.plusJakartaSans(
+                                              fontSize: 11,
+                                              color: const Color(0xFF64748B),
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
 
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 10),
 
                                   // Auxiliary Controls (Ingat Saya & Lupa Sandi)
                                   Row(
@@ -1225,6 +1252,53 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 12),
 
+          // Guru
+          _buildRoleHeader('👨‍🏫 Akun Guru (Tenaga Pendidik):'),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildDemoChip(
+                label: 'Guru SMKS Pemuda 1 (Eko Prasetyo)',
+                username: 'guru.smkspmd1.eko',
+                password: 'SMKS-PMD1',
+                color: const Color(0xFF4F46E5),
+                subtitle: 'TKJ • Wali XI-TKJ-1 • Pass: SMKS-PMD1',
+              ),
+              _buildDemoChip(
+                label: 'Guru SMKS Pemuda 1 (Rina Wulandari)',
+                username: 'guru.smkspmd1.rina',
+                password: 'SMKS-PMD1',
+                color: const Color(0xFF7C3AED),
+                subtitle: 'RPL • Wali XII-RPL-1 • Pass: SMKS-PMD1',
+              ),
+              _buildDemoChip(
+                label: 'Guru SMAN 1 Jakarta (Siti Nurhaliza)',
+                username: 'guru.siti',
+                password: 'SMAN1-JKT',
+                color: const Color(0xFF007D55),
+                subtitle: 'Fisika • Wali XI-IPA-1 • Pass: SMAN1-JKT',
+              ),
+              _buildDemoChip(
+                label: 'Wali Kelas X-IPA-1 (Drs. Bambang)',
+                username: 'guru.bambang',
+                password: 'SMAN1-JKT',
+                color: const Color(0xFF004AC6),
+                subtitle: 'Matematika • Pass: SMAN1-JKT',
+              ),
+              _buildDemoChip(
+                label: 'Guru SMK Vintech (Reza Rahadian)',
+                username: 'guru.smkvintech.199205112018011005',
+                password: 'SMK-VINTECH',
+                color: const Color(0xFF0284C7),
+                subtitle: 'RPL • Pass: SMK-VINTECH',
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
           // Siswa
           _buildRoleHeader('🎓 Akun Siswa (Pelajar):'),
           const SizedBox(height: 6),
@@ -1233,22 +1307,32 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Siswa SMAN 1 Jakarta',
+                label: 'Siswa SMKS Pemuda 1 (Ahmad Faisal)',
+                username: 'siswa.smkspmd1.20264001',
+                password: 'SMKS-PMD1',
+                color: const Color(0xFF4F46E5),
+                subtitle: 'XI-TKJ-1 • Pass: SMKS-PMD1',
+              ),
+              _buildDemoChip(
+                label: 'Siswa SMAN 1 Jakarta (Aditya)',
                 username: 'siswa.sman1jkt.20261001',
-                password: 'siswa123',
+                password: 'SMAN1-JKT',
                 color: const Color(0xFF004AC6),
+                subtitle: 'X-IPA-1 • Pass: SMAN1-JKT',
               ),
               _buildDemoChip(
                 label: 'Siswa SMK Vintech Bandung',
                 username: 'siswa.smkvintech.20262001',
-                password: 'siswa123',
+                password: 'SMK-VINTECH',
                 color: const Color(0xFF0284C7),
+                subtitle: 'X-RPL-1 • Pass: SMK-VINTECH',
               ),
               _buildDemoChip(
                 label: 'Siswa SMP Al-Hikmah',
                 username: 'siswa.smpalhikmah.20263001',
-                password: 'siswa123',
+                password: 'SMP-ALHIKMAH',
                 color: const Color(0xFF059669),
+                subtitle: 'Pass: SMP-ALHIKMAH',
               ),
             ],
           ),
@@ -1263,51 +1347,18 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Wali Murid (Aditya)',
+                label: 'Wali Murid (Aditya - SMAN 1)',
                 username: 'ortu.aditya',
-                password: 'ortu123',
+                password: 'SMAN1-JKT',
                 color: const Color(0xFFD97706),
                 subtitle: 'Siswa: Aditya Pratama (X-IPA-1)',
               ),
               _buildDemoChip(
-                label: 'Wali Murid (2 Siswa)',
+                label: 'Wali Murid (2 Siswa - SMAN 1)',
                 username: 'ortu.dewi',
-                password: 'ortu123',
+                password: 'SMAN1-JKT',
                 color: const Color(0xFF7C3AED),
                 subtitle: 'Siswa: Nabila & Rizky',
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Guru
-          _buildRoleHeader('👨‍🏫 Akun Guru (Tenaga Pendidik):'),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _buildDemoChip(
-                label: 'Guru Fisika (Siti Nurhaliza)',
-                username: 'guru.siti',
-                password: 'guru123',
-                color: const Color(0xFF007D55),
-                subtitle: 'Fisika • NIP: 198609182011012004',
-              ),
-              _buildDemoChip(
-                label: 'Wali Kelas X-IPA-1 (Drs. Bambang)',
-                username: 'guru.bambang',
-                password: 'guru123',
-                color: const Color(0xFF004AC6),
-                subtitle: 'Matematika • NIP: 197804122005011002',
-              ),
-              _buildDemoChip(
-                label: 'Guru SMK Vintech (RPL)',
-                username: 'guru.smkvintech.199205112018011005',
-                password: 'guru123',
-                color: const Color(0xFF0284C7),
-                subtitle: 'Reza Rahadian, S.Kom.',
               ),
             ],
           ),
@@ -1322,16 +1373,25 @@ class _LoginScreenState extends State<LoginScreen>
             runSpacing: 6,
             children: [
               _buildDemoChip(
-                label: 'Admin SMAN 1',
+                label: 'Admin SMKS Pemuda 1 Kesamben',
+                username: 'celvinanda22',
+                password: 'SMKS-PMD1',
+                color: const Color(0xFF4F46E5),
+                subtitle: 'Pass: SMKS-PMD1',
+              ),
+              _buildDemoChip(
+                label: 'Admin SMAN 1 Jakarta',
                 username: 'admin.sman1',
-                password: 'admin123',
+                password: 'SMAN1-JKT',
                 color: const Color(0xFF475569),
+                subtitle: 'Pass: SMAN1-JKT',
               ),
               _buildDemoChip(
                 label: 'Admin SMK Vintech',
                 username: 'admin.smkvintech',
-                password: 'admin123',
+                password: 'SMK-VINTECH',
                 color: const Color(0xFF475569),
+                subtitle: 'Pass: SMK-VINTECH',
               ),
             ],
           ),
