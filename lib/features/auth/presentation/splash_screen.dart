@@ -1,3 +1,6 @@
+import 'package:restart_app/restart_app.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
+import '../../../core/update/ota_update_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -30,6 +33,8 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   bool _hasNavigated = false;
   bool _isEntranceComplete = false;
+  bool _isOtaUpdating = false;
+  String? _otaStatusMessage;
   AuthState? _pendingState;
   Timer? _watchdogTimer;
   late final DateTime _initTime;
@@ -103,9 +108,9 @@ class _SplashScreenState extends State<SplashScreen>
     // 4. Pengecekan sesi lokal Hive (~1-5ms) & Sinkronisasi Cloud
     context.read<AuthCubit>().checkSession();
 
-    // 5. Post-Frame Synchronous Evaluation:
-    // Menangkap state jika Hive mengembalikan state secara instan sebelum BlocListener mount
+    // 5. Post-Frame Synchronous Evaluation & OTA Auto-Update Check
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOtaOnStartup();
       if (!mounted || _hasNavigated) return;
       final currentState = context.read<AuthCubit>().state;
       if (currentState is Authenticated ||
@@ -132,7 +137,7 @@ class _SplashScreenState extends State<SplashScreen>
   /// - Returning Daily User: ~400 ms (snappy, bebas "pajak waktu")
   /// - First Launch / Update: ~800 ms (branding penuh)
   void _triggerScheduledNavigation() {
-    if (_hasNavigated || !mounted) return;
+    if (_hasNavigated || !mounted || _isOtaUpdating) return;
 
     final currentState = context.read<AuthCubit>().state;
     final stateToUse = _pendingState ?? currentState;
@@ -155,6 +160,76 @@ class _SplashScreenState extends State<SplashScreen>
         if (!mounted || _hasNavigated) return;
         _navigateToRoute(stateToUse);
       });
+    }
+  }
+
+  /// Pemeriksaan & Unduh Otomatis Pembaruan Kode OTA (Shorebird) di Splash Screen
+  /// Menjamin aplikasi selalu dalam versi mutakhir sebelum memasuki Beranda
+  Future<void> _checkOtaOnStartup() async {
+    if (!mounted) return;
+    final storage = context.read<LocalStorage>();
+    final otaService = context.read<OtaUpdateService>();
+
+    // 1. Guard anti-loop: cegah restart berulang jika baru saja restart dalam 15 detik terakhir
+    if (storage.shouldSkipOtaAutoRestart) {
+      debugPrint('[OTA STARTUP] Skip auto-update guard (baru saja restart).');
+      return;
+    }
+
+    if (!otaService.isShorebirdAvailable && !otaService.isDevSimulated) {
+      return;
+    }
+
+    try {
+      // 2. Cek patch baru dengan batas waktu aman 2.5 detik (tidak menahan user saat offline)
+      final status = await otaService.checkForUpdate().timeout(
+        const Duration(milliseconds: 2500),
+      );
+
+      if (status == UpdateStatus.outdated) {
+        if (!mounted || _hasNavigated) return;
+        _watchdogTimer?.cancel(); // Tangguhkan watchdog selama mengunduh patch
+
+        setState(() {
+          _isOtaUpdating = true;
+          _otaStatusMessage = 'Mengunduh pembaruan sistem...';
+        });
+
+        final success = await otaService.downloadPatch(storage: storage);
+        if (success && mounted) {
+          setState(() {
+            _otaStatusMessage = 'Menerapkan pembaruan sistem...';
+          });
+          await otaService.prepareForRestart(storage);
+          await storage.markOtaRestarted();
+          await Future.delayed(const Duration(milliseconds: 350));
+          await Restart.restartApp();
+          return;
+        }
+      } else if (status == UpdateStatus.restartRequired) {
+        if (!mounted || _hasNavigated) return;
+        _watchdogTimer?.cancel();
+
+        setState(() {
+          _isOtaUpdating = true;
+          _otaStatusMessage = 'Menerapkan pembaruan sistem...';
+        });
+        await otaService.prepareForRestart(storage);
+        await storage.markOtaRestarted();
+        await Future.delayed(const Duration(milliseconds: 350));
+        await Restart.restartApp();
+        return;
+      }
+    } catch (e) {
+      debugPrint('[OTA STARTUP] Skip OTA check: $e');
+    } finally {
+      if (mounted && _isOtaUpdating) {
+        setState(() {
+          _isOtaUpdating = false;
+          _otaStatusMessage = null;
+        });
+        _triggerScheduledNavigation();
+      }
     }
   }
 
@@ -341,8 +416,10 @@ class _SplashScreenState extends State<SplashScreen>
                                                   // Dynamic Live Status Indicator (Sapaan Hangat Personal)
                                                   BlocBuilder<AuthCubit, AuthState>(
                                                     builder: (context, state) {
-                                                      String statusText = 'Memeriksa sesi akun...';
-                                                      Color statusColor = const Color(0xFF737686);
+                                                      String statusText = _otaStatusMessage ?? 'Memeriksa sesi akun...';
+                                                      Color statusColor = _isOtaUpdating
+                                                          ? const Color(0xFF004AC6)
+                                                          : const Color(0xFF737686);
                                                       if (state is AuthLoading && state.message != null) {
                                                         statusText = state.message!;
                                                       } else if (state is Authenticated) {

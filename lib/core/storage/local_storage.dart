@@ -116,6 +116,20 @@ class LocalStorage {
     await _prefs.setString(_keyLastAppVersion, _currentAppVersion);
   }
 
+  static const String _keyLastOtaRestartMs = 'last_ota_restart_timestamp';
+
+  /// Mencegah loop restart jika sistem baru saja memicu auto-restart OTA dalam 15 detik terakhir
+  bool get shouldSkipOtaAutoRestart {
+    final lastRestart = _prefs.getInt(_keyLastOtaRestartMs) ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    return (now - lastRestart) < 15000;
+  }
+
+  /// Menandai bahwa aplikasi baru saja memicu restart untuk patch OTA
+  Future<void> markOtaRestarted() async {
+    await _prefs.setInt(_keyLastOtaRestartMs, DateTime.now().millisecondsSinceEpoch);
+  }
+
   /// Menyimpan token autentikasi ke dalam Hardware Keystore / Keychain
   Future<void> saveToken(String token) async {
     _cachedToken = token;
