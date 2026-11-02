@@ -1,3 +1,4 @@
+import 'package:restart_app/restart_app.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import '../../../core/update/ota_update_service.dart';
 import 'dart:async';
@@ -202,7 +203,7 @@ class _SplashScreenState extends State<SplashScreen>
           await otaService.prepareForRestart(storage);
           await storage.markOtaRestarted();
           await Future.delayed(const Duration(milliseconds: 350));
-          // Patch akan aktif otomatis pada peluncuran berikutnya
+          await Restart.restartApp();
           return;
         }
       } else if (status == UpdateStatus.restartRequired) {
@@ -216,7 +217,7 @@ class _SplashScreenState extends State<SplashScreen>
         await otaService.prepareForRestart(storage);
         await storage.markOtaRestarted();
         await Future.delayed(const Duration(milliseconds: 350));
-        // Patch akan aktif otomatis pada peluncuran berikutnya
+        await Restart.restartApp();
         return;
       }
     } catch (e) {
