@@ -1,3 +1,4 @@
+import '../../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -1612,7 +1613,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'Versi 1.1.0 • Clean Modern Architecture',
+                    '${AppConstants.versionDisplay} • ${AppConstants.securityStandard}',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: const Color(0xFF64748B),
@@ -1627,8 +1628,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     showAboutDialog(
                       context: context,
                       applicationName: 'Vintech School',
-                      applicationVersion: '1.1.0 (Clean Modern UI)',
-                      applicationLegalese: '© 2026 Vintech Cloud Platform. Seluruh Hak Cipta Dilindungi.',
+                      applicationVersion: '${AppConstants.versionDisplay} • Build ${AppConstants.buildNumber}',
+                      applicationLegalese: AppConstants.legalCopyright,
                       applicationIcon: Container(
                         width: 48,
                         height: 48,
@@ -1678,7 +1679,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ? 'Patch kode baru tersedia • Ketuk untuk mengunduh'
                               : (ota.status == UpdateStatus.unavailable
                                     ? 'Engine Siap (Production Release Standby)'
-                                    : 'Kode Mutakhir • Patch #${ota.activePatchNumber ?? "Base"}')),
+                                    : 'Sistem Mutakhir • Kanal Produksi ${ota.activePatchNumber != null ? "(Patch #${ota.activePatchNumber})" : "(Rilis Fondasi)"}')),
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11.5,
                       color: ota.status == UpdateStatus.restartRequired

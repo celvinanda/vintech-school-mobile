@@ -141,25 +141,6 @@ class StudentSmartCard extends StatelessWidget {
                                 letterSpacing: 0.5,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 1.5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                'OTA #1 ⚡',
-                                style: GoogleFonts.jetBrainsMono(
-                                  color: const Color(0xFFBAE6FD),
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
