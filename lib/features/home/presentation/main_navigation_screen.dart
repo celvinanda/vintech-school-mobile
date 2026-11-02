@@ -1,3 +1,4 @@
+import '../../../core/widgets/whats_new_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -89,6 +90,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
       },
     )..start();
+
+    // Tampilkan modal 'Yang Baru di Versi Ini' jika aplikasi baru saja diperbarui
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      WhatsNewModal.showIfAvailable(
+        context,
+        context.read<LocalStorage>(),
+      );
+    });
   }
 
   /// Inisialisasi daftar halaman satu kali (Persistent Cached Pages):

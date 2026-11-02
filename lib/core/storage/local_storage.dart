@@ -130,6 +130,19 @@ class LocalStorage {
     await _prefs.setInt(_keyLastOtaRestartMs, DateTime.now().millisecondsSinceEpoch);
   }
 
+  static const String _keyLastSeenWhatsNewVersion = 'last_seen_whats_new_version';
+
+  /// Memeriksa apakah dialog 'Yang Baru di Versi Ini' perlu ditampilkan ke pengguna
+  bool shouldShowWhatsNew() {
+    final lastSeen = _prefs.getString(_keyLastSeenWhatsNewVersion);
+    return lastSeen != _currentAppVersion;
+  }
+
+  /// Menandai bahwa pengguna telah melihat pengumuman pembaruan versi saat ini
+  Future<void> markWhatsNewSeen() async {
+    await _prefs.setString(_keyLastSeenWhatsNewVersion, _currentAppVersion);
+  }
+
   /// Menyimpan token autentikasi ke dalam Hardware Keystore / Keychain
   Future<void> saveToken(String token) async {
     _cachedToken = token;
