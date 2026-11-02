@@ -47,6 +47,8 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _exitFadeAnimation;
   late Animation<double> _exitScaleAnimation;
 
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
   late AnimationController _waveController;
 
   @override
@@ -54,10 +56,10 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _initTime = DateTime.now();
 
-    // 1. Inisialisasi Entrance Animation yang tangkas & mulus (350ms, easeOutCubic)
+    // 1. Inisialisasi Entrance Animation yang tangkas & bertenaga (500ms, easeOutBack)
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 500),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -65,10 +67,23 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeOut,
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: Curves.easeOutCubic,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
+    // 2. Inisialisasi Breathing Pulse Animation untuk Emblem Logo (1400ms, mulus)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
+      CurvedAnimation(
+        parent: _pulseController,
+        curve: Curves.easeInOutSine,
       ),
     );
 
@@ -99,10 +114,10 @@ class _SplashScreenState extends State<SplashScreen>
       _triggerScheduledNavigation();
     });
 
-    // 3. Inisialisasi Harmonic 3-Dot Wave Animation (1100ms)
+    // 3. Inisialisasi Harmonic 3-Dot Wave Animation yang mengalir (950ms)
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(milliseconds: 950),
     )..repeat();
 
     // 4. Pengecekan sesi lokal Hive (~1-5ms) & Sinkronisasi Cloud
@@ -125,9 +140,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 6. Fail-Safe Watchdog Timer Anti-Stuck (Maksimal 2.5 detik)
     // Selalu fallback ke LoginScreen secara aman jika terjadi anomali
-    _watchdogTimer = Timer(const Duration(milliseconds: 2500), () {
+    _watchdogTimer = Timer(const Duration(milliseconds: 3500), () {
       if (!mounted || _hasNavigated) return;
-      debugPrint('[SPLASH WATCHDOG] Fallback aman ke LoginScreen (timeout 2500ms).');
+      debugPrint('[SPLASH WATCHDOG] Fallback aman ke LoginScreen (timeout 3500ms).');
       _navigateToRoute(Unauthenticated());
     });
   }
@@ -151,8 +166,8 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      final isReturning = context.read<LocalStorage>().isReturningUser();
-      final targetDwell = isReturning ? 400 : 800;
+      // Dwell Time standar 1800ms agar animasi logo bernafas & 3-dot wave terlihat nyata
+      const targetDwell = 1800;
       final elapsed = DateTime.now().difference(_initTime).inMilliseconds;
       final remainingDwell = math.max(0, targetDwell - elapsed);
 
@@ -237,6 +252,7 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _watchdogTimer?.cancel();
     _entranceController.dispose();
+    _pulseController.dispose();
     _exitController.dispose();
     _waveController.dispose();
     super.dispose();
@@ -248,6 +264,7 @@ class _SplashScreenState extends State<SplashScreen>
     _hasNavigated = true;
     _watchdogTimer?.cancel();
     _waveController.stop();
+    _pulseController.stop();
 
     // Catat versi aplikasi terakhir yang dikunjungi pengguna
     try {
@@ -344,35 +361,38 @@ class _SplashScreenState extends State<SplashScreen>
                                                 mainAxisSize: MainAxisSize.min,
                                                 crossAxisAlignment: CrossAxisAlignment.center,
                                                 children: [
-                                                  // Stitch Center Emblem (96x96 rounded-3xl with subtle border & shadow)
-                                                  RepaintBoundary(
-                                                    child: Container(
-                                                      width: 96,
-                                                      height: 96,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        borderRadius: BorderRadius.circular(24),
-                                                        border: Border.all(
-                                                          color: const Color(0xFFE6E8EA),
-                                                          width: 1,
+                                                  // Stitch Center Emblem dengan Breathing Pulse Animation yang hidup
+                                                  ScaleTransition(
+                                                    scale: _pulseAnimation,
+                                                    child: RepaintBoundary(
+                                                      child: Container(
+                                                        width: 96,
+                                                        height: 96,
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          borderRadius: BorderRadius.circular(24),
+                                                          border: Border.all(
+                                                            color: const Color(0xFFE6E8EA),
+                                                            width: 1,
+                                                          ),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: const Color(0xFF191C1E).withValues(alpha: 0.05),
+                                                              blurRadius: 18,
+                                                              offset: const Offset(0, 6),
+                                                            ),
+                                                            BoxShadow(
+                                                              color: const Color(0xFF004AC6).withValues(alpha: 0.08),
+                                                              blurRadius: 12,
+                                                              offset: const Offset(0, 3),
+                                                            ),
+                                                          ],
                                                         ),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: const Color(0xFF191C1E).withValues(alpha: 0.05),
-                                                            blurRadius: 18,
-                                                            offset: const Offset(0, 6),
+                                                        child: Center(
+                                                          child: CustomPaint(
+                                                            size: const Size(48, 48),
+                                                            painter: _StitchGraduationCapPainter(),
                                                           ),
-                                                          BoxShadow(
-                                                            color: const Color(0xFF004AC6).withValues(alpha: 0.04),
-                                                            blurRadius: 8,
-                                                            offset: const Offset(0, 2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Center(
-                                                        child: CustomPaint(
-                                                          size: const Size(48, 48),
-                                                          painter: _StitchGraduationCapPainter(),
                                                         ),
                                                       ),
                                                     ),
@@ -597,12 +617,12 @@ class _SplashScreenState extends State<SplashScreen>
     final waveValue = math.sin(_waveController.value * 2 * math.pi - phaseOffset);
     final normalized = (waveValue + 1.0) / 2.0; // 0.0 -> 1.0
 
-    // Animasi translasi Y (-4.5px hingga 0px)
-    final translateY = -4.5 * normalized;
+    // Animasi translasi Y (-6.0px hingga 0px) agar osilasi gelombang terlihat jelas
+    final translateY = -6.0 * normalized;
     // Animasi opacity (0.45 hingga 1.0)
     final opacity = 0.45 + (0.55 * normalized);
-    // Animasi skala titik (0.85 hingga 1.15)
-    final scale = 0.85 + (0.30 * normalized);
+    // Animasi skala titik (0.80 hingga 1.20)
+    final scale = 0.80 + (0.40 * normalized);
 
     return Transform.translate(
       offset: Offset(0, translateY),
@@ -611,8 +631,8 @@ class _SplashScreenState extends State<SplashScreen>
         child: Opacity(
           opacity: opacity,
           child: Container(
-            width: 7,
-            height: 7,
+            width: 8,
+            height: 8,
             decoration: const BoxDecoration(
               color: Color(0xFF004AC6), // Google Stitch: primary royal blue
               shape: BoxShape.circle,

@@ -153,6 +153,36 @@ class SchoolTeacherModel {
   };
 }
 
+class SchoolPartnerModel {
+  final String name;
+  final String category;
+  final String description;
+  final String type;
+
+  SchoolPartnerModel({
+    required this.name,
+    required this.category,
+    required this.description,
+    required this.type,
+  });
+
+  factory SchoolPartnerModel.fromJson(Map<String, dynamic> json) {
+    return SchoolPartnerModel(
+      name: json['name'] as String? ?? '',
+      category: json['category'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      type: json['type'] as String? ?? 'general',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'category': category,
+    'description': description,
+    'type': type,
+  };
+}
+
 class SchoolDashboardModel {
   final String id;
   final String code;
@@ -163,6 +193,7 @@ class SchoolDashboardModel {
   final String? logoUrl;
   final String principalName;
   final String principalNip;
+  final String principalMessage;
   final String schoolStatus;
   final String accreditation;
   final String accreditationDisplay;
@@ -173,12 +204,14 @@ class SchoolDashboardModel {
   final String phone;
   final String email;
   final String website;
+  final String serviceHours;
   final String motto;
   final String vision;
   final List<String> missions;
   final List<SchoolMajorModel> majors;
   final List<SchoolTeacherModel> teachers;
   final List<String> facilities;
+  final List<SchoolPartnerModel> partners;
   final int totalStudents;
   final int totalTeachers;
   final int totalClassrooms;
@@ -196,6 +229,7 @@ class SchoolDashboardModel {
     this.logoUrl,
     this.principalName = 'Drs. Supiyanto',
     this.principalNip = '',
+    this.principalMessage = '',
     this.schoolStatus = 'SWASTA',
     this.accreditation = 'A',
     this.accreditationDisplay = 'Akreditasi A (Unggul)',
@@ -206,12 +240,14 @@ class SchoolDashboardModel {
     this.phone = '',
     this.email = '',
     this.website = '',
+    this.serviceHours = 'Senin – Jumat: 07.00 – 15.30 WIB',
     this.motto = '',
     this.vision = '',
     this.missions = const [],
     this.majors = const [],
     this.teachers = const [],
     this.facilities = const [],
+    this.partners = const [],
     required this.totalStudents,
     required this.totalTeachers,
     required this.totalClassrooms,
@@ -237,6 +273,7 @@ class SchoolDashboardModel {
       logoUrl: branding['logo_url'] as String?,
       principalName: json['principal_name'] as String? ?? 'Drs. Supiyanto',
       principalNip: json['principal_nip'] as String? ?? '',
+      principalMessage: json['principal_message'] as String? ?? '',
       schoolStatus: json['school_status'] as String? ?? 'SWASTA',
       accreditation: json['accreditation'] as String? ?? 'A',
       accreditationDisplay:
@@ -248,6 +285,8 @@ class SchoolDashboardModel {
       phone: json['phone'] as String? ?? '',
       email: json['email'] as String? ?? '',
       website: json['website'] as String? ?? '',
+      serviceHours:
+          json['service_hours'] as String? ?? 'Senin – Jumat: 07.00 – 15.30 WIB',
       motto: json['motto'] as String? ?? '',
       vision: json['vision'] as String? ?? '',
       missions: (json['missions'] as List<dynamic>?)
@@ -266,6 +305,11 @@ class SchoolDashboardModel {
           [],
       facilities: (json['facilities'] as List<dynamic>?)
               ?.map((f) => f.toString())
+              .toList() ??
+          [],
+      partners: (json['partners'] as List<dynamic>?)
+              ?.map((p) =>
+                  SchoolPartnerModel.fromJson(Map<String, dynamic>.from(p as Map)))
               .toList() ??
           [],
       totalStudents: summary['total_students'] as int? ?? 0,
@@ -290,6 +334,7 @@ class SchoolDashboardModel {
     'level_display': levelDisplay,
     'principal_name': principalName,
     'principal_nip': principalNip,
+    'principal_message': principalMessage,
     'school_status': schoolStatus,
     'accreditation': accreditation,
     'accreditation_display': accreditationDisplay,
@@ -300,12 +345,14 @@ class SchoolDashboardModel {
     'phone': phone,
     'email': email,
     'website': website,
+    'service_hours': serviceHours,
     'motto': motto,
     'vision': vision,
     'missions': missions,
     'majors': majors.map((m) => m.toJson()).toList(),
     'teachers': teachers.map((t) => t.toJson()).toList(),
     'facilities': facilities,
+    'partners': partners.map((p) => p.toJson()).toList(),
     'branding': {'primary_color': primaryColor, 'logo_url': logoUrl},
     'summary': {
       'total_students': totalStudents,

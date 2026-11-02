@@ -48,6 +48,13 @@ class MockAuthRepository implements AuthRepository {
   }) => throw UnimplementedError();
 
   @override
+  Future<UserProfileResponse> setupCredentials({
+    required String username,
+    required String password,
+    String? confirmPassword,
+  }) => throw UnimplementedError();
+
+  @override
   Future<void> logout({bool clearLocalCache = false}) async {}
 }
 

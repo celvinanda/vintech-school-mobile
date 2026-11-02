@@ -201,11 +201,12 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
         ? dashboard!.motto
         : 'Terampil, Mandiri, Berkarakter & Siap Kerja';
 
-    final totalStudents = (dashboard?.totalStudents ?? 3).toString();
+    final totalStudents = (dashboard?.totalStudents ?? 24).toString();
     final totalTeachers = (dashboard?.totalTeachers ?? 8).toString();
     final totalMajors =
         (dashboard?.majors.isNotEmpty == true ? dashboard!.majors.length : 4)
             .toString();
+    final totalClassrooms = (dashboard?.totalClassrooms ?? 8).toString();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -491,8 +492,8 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                         ),
                         const SizedBox(width: 8),
                         _buildStatCell(
-                          value: '24+',
-                          label: 'Mitra Industri',
+                          value: totalClassrooms,
+                          label: 'Rombel',
                           color: const Color(0xFF191C1E),
                         ),
                       ],
@@ -749,7 +750,9 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '"Kami berkomitmen melahirkan lulusan vokasi yang berakhlak mulia, berintelektual maju, terampil, dan berkarakter mandiri yang siap bersaing di dunia usaha maupun industri global."',
+                        dashboard?.principalMessage.isNotEmpty == true
+                            ? '"${dashboard!.principalMessage}"'
+                            : '"Selamat datang di portal akademik digital SMKS Pemuda 1 Kesamben. Kami berkomitmen menyelenggarakan pendidikan vokasi berkualitas unggul yang berakhlak mulia, berwawasan industri, serta membekali peserta didik dengan kompetensi kejuruan yang siap kerja, mandiri, dan berdaya saing global."',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: const Color(0xFF191C1E),
@@ -1003,23 +1006,19 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
       final Color bg;
       String category = 'kejuruan';
 
-      if (spec.contains('Jaringan') || spec.contains('TKJ')) {
+      if (spec.contains('Jaringan') || spec.contains('TKJ') || spec.contains('RPL') || spec.contains('Perangkat Lunak') || spec.contains('Informatika')) {
         color = const Color(0xFF004AC6);
         bg = const Color(0xFFDBE1FF);
         category = 'tkj';
-      } else if (spec.contains('RPL') || spec.contains('Perangkat Lunak')) {
-        color = const Color(0xFF7C3AED);
-        bg = const Color(0xFFEDE9FE);
-        category = 'rpl';
-      } else if (spec.contains('Otomotif') || spec.contains('Kendaraan')) {
+      } else if (spec.contains('Otomotif') || spec.contains('Kendaraan') || spec.contains('TKRO')) {
         color = const Color(0xFF007D55);
         bg = const Color(0xFFD1FAE5);
         category = 'tkro';
-      } else if (spec.contains('Akuntansi') || spec.contains('Keuangan')) {
+      } else if (spec.contains('Akuntansi') || spec.contains('Keuangan') || spec.contains('AKL')) {
         color = const Color(0xFFB45309);
         bg = const Color(0xFFFEF3C7);
         category = 'akl';
-      } else if (spec.contains('Pemasaran') || spec.contains('Bisnis')) {
+      } else if (spec.contains('Pemasaran') || spec.contains('Bisnis') || spec.contains('BDP')) {
         color = const Color(0xFFBE123C);
         bg = const Color(0xFFFFE4E6);
         category = 'bdp';
@@ -1038,15 +1037,19 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
       if (t.nip == '196805121993031008') {
         badge = 'Kepala Sekolah';
       } else if (t.nip == '198506122010011003') {
-        badge = 'Wali XI-TKJ-1';
-      } else if (t.nip == '199003252014022005') {
-        badge = 'Wali XII-RPL-1';
-      } else if (spec.contains('Otomotif')) {
-        badge = 'Kajur TKRO';
-      } else if (spec.contains('Akuntansi')) {
-        badge = 'Kajur AKL';
-      } else if (spec.contains('Pemasaran')) {
-        badge = 'Kajur BDP';
+        badge = 'Wali XI-TKJ-1 / Kajur';
+      } else if (spec.contains('Otomotif') || spec.contains('TKRO')) {
+        badge = 'Wali XI-TKRO-1 / Kajur';
+      } else if (spec.contains('Akuntansi') || spec.contains('AKL')) {
+        badge = 'Wali XI-AKL-1 / Kajur';
+      } else if (spec.contains('Pemasaran') || spec.contains('BDP') || spec.contains('Bisnis')) {
+        badge = 'Wali XI-BDP-1 / Kajur';
+      } else if (spec.contains('Perangkat Lunak') || spec.contains('RPL') || spec.contains('Informatika')) {
+        badge = 'Guru Produktif IT';
+      } else if (spec.contains('MIPA') || spec.contains('Matematika')) {
+        badge = 'Guru MIPA';
+      } else if (spec.contains('Bahasa')) {
+        badge = 'Guru Bahasa';
       }
 
       // Calculate initials
@@ -1505,49 +1508,53 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPartnerItem(
-                      icon: Icons.directions_car_rounded,
-                      color: const Color(0xFF007D55),
-                      title: 'Astra Daihatsu Motor',
-                      subtitle: 'Mitra DU/DI Otomotif',
-                    ),
+              if ((dashboard?.partners ?? []).isEmpty)
+                Text(
+                  'Belum ada data mitra industri terdaftar.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: const Color(0xFF737686),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildPartnerItem(
-                      icon: Icons.router_rounded,
-                      color: const Color(0xFF004AC6),
-                      title: 'MikroTik Academy',
-                      subtitle: 'Sertifikasi MTCNA',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPartnerItem(
-                      icon: Icons.account_balance_rounded,
-                      color: const Color(0xFFB45309),
-                      title: 'Bank Jatim',
-                      subtitle: 'Praktik Mini Bank',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildPartnerItem(
-                      icon: Icons.cell_tower_rounded,
-                      color: const Color(0xFFDC2626),
-                      title: 'Telkom Indonesia',
-                      subtitle: 'Prakerin & Magang',
-                    ),
-                  ),
-                ],
-              ),
+                )
+              else
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: (dashboard!.partners).map((partner) {
+                    final IconData icon;
+                    final Color color;
+                    final type = partner.type.toLowerCase();
+                    final cat = partner.category.toLowerCase();
+                    final name = partner.name.toLowerCase();
+
+                    if (type == 'automotive' || cat.contains('otomotif') || name.contains('daihatsu')) {
+                      icon = Icons.directions_car_rounded;
+                      color = const Color(0xFF007D55);
+                    } else if (type == 'network' || cat.contains('jaringan') || name.contains('mikrotik')) {
+                      icon = Icons.router_rounded;
+                      color = const Color(0xFF004AC6);
+                    } else if (type == 'finance' || cat.contains('bank') || name.contains('bank')) {
+                      icon = Icons.account_balance_rounded;
+                      color = const Color(0xFFB45309);
+                    } else if (type == 'telecom' || name.contains('telkom')) {
+                      icon = Icons.cell_tower_rounded;
+                      color = const Color(0xFFDC2626);
+                    } else {
+                      icon = Icons.corporate_fare_rounded;
+                      color = const Color(0xFF004AC6);
+                    }
+
+                    return SizedBox(
+                      width: (MediaQuery.of(context).size.width - 72) / 2,
+                      child: _buildPartnerItem(
+                        icon: icon,
+                        color: color,
+                        title: partner.name,
+                        subtitle: partner.category,
+                      ),
+                    );
+                  }).toList(),
+                ),
             ],
           ),
         ),
@@ -1894,7 +1901,9 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
               _buildContactItem(
                 icon: Icons.schedule_rounded,
                 title: 'Jam Layanan Pelayanan Siswa',
-                subtitle: 'Senin - Jumat: 07.00 - 15.30 WIB',
+                subtitle: dashboard?.serviceHours.isNotEmpty == true
+                    ? dashboard!.serviceHours
+                    : 'Senin – Jumat: 07.00 – 15.30 WIB',
               ),
             ],
           ),
