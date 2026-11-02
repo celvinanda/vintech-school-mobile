@@ -145,7 +145,7 @@ class WhatsNewModal extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             _buildFeatureRow(
-              icon: Icons.offline_bolt_outlined,
+              icon: Icons.bolt_rounded,
               iconColor: const Color(0xFFEA580C),
               iconBg: const Color(0xFFFFEDD5),
               title: 'Peningkatan Kinerja & Offline Cepat',
