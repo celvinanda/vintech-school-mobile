@@ -22,6 +22,7 @@ import '../../billing/logic/billing_state.dart';
 import '../../billing/presentation/billing_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../logic/home_cubit.dart';
+import '../../auth/presentation/widgets/setup_credentials_sheet.dart';
 import 'student_dashboard_view.dart';
 import 'teacher_dashboard_view.dart';
 import 'widgets/app_base_top_bar.dart';
@@ -91,13 +92,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       },
     )..start();
 
-    // Tampilkan modal 'Yang Baru di Versi Ini' jika aplikasi baru saja diperbarui
+    // Cek apakah guru perlu mengatur username & password pribadi atau update baru
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      WhatsNewModal.showIfAvailable(
-        context,
-        context.read<LocalStorage>(),
-      );
+      if (widget.profile.mustSetupCredentials) {
+        SetupCredentialsSheet.show(
+          context,
+          profile: widget.profile,
+        );
+      } else {
+        WhatsNewModal.showIfAvailable(
+          context,
+          context.read<LocalStorage>(),
+        );
+      }
     });
   }
 

@@ -9,6 +9,7 @@ import '../../../core/widgets/smooth_welcome_page_route.dart';
 import '../../home/presentation/main_navigation_screen.dart';
 import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
+import 'widgets/setup_credentials_sheet.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -412,6 +413,21 @@ class _LoginScreenState extends State<LoginScreen>
       listener: (context, state) {
         if (state is Authenticated) {
           HapticFeedback.mediumImpact();
+          if (state.profile.mustSetupCredentials) {
+            SetupCredentialsSheet.show(
+              context,
+              profile: state.profile,
+              onSuccess: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  SmoothWelcomePageRoute(
+                    child: MainNavigationScreen(profile: state.profile),
+                  ),
+                  (route) => false,
+                );
+              },
+            );
+            return;
+          }
           Navigator.of(context).pushAndRemoveUntil(
             SmoothWelcomePageRoute(
               child: MainNavigationScreen(profile: state.profile),
@@ -651,7 +667,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   Align(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      'ID Pengguna / NISN / NIP',
+                                      'ID Pengguna / NIP / Email / NISN',
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w600,
@@ -684,7 +700,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: const Color(0xFF191C1E),
                                       ),
                                       decoration: InputDecoration(
-                                        hintText: 'Masukkan NISN / Username',
+                                        hintText: 'NIP, Email, Username, atau NISN',
                                         hintStyle: GoogleFonts.plusJakartaSans(
                                           fontSize: 13.5,
                                           color: const Color(0xFF737686),

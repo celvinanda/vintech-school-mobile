@@ -323,6 +323,7 @@ class UserProfileResponse {
   final List<SchoolMembershipModel> memberships;
   final AuthTokenModel? auth;
   final List<StudentModel> children;
+  final bool mustSetupCredentials;
 
   UserProfileResponse({
     required this.user,
@@ -330,6 +331,7 @@ class UserProfileResponse {
     required this.memberships,
     this.auth,
     this.children = const [],
+    this.mustSetupCredentials = false,
   });
 
   /// Mengambil data anak pertama/utama jika pengguna adalah akun Orang Tua
@@ -341,6 +343,7 @@ class UserProfileResponse {
     List<SchoolMembershipModel>? memberships,
     AuthTokenModel? auth,
     List<StudentModel>? children,
+    bool? mustSetupCredentials,
   }) {
     return UserProfileResponse(
       user: user ?? this.user,
@@ -348,10 +351,15 @@ class UserProfileResponse {
       memberships: memberships ?? this.memberships,
       auth: auth ?? this.auth,
       children: children ?? this.children,
+      mustSetupCredentials: mustSetupCredentials ?? this.mustSetupCredentials,
     );
   }
 
   factory UserProfileResponse.fromJson(Map<String, dynamic> json) {
+    final mustSetup = json['must_setup_credentials'] == true ||
+        (json['user'] is Map && (json['user'] as Map)['must_setup_credentials'] == true) ||
+        (json['active_school'] is Map && (json['active_school'] as Map)['must_setup_credentials'] == true);
+
     return UserProfileResponse(
       user: UserModel.fromJson(json['user'] as Map<String, dynamic>? ?? {}),
       activeSchool: json['active_school'] != null
@@ -368,6 +376,7 @@ class UserProfileResponse {
       children: (json['children'] as List<dynamic>? ?? [])
           .map((c) => StudentModel.fromJson(c as Map<String, dynamic>))
           .toList(),
+      mustSetupCredentials: mustSetup,
     );
   }
 
@@ -377,5 +386,6 @@ class UserProfileResponse {
     'memberships': memberships.map((m) => m.toJson()).toList(),
     if (auth != null) 'auth': auth!.toJson(),
     'children': children.map((c) => c.toJson()).toList(),
+    'must_setup_credentials': mustSetupCredentials,
   };
 }
