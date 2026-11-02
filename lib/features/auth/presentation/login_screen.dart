@@ -11,6 +11,16 @@ import '../logic/auth_cubit.dart';
 import '../logic/auth_state.dart';
 import 'widgets/setup_credentials_sheet.dart';
 
+enum SmartIdentifierType {
+  empty,
+  nisn,
+  nis,
+  nip,
+  email,
+  phone,
+  username,
+}
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -62,6 +72,9 @@ class _LoginScreenState extends State<LoginScreen>
 
     _entranceController.forward();
 
+    // Smart Universal Login listener
+    _usernameController.addListener(_onUsernameChanged);
+
     // Default demo guru: SMKS Pemuda 1 Kesamben
     _usernameController.text = 'ekoprasetyo';
     _passwordController.text = 'Guru12345!';
@@ -74,10 +87,188 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   void dispose() {
+    _usernameController.removeListener(_onUsernameChanged);
     _entranceController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _onUsernameChanged() {
+    setState(() {});
+  }
+
+  SmartIdentifierType get _currentIdentifierType {
+    final raw = _usernameController.text;
+    final clean = raw.trim().replaceAll(RegExp(r'[\s\.\-]'), '');
+    if (clean.isEmpty) return SmartIdentifierType.empty;
+    if (raw.contains('@')) return SmartIdentifierType.email;
+    if (clean.startsWith('08') || clean.startsWith('62') || raw.trim().startsWith('+62')) {
+      if (clean.length >= 10 && clean.length <= 15) {
+        return SmartIdentifierType.phone;
+      }
+    }
+    if (RegExp(r'^\d+$').hasMatch(clean)) {
+      if (clean.length == 18) return SmartIdentifierType.nip;
+      if (clean.length == 10) return SmartIdentifierType.nisn;
+      if (clean.length == 8) return SmartIdentifierType.nis;
+      if (clean.length > 10) return SmartIdentifierType.nip;
+      return SmartIdentifierType.nis;
+    }
+    return SmartIdentifierType.username;
+  }
+
+  IconData _getPrefixIcon(SmartIdentifierType type) {
+    switch (type) {
+      case SmartIdentifierType.nisn:
+      case SmartIdentifierType.nis:
+        return Icons.school_rounded;
+      case SmartIdentifierType.nip:
+        return Icons.work_outline_rounded;
+      case SmartIdentifierType.email:
+        return Icons.alternate_email_rounded;
+      case SmartIdentifierType.phone:
+        return Icons.phone_android_rounded;
+      case SmartIdentifierType.username:
+        return Icons.person_outline_rounded;
+      default:
+        return Icons.badge_outlined;
+    }
+  }
+
+  Color _getPrefixColor(SmartIdentifierType type) {
+    switch (type) {
+      case SmartIdentifierType.nisn:
+        return const Color(0xFF047857);
+      case SmartIdentifierType.nis:
+        return const Color(0xFF004AC6);
+      case SmartIdentifierType.nip:
+        return const Color(0xFF6D28D9);
+      case SmartIdentifierType.email:
+        return const Color(0xFFB45309);
+      case SmartIdentifierType.phone:
+        return const Color(0xFF15803D);
+      case SmartIdentifierType.username:
+        return const Color(0xFF475569);
+      default:
+        return const Color(0xFF565E74);
+    }
+  }
+
+  Color _getBorderColor(SmartIdentifierType type) {
+    switch (type) {
+      case SmartIdentifierType.nisn:
+        return const Color(0xFF10B981);
+      case SmartIdentifierType.nis:
+        return const Color(0xFF004AC6);
+      case SmartIdentifierType.nip:
+        return const Color(0xFF8B5CF6);
+      case SmartIdentifierType.email:
+        return const Color(0xFFF59E0B);
+      case SmartIdentifierType.phone:
+        return const Color(0xFF22C55E);
+      case SmartIdentifierType.username:
+        return const Color(0xFF004AC6);
+      default:
+        return const Color(0xFFE0E3E5);
+    }
+  }
+
+  Widget _buildSmartIdentifierBadge(SmartIdentifierType type) {
+    if (type == SmartIdentifierType.empty) return const SizedBox.shrink();
+
+    final IconData icon;
+    final String label;
+    final Color bg;
+    final Color fg;
+    final String tip;
+
+    switch (type) {
+      case SmartIdentifierType.nisn:
+        icon = Icons.verified_rounded;
+        label = 'NISN Siswa Terdeteksi (10 Digit)';
+        bg = const Color(0xFFD1FAE5);
+        fg = const Color(0xFF047857);
+        tip = 'Nomor Induk Siswa Nasional • Login langsung tanpa kode sekolah';
+        break;
+      case SmartIdentifierType.nis:
+        icon = Icons.school_rounded;
+        label = 'NIS Siswa Terdeteksi (Nomor Induk Siswa)';
+        bg = const Color(0xFFDBE1FF);
+        fg = const Color(0xFF004AC6);
+        tip = 'Nomor Induk Siswa • Terhubung otomatis ke rombel & presensi';
+        break;
+      case SmartIdentifierType.nip:
+        icon = Icons.workspace_premium_rounded;
+        label = 'NIP Tenaga Pendidik Terdeteksi (18 Digit)';
+        bg = const Color(0xFFEDE9FE);
+        fg = const Color(0xFF6D28D9);
+        tip = 'NIP Dapodik Guru • Format spasi/strip otomatis disanitasi';
+        break;
+      case SmartIdentifierType.email:
+        icon = Icons.alternate_email_rounded;
+        label = 'Alamat Email Terdeteksi';
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFFB45309);
+        tip = 'Email terdaftar pada Dapodik / Portal Vintech School';
+        break;
+      case SmartIdentifierType.phone:
+        icon = Icons.phone_android_rounded;
+        label = 'No. WhatsApp / HP Terdeteksi (Wali Murid / Guru)';
+        bg = const Color(0xFFDCFCE7);
+        fg = const Color(0xFF15803D);
+        tip = 'Nomor kontak resmi terdaftar di database sekolah';
+        break;
+      case SmartIdentifierType.username:
+        icon = Icons.account_circle_rounded;
+        label = 'ID Pengguna / Username Terdeteksi';
+        bg = const Color(0xFFF1F5F9);
+        fg = const Color(0xFF475569);
+        tip = 'Username akun multi-tenant • Pengaitan tenant diproses otomatis';
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: fg.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: fg),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: fg,
+                  ),
+                ),
+                Text(
+                  tip,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: fg.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onLogin() {
@@ -663,16 +854,54 @@ class _LoginScreenState extends State<LoginScreen>
 
                                   const SizedBox(height: 28),
 
-                                  // Input 1: ID Pengguna / NISN / NIP
+                                  // Input 1: Smart Universal Identifier
                                   Align(
                                     alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      'ID Pengguna / NIP / Email / NISN',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF191C1E),
-                                      ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'ID Pengguna / NISN / NIS / NIP / Email',
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF191C1E),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 7,
+                                            vertical: 2.5,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEEF2FF),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.auto_awesome_rounded,
+                                                size: 11,
+                                                color: Color(0xFF4F46E5),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'SMART UNIVERSAL',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: 0.5,
+                                                  color:
+                                                      const Color(0xFF4F46E5),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const SizedBox(height: 6),
@@ -681,7 +910,14 @@ class _LoginScreenState extends State<LoginScreen>
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
-                                        color: const Color(0xFFE0E3E5),
+                                        color: _getBorderColor(
+                                          _currentIdentifierType,
+                                        ),
+                                        width:
+                                            _currentIdentifierType !=
+                                                    SmartIdentifierType.empty
+                                                ? 1.5
+                                                : 1.0,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
@@ -701,16 +937,34 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                       decoration: InputDecoration(
                                         hintText:
-                                            'NIP, Email, Username, atau NISN',
+                                            'NISN, NIS, NIP, Email, atau Username',
                                         hintStyle: GoogleFonts.plusJakartaSans(
                                           fontSize: 13.5,
                                           color: const Color(0xFF737686),
                                         ),
-                                        prefixIcon: const Icon(
-                                          Icons.badge_outlined,
-                                          color: Color(0xFF565E74),
+                                        prefixIcon: Icon(
+                                          _getPrefixIcon(
+                                            _currentIdentifierType,
+                                          ),
+                                          color: _getPrefixColor(
+                                            _currentIdentifierType,
+                                          ),
                                           size: 20,
                                         ),
+                                        suffixIcon: _usernameController
+                                                .text
+                                                .isNotEmpty
+                                            ? IconButton(
+                                                icon: const Icon(
+                                                  Icons.clear_rounded,
+                                                  size: 18,
+                                                  color: Color(0xFF94A3B8),
+                                                ),
+                                                onPressed: () {
+                                                  _usernameController.clear();
+                                                },
+                                              )
+                                            : null,
                                         border: InputBorder.none,
                                         contentPadding:
                                             const EdgeInsets.symmetric(
@@ -720,11 +974,15 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                       validator: (val) {
                                         if (val == null || val.trim().isEmpty) {
-                                          return 'ID Pengguna wajib diisi';
+                                          return 'ID Pengguna / NISN / NIP wajib diisi';
                                         }
                                         return null;
                                       },
                                     ),
+                                  ),
+                                  // Real-time Smart Detection Badge
+                                  _buildSmartIdentifierBadge(
+                                    _currentIdentifierType,
                                   ),
 
                                   const SizedBox(height: 16),
@@ -1251,6 +1509,103 @@ class _LoginScreenState extends State<LoginScreen>
             ],
           ),
           const SizedBox(height: 12),
+
+          // Smart Universal Login Showcase (SMKS Pemuda 1 Kesamben)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFEEF2FF), Color(0xFFF8FAFC)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFC7D2FE)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 16,
+                      color: Color(0xFF4F46E5),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'UJI COBA SMART UNIVERSAL LOGIN (SMKS-PMD1)',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                        color: const Color(0xFF4338CA),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ketik atau tap opsi di bawah: sistem otomatis mengenali akun Anda tanpa perlu kode sekolah.',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: const Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _buildDemoChip(
+                      label: '🎓 NISN: 0071234001',
+                      username: '0071234001',
+                      password: 'Siswa12345!',
+                      color: const Color(0xFF059669),
+                      subtitle: 'Siswa Ahmad Faisal (10 Digit)',
+                    ),
+                    _buildDemoChip(
+                      label: '🎓 NIS: 20264001',
+                      username: '20264001',
+                      password: 'Siswa12345!',
+                      color: const Color(0xFF0284C7),
+                      subtitle: 'Siswa Ahmad Faisal (8 Digit)',
+                    ),
+                    _buildDemoChip(
+                      label: '👨‍🏫 NIP: 198506122010011003',
+                      username: '198506122010011003',
+                      password: 'Guru12345!',
+                      color: const Color(0xFF7C3AED),
+                      subtitle: 'Guru Eko Prasetyo (18 Digit)',
+                    ),
+                    _buildDemoChip(
+                      label: '👨‍🏫 NIP Format Spasi',
+                      username: '19850612 201001 1 003',
+                      password: 'Guru12345!',
+                      color: const Color(0xFF6D28D9),
+                      subtitle: 'Auto-sanitize oleh server',
+                    ),
+                    _buildDemoChip(
+                      label: '✉️ Email Guru',
+                      username: 'guru.smkspmd1.eko@vintech.school',
+                      password: 'Guru12345!',
+                      color: const Color(0xFFD97706),
+                      subtitle: 'Login via Email Resmi',
+                    ),
+                    _buildDemoChip(
+                      label: '👤 Username Guru',
+                      username: 'ekoprasetyo',
+                      password: 'Guru12345!',
+                      color: const Color(0xFF4F46E5),
+                      subtitle: 'Login via Username Murni',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
 
           // Guru
           _buildRoleHeader('👨‍🏫 Akun Guru (Tenaga Pendidik):'),

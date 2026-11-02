@@ -66,7 +66,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     return const Color(0xFF004AC6);
   }
 
-  String get _myCleanNis => widget.profile.user.cleanIdentifier;
+  String get _myCleanNis {
+    if (widget.profile.activeSchool?.nis?.isNotEmpty == true) {
+      return widget.profile.activeSchool!.nis!;
+    }
+    return widget.profile.user.cleanIdentifier;
+  }
 
   Future<void> _fetchAttendances({
     String? classroomId,

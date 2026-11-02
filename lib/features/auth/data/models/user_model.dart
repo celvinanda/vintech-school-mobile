@@ -12,6 +12,8 @@ class UserModel {
   final String occupation;
   final String emergencyPhone;
   final String address;
+  final String nis;
+  final String nisn;
 
   UserModel({
     required this.id,
@@ -25,11 +27,14 @@ class UserModel {
     this.occupation = '',
     this.emergencyPhone = '',
     this.address = '',
+    this.nis = '',
+    this.nisn = '',
   });
 
   /// Mengambil NIS atau NIP murni dari format username multi-tenant
   /// (contoh: "siswa.sman1jkt.20261001" -> "20261001")
   String get cleanIdentifier {
+    if (nis.isNotEmpty) return nis;
     final raw = username.trim();
     if (raw.contains('.')) {
       return raw.split('.').last;
@@ -70,6 +75,8 @@ class UserModel {
     String? occupation,
     String? emergencyPhone,
     String? address,
+    String? nis,
+    String? nisn,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -83,6 +90,8 @@ class UserModel {
       occupation: occupation ?? this.occupation,
       emergencyPhone: emergencyPhone ?? this.emergencyPhone,
       address: address ?? this.address,
+      nis: nis ?? this.nis,
+      nisn: nisn ?? this.nisn,
     );
   }
 
@@ -100,6 +109,8 @@ class UserModel {
       occupation: json['occupation'] as String? ?? '',
       emergencyPhone: json['emergency_phone'] as String? ?? '',
       address: json['address'] as String? ?? '',
+      nis: json['nis'] as String? ?? '',
+      nisn: json['nisn'] as String? ?? '',
     );
   }
 
@@ -115,6 +126,8 @@ class UserModel {
     'occupation': occupation,
     'emergency_phone': emergencyPhone,
     'address': address,
+    'nis': nis,
+    'nisn': nisn,
   };
 }
 
@@ -132,6 +145,8 @@ class ActiveSchoolModel {
   final String? classroomNameField;
   final String? nip;
   final String? specialization;
+  final String? nis;
+  final String? nisn;
 
   ActiveSchoolModel({
     required this.id,
@@ -147,6 +162,8 @@ class ActiveSchoolModel {
     this.classroomNameField,
     this.nip,
     this.specialization,
+    this.nis,
+    this.nisn,
   });
 
   bool get isStudent => role == 'STUDENT';
@@ -206,6 +223,8 @@ class ActiveSchoolModel {
       classroomNameField: json['classroom_name'] as String?,
       nip: json['nip'] as String?,
       specialization: json['specialization'] as String?,
+      nis: json['nis'] as String?,
+      nisn: json['nisn'] as String?,
     );
   }
 
@@ -223,6 +242,8 @@ class ActiveSchoolModel {
     if (classroomNameField != null) 'classroom_name': classroomNameField,
     if (nip != null) 'nip': nip,
     if (specialization != null) 'specialization': specialization,
+    if (nis != null) 'nis': nis,
+    if (nisn != null) 'nisn': nisn,
   };
 }
 
