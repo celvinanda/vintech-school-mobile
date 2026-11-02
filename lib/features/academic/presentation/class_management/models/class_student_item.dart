@@ -49,9 +49,19 @@ class ClassStudentItem {
     return List.generate(students.length, (index) {
       final s = students[index];
       final matchingAtts = attendances
-          .where((a) => a.studentNis == s.nis)
+          .where(
+            (a) =>
+                (s.nis.isNotEmpty && a.studentNis == s.nis) ||
+                (s.nisn?.isNotEmpty == true && a.studentNis == s.nisn) ||
+                (s.id.isNotEmpty && a.studentId == s.id),
+          )
           .toList();
-      final latestAtt = matchingAtts.isNotEmpty ? matchingAtts.first : null;
+      final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+      final todayAtt = matchingAtts
+          .where((a) => a.date == todayStr)
+          .firstOrNull;
+      final latestAtt =
+          todayAtt ?? (matchingAtts.isNotEmpty ? matchingAtts.first : null);
       final rawStatus = latestAtt?.status.toUpperCase() ?? 'HADIR';
 
       String status = rawStatus;

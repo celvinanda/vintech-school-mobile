@@ -8,6 +8,7 @@ import 'package:vintech_school_mobile/features/auth/data/models/user_model.dart'
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vintech_school_mobile/features/academic/logic/attendance_cubit.dart';
+import 'package:vintech_school_mobile/features/academic/logic/attendance_state.dart';
 
 import 'dialogs/add_class_note_dialog.dart';
 import 'dialogs/class_batch_attendance_sheet.dart';
@@ -68,20 +69,75 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     super.dispose();
   }
 
-  void _loadDataForCurrentClass() {
+  bool _isSameClass(String? a, String? b) {
+    if (a == null || b == null) return false;
+    final cleanA = a
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .trim();
+    final cleanB = b
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .trim();
+    return cleanA == cleanB;
+  }
+
+  void _loadDataForCurrentClass({List<AttendanceModel>? freshAttendances}) {
     final cubit = context.read<AttendanceCubit>();
     final allStudents = cubit.cachedStudents;
     final matchingStudents = allStudents.where((s) {
       if (s.classroomName == null || s.classroomName!.isEmpty) return true;
-      return s.classroomName!.toLowerCase() ==
-          _currentClass.className.toLowerCase();
+      return _isSameClass(s.classroomName, _currentClass.className);
     }).toList();
+
+    final List<AttendanceModel> attendances;
+    if (freshAttendances != null && freshAttendances.isNotEmpty) {
+      attendances = freshAttendances;
+    } else if (cubit.cachedAttendances.isNotEmpty) {
+      attendances = cubit.cachedAttendances;
+    } else if (cubit.state is AttendanceLoaded) {
+      attendances = (cubit.state as AttendanceLoaded).attendances;
+    } else {
+      attendances = widget.allRecords;
+    }
 
     _students = ClassStudentItem.fromRealData(
       students: matchingStudents,
-      attendances: widget.allRecords,
+      attendances: attendances,
       info: _currentClass,
     );
+
+    // Hitung ulang KPI riil agar banner atas langsung tersinkron seketika
+    int hadir = 0, sakit = 0, izin = 0, alpa = 0;
+    for (final s in _students) {
+      switch (s.status.toUpperCase()) {
+        case 'HADIR':
+        case 'DISPENSASI':
+          hadir++;
+          break;
+        case 'SAKIT':
+          sakit++;
+          break;
+        case 'IZIN':
+          izin++;
+          break;
+        case 'ALPA':
+          alpa++;
+          break;
+      }
+    }
+
+    _currentClass = _currentClass.copyWith(
+      hadirCount: hadir,
+      sakitCount: sakit,
+      izinCount: izin,
+      alpaCount: alpa,
+      totalStudents: _students.length,
+      progressText: 'Progress: ${_students.length} / ${_students.length} Siswa',
+    );
+
     final teacherName = widget.profile.user.fullName.isNotEmpty
         ? widget.profile.user.fullName
         : 'Dani Hermawan, S.Kom';
@@ -239,9 +295,9 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.pop(ctx);
-                    showModalBottomSheet(
+                    await showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.white,
@@ -254,6 +310,11 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                         initialStudentNis: student.effectiveNis,
                       ),
                     );
+                    if (mounted) {
+                      setState(() {
+                        _loadDataForCurrentClass();
+                      });
+                    }
                   },
                 ),
               ),
@@ -398,173 +459,206 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
         ? widget.profile.user.fullName
         : 'Dani Hermawan, S.Kom';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // surface
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F172A)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Manajemen Kelas',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        actions: [
-          // Class Switcher Pill
-          Center(
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                ClassSwitcherSheet.show(
-                  context,
-                  allClasses: widget.allClasses,
-                  selectedClass: _currentClass,
-                  onSelectClass: _switchClass,
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.only(right: 6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _currentClass.className,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF004AC6),
-                      ),
-                    ),
-                    const SizedBox(width: 3),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 16,
-                      color: Color(0xFF004AC6),
-                    ),
-                  ],
-                ),
+    return BlocConsumer<AttendanceCubit, AttendanceState>(
+      listener: (context, state) {
+        if (state is AttendanceLoaded) {
+          setState(() {
+            _loadDataForCurrentClass(freshAttendances: state.attendances);
+          });
+        } else if (state is AttendanceActionSuccess) {
+          setState(() {
+            _loadDataForCurrentClass();
+          });
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC), // surface
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            scrolledUnderElevation: 0.5,
+            centerTitle: false,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: Color(0xFF0F172A),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              'Manajemen Kelas',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF0F172A),
               ),
             ),
-          ),
-          IconButton(
-            tooltip: 'Filter Rombel',
-            icon: const Icon(Icons.tune_rounded, color: Color(0xFF64748B)),
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              ClassSwitcherSheet.show(
-                context,
-                allClasses: widget.allClasses,
-                selectedClass: _currentClass,
-                onSelectClass: _switchClass,
-              );
-            },
-          ),
-          const SizedBox(width: 4),
-        ],
-      ),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-              child: ClassManagementHeroCard(
-                classInfo: _currentClass,
-                homeroomTeacher: teacherName,
-              ),
-            ),
-          ),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _PinnedTabBarDelegate(
-              height: 52,
-              child: Container(
-                color: const Color(0xFFF8FAFC),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                child: ClassManagementTabBar(
-                  selectedIndex: _activeTabIndex,
-                  onTabChanged: (index) {
-                    setState(() => _activeTabIndex = index);
-                    _pageController.animateToPage(
-                      index,
-                      duration: const Duration(milliseconds: 260),
-                      curve: Curves.easeInOutCubic,
+            actions: [
+              // Class Switcher Pill
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    ClassSwitcherSheet.show(
+                      context,
+                      allClasses: widget.allClasses,
+                      selectedClass: _currentClass,
+                      onSelectClass: _switchClass,
                     );
                   },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _currentClass.className,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF004AC6),
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 16,
+                          color: Color(0xFF004AC6),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
-        body: PageView(
-          controller: _pageController,
-          onPageChanged: (index) {
-            HapticFeedback.selectionClick();
-            setState(() => _activeTabIndex = index);
-          },
-          children: [
-            SingleChildScrollView(
-              primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-              child: ClassStudentTabView(
-                students: _students,
-                onStudentTap: _showStudentDetail,
-                onChatTap: _handleChatStudent,
-                onCallTap: _handleCallStudent,
-              ),
-            ),
-            SingleChildScrollView(
-              primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-              child: ClassOfficersTabView(
-                officers: _officers,
-                onContactTap: (ClassOfficerItem officer) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Menghubungi ${officer.role} (${officer.name})...',
-                        style: GoogleFonts.plusJakartaSans(fontSize: 12),
-                      ),
-                      backgroundColor: const Color(0xFF004AC6),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+              IconButton(
+                tooltip: 'Filter Rombel',
+                icon: const Icon(Icons.tune_rounded, color: Color(0xFF64748B)),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  ClassSwitcherSheet.show(
+                    context,
+                    allClasses: widget.allClasses,
+                    selectedClass: _currentClass,
+                    onSelectClass: _switchClass,
                   );
                 },
               ),
+              const SizedBox(width: 4),
+            ],
+          ),
+          body: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                  child: ClassManagementHeroCard(
+                    classInfo: _currentClass,
+                    homeroomTeacher: teacherName,
+                  ),
+                ),
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _PinnedTabBarDelegate(
+                  height: 52,
+                  child: Container(
+                    color: const Color(0xFFF8FAFC),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: ClassManagementTabBar(
+                      selectedIndex: _activeTabIndex,
+                      onTabChanged: (index) {
+                        setState(() => _activeTabIndex = index);
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeInOutCubic,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+            body: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                HapticFeedback.selectionClick();
+                setState(() => _activeTabIndex = index);
+              },
+              children: [
+                RefreshIndicator(
+                  color: const Color(0xFF007D55),
+                  onRefresh: () async {
+                    await context.read<AttendanceCubit>().loadAttendances(
+                      isStaff: true,
+                      forceRefreshMeta: true,
+                    );
+                    if (mounted) {
+                      setState(() {
+                        _loadDataForCurrentClass();
+                      });
+                    }
+                  },
+                  child: SingleChildScrollView(
+                    primary: false,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                    child: ClassStudentTabView(
+                      students: _students,
+                      onStudentTap: _showStudentDetail,
+                      onChatTap: _handleChatStudent,
+                      onCallTap: _handleCallStudent,
+                    ),
+                  ),
+                ),
+                SingleChildScrollView(
+                  primary: false,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                  child: ClassOfficersTabView(
+                    officers: _officers,
+                    onContactTap: (ClassOfficerItem officer) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Menghubungi ${officer.role} (${officer.name})...',
+                            style: GoogleFonts.plusJakartaSans(fontSize: 12),
+                          ),
+                          backgroundColor: const Color(0xFF004AC6),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SingleChildScrollView(
+                  primary: false,
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 80),
+                  child: ClassScheduleTabView(),
+                ),
+                SingleChildScrollView(
+                  primary: false,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                  child: ClassNotesTabView(notes: _notes),
+                ),
+              ],
             ),
-            const SingleChildScrollView(
-              primary: false,
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 80),
-              child: ClassScheduleTabView(),
-            ),
-            SingleChildScrollView(
-              primary: false,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
-              child: ClassNotesTabView(notes: _notes),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: _buildContextualFab(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          ),
+          floatingActionButton: _buildContextualFab(),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        );
+      },
     );
   }
 
@@ -584,10 +678,22 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
             context,
             classInfo: _currentClass,
             students: _students,
-            onSaved: () {
-              setState(() {
-                _loadDataForCurrentClass();
-              });
+            onSaved: () async {
+              // 1. Segarkan tampilan seketika (0 ms)
+              if (mounted) {
+                setState(() {
+                  _loadDataForCurrentClass();
+                });
+              }
+              // 2. Sinkronkan dengan data server di latar belakang
+              await context.read<AttendanceCubit>().loadAttendances(
+                isStaff: true,
+              );
+              if (mounted) {
+                setState(() {
+                  _loadDataForCurrentClass();
+                });
+              }
             },
           );
         };

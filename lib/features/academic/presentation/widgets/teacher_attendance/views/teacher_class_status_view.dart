@@ -77,7 +77,10 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
 
   @override
   Widget build(BuildContext context) {
-    final classList = ClassAttendanceInfo.generateDefaultList(widget.profile);
+    final classList = ClassAttendanceInfo.generateDefaultList(
+      widget.profile,
+      allRecords: widget.allRecords,
+    );
     final lockedCount = classList.where((c) => c.statusKey == 'locked').length;
     final pendingCount = classList.where((c) => c.statusKey != 'locked').length;
     final totalCount = classList.length;
@@ -269,9 +272,9 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
                   child: TeacherClassCard(
                     classInfo: item,
                     schoolColor: widget.schoolColor,
-                    onTap: () {
+                    onTap: () async {
                       HapticFeedback.selectionClick();
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => ClassManagementScreen(
@@ -283,6 +286,7 @@ class _TeacherClassStatusViewState extends State<TeacherClassStatusView> {
                           ),
                         ),
                       );
+                      widget.onRefresh();
                     },
                     onAction: () {
                       HapticFeedback.selectionClick();

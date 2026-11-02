@@ -11,11 +11,13 @@ class AttendanceCubit extends Cubit<AttendanceState> {
 
   List<ClassroomModel> _cachedClassrooms = [];
   List<StudentModel> _cachedStudents = [];
+  List<AttendanceModel> _cachedAttendances = [];
 
   AttendanceCubit(this._repository) : super(AttendanceInitial());
 
   List<ClassroomModel> get cachedClassrooms => _cachedClassrooms;
   List<StudentModel> get cachedStudents => _cachedStudents;
+  List<AttendanceModel> get cachedAttendances => _cachedAttendances;
 
   Future<void> loadAttendances({
     String? classroomId,
@@ -86,6 +88,7 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         _cachedStudents = results[nextIdx++] as List<StudentModel>;
       }
 
+      _cachedAttendances = attendances;
       emit(
         AttendanceLoaded(
           attendances: attendances,
@@ -112,6 +115,20 @@ class AttendanceCubit extends Cubit<AttendanceState> {
         status: status,
         notes: notes,
       );
+      // Pembaruan instan (0 ms) di state lokal
+      _cachedAttendances = [
+        att,
+        ..._cachedAttendances.where(
+          (a) => !(a.studentNis == att.studentNis && a.date == att.date),
+        ),
+      ];
+      emit(
+        AttendanceLoaded(
+          attendances: _cachedAttendances,
+          classrooms: _cachedClassrooms,
+          students: _cachedStudents,
+        ),
+      );
       emit(
         AttendanceActionSuccess(
           'Presensi ${att.studentName} (${att.statusDisplay}) berhasil dicatat!',
@@ -128,9 +145,30 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     String? classroomId,
   }) async {
     try {
-      await _repository.recordBatchAttendance(records: records);
+      final results = await _repository.recordBatchAttendance(records: records);
+      // Pembaruan instan (0 ms) di state lokal
+      if (results.isNotEmpty) {
+        _cachedAttendances = [
+          ...results,
+          ..._cachedAttendances.where(
+            (a) => !results.any(
+              (r) => r.studentNis == a.studentNis && r.date == a.date,
+            ),
+          ),
+        ];
+        emit(
+          AttendanceLoaded(
+            attendances: _cachedAttendances,
+            classrooms: _cachedClassrooms,
+            students: _cachedStudents,
+            selectedClassroomId: classroomId,
+          ),
+        );
+      }
       emit(
-        AttendanceActionSuccess('Presensi rombel berhasil dicatat ( siswa)!'),
+        AttendanceActionSuccess(
+          'Presensi rombel berhasil dicatat (${records.length} siswa)!',
+        ),
       );
       await loadAttendances(
         classroomId: classroomId,
