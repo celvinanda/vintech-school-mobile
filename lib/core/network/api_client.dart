@@ -36,9 +36,10 @@ class ApiClient {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
-          // Inject Active School Code
+          // Inject Active School Code (exclude auth/login to prevent stale school code from previous session)
+          final isLoginEndpoint = options.path.contains('/auth/login');
           final schoolCode = _storage.getSchoolCode();
-          if (schoolCode != null && schoolCode.isNotEmpty) {
+          if (!isLoginEndpoint && schoolCode != null && schoolCode.isNotEmpty) {
             options.headers['X-School-Code'] = schoolCode;
           }
 
