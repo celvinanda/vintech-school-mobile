@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -133,18 +134,20 @@ class _ServerSettingsSheetState extends State<ServerSettingsSheet> {
                   label: const Text('Server Resmi (Cloud)'),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _serverController.text = 'http://10.0.2.2:8001';
-                    });
-                  },
-                  child: const Text('Lokal AVD'),
+              if (kDebugMode) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _serverController.text = 'http://10.0.2.2:8001';
+                      });
+                    },
+                    child: const Text('Lokal AVD'),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 18),
