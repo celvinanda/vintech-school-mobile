@@ -161,9 +161,15 @@ void main() {
       'nis': '20261001',
       'homeroom_teacher': 'Drs. Bambang Sutrisno',
       'homeroom_teacher_phone': '08123456789',
+      'homeroom_teacher_nip': '197804122005011002',
+      'homeroom_teacher_specialization': 'Matematika Lanjut',
+      'homeroom_teacher_email': 'bambang@vintech.cloud',
     });
     expect(user.homeroomTeacher, 'Drs. Bambang Sutrisno');
     expect(user.homeroomTeacherPhone, '08123456789');
+    expect(user.homeroomTeacherNip, '197804122005011002');
+    expect(user.homeroomTeacherSpecialization, 'Matematika Lanjut');
+    expect(user.homeroomTeacherEmail, 'bambang@vintech.cloud');
 
     final activeSchool = ActiveSchoolModel.fromJson({
       'id': 'sch-1',
@@ -177,9 +183,15 @@ void main() {
       'nis': '20261001',
       'homeroom_teacher': 'Drs. Bambang Sutrisno',
       'homeroom_teacher_phone': '08123456789',
+      'homeroom_teacher_nip': '197804122005011002',
+      'homeroom_teacher_specialization': 'Matematika Lanjut',
+      'homeroom_teacher_email': 'bambang@vintech.cloud',
     });
     expect(activeSchool.homeroomTeacher, 'Drs. Bambang Sutrisno');
     expect(activeSchool.homeroomTeacherPhone, '08123456789');
+    expect(activeSchool.homeroomTeacherNip, '197804122005011002');
+    expect(activeSchool.homeroomTeacherSpecialization, 'Matematika Lanjut');
+    expect(activeSchool.homeroomTeacherEmail, 'bambang@vintech.cloud');
   });
 
   test('SchoolLookupModel serialization smoke test', () {

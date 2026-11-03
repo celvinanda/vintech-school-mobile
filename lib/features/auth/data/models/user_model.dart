@@ -16,6 +16,9 @@ class UserModel {
   final String nisn;
   final String homeroomTeacher;
   final String homeroomTeacherPhone;
+  final String homeroomTeacherNip;
+  final String homeroomTeacherSpecialization;
+  final String homeroomTeacherEmail;
 
   UserModel({
     required this.id,
@@ -33,6 +36,9 @@ class UserModel {
     this.nisn = '',
     this.homeroomTeacher = '',
     this.homeroomTeacherPhone = '',
+    this.homeroomTeacherNip = '',
+    this.homeroomTeacherSpecialization = '',
+    this.homeroomTeacherEmail = '',
   });
 
   /// Mengambil NIS atau NIP murni dari format username multi-tenant
@@ -83,6 +89,9 @@ class UserModel {
     String? nisn,
     String? homeroomTeacher,
     String? homeroomTeacherPhone,
+    String? homeroomTeacherNip,
+    String? homeroomTeacherSpecialization,
+    String? homeroomTeacherEmail,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -100,6 +109,10 @@ class UserModel {
       nisn: nisn ?? this.nisn,
       homeroomTeacher: homeroomTeacher ?? this.homeroomTeacher,
       homeroomTeacherPhone: homeroomTeacherPhone ?? this.homeroomTeacherPhone,
+      homeroomTeacherNip: homeroomTeacherNip ?? this.homeroomTeacherNip,
+      homeroomTeacherSpecialization:
+          homeroomTeacherSpecialization ?? this.homeroomTeacherSpecialization,
+      homeroomTeacherEmail: homeroomTeacherEmail ?? this.homeroomTeacherEmail,
     );
   }
 
@@ -121,6 +134,10 @@ class UserModel {
       nisn: json['nisn'] as String? ?? '',
       homeroomTeacher: json['homeroom_teacher'] as String? ?? '',
       homeroomTeacherPhone: json['homeroom_teacher_phone'] as String? ?? '',
+      homeroomTeacherNip: json['homeroom_teacher_nip'] as String? ?? '',
+      homeroomTeacherSpecialization:
+          json['homeroom_teacher_specialization'] as String? ?? '',
+      homeroomTeacherEmail: json['homeroom_teacher_email'] as String? ?? '',
     );
   }
 
@@ -140,6 +157,9 @@ class UserModel {
     'nisn': nisn,
     'homeroom_teacher': homeroomTeacher,
     'homeroom_teacher_phone': homeroomTeacherPhone,
+    'homeroom_teacher_nip': homeroomTeacherNip,
+    'homeroom_teacher_specialization': homeroomTeacherSpecialization,
+    'homeroom_teacher_email': homeroomTeacherEmail,
   };
 }
 
@@ -161,6 +181,9 @@ class ActiveSchoolModel {
   final String? nisn;
   final String? homeroomTeacher;
   final String? homeroomTeacherPhone;
+  final String? homeroomTeacherNip;
+  final String? homeroomTeacherSpecialization;
+  final String? homeroomTeacherEmail;
 
   ActiveSchoolModel({
     required this.id,
@@ -180,6 +203,9 @@ class ActiveSchoolModel {
     this.nisn,
     this.homeroomTeacher,
     this.homeroomTeacherPhone,
+    this.homeroomTeacherNip,
+    this.homeroomTeacherSpecialization,
+    this.homeroomTeacherEmail,
   });
 
   bool get isStudent => role == 'STUDENT';
@@ -243,6 +269,10 @@ class ActiveSchoolModel {
       nisn: json['nisn'] as String?,
       homeroomTeacher: json['homeroom_teacher'] as String?,
       homeroomTeacherPhone: json['homeroom_teacher_phone'] as String?,
+      homeroomTeacherNip: json['homeroom_teacher_nip'] as String?,
+      homeroomTeacherSpecialization:
+          json['homeroom_teacher_specialization'] as String?,
+      homeroomTeacherEmail: json['homeroom_teacher_email'] as String?,
     );
   }
 
@@ -265,6 +295,11 @@ class ActiveSchoolModel {
     if (homeroomTeacher != null) 'homeroom_teacher': homeroomTeacher,
     if (homeroomTeacherPhone != null)
       'homeroom_teacher_phone': homeroomTeacherPhone,
+    if (homeroomTeacherNip != null) 'homeroom_teacher_nip': homeroomTeacherNip,
+    if (homeroomTeacherSpecialization != null)
+      'homeroom_teacher_specialization': homeroomTeacherSpecialization,
+    if (homeroomTeacherEmail != null)
+      'homeroom_teacher_email': homeroomTeacherEmail,
   };
 }
 

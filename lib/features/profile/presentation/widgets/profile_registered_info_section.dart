@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../academic/data/models/student_model.dart';
+import '../teacher_profile_screen.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../parent_edit_profile_screen.dart';
 
@@ -71,6 +72,76 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
       return profile.user.homeroomTeacherPhone.trim();
     }
     return homeroomTeacherPhone.trim();
+  }
+
+  String get _effectiveHomeroomNip {
+    if (student?.homeroomTeacherNip != null &&
+        student!.homeroomTeacherNip!.trim().isNotEmpty) {
+      return student!.homeroomTeacherNip!.trim();
+    }
+    if (profile.activeSchool?.homeroomTeacherNip != null &&
+        profile.activeSchool!.homeroomTeacherNip!.trim().isNotEmpty) {
+      return profile.activeSchool!.homeroomTeacherNip!.trim();
+    }
+    if (profile.user.homeroomTeacherNip.trim().isNotEmpty) {
+      return profile.user.homeroomTeacherNip.trim();
+    }
+    return '';
+  }
+
+  String get _effectiveHomeroomSpecialization {
+    if (student?.homeroomTeacherSpecialization != null &&
+        student!.homeroomTeacherSpecialization!.trim().isNotEmpty) {
+      return student!.homeroomTeacherSpecialization!.trim();
+    }
+    if (profile.activeSchool?.homeroomTeacherSpecialization != null &&
+        profile.activeSchool!.homeroomTeacherSpecialization!.trim().isNotEmpty) {
+      return profile.activeSchool!.homeroomTeacherSpecialization!.trim();
+    }
+    if (profile.user.homeroomTeacherSpecialization.trim().isNotEmpty) {
+      return profile.user.homeroomTeacherSpecialization.trim();
+    }
+    return '';
+  }
+
+  String get _effectiveHomeroomEmail {
+    if (student?.homeroomTeacherEmail != null &&
+        student!.homeroomTeacherEmail!.trim().isNotEmpty) {
+      return student!.homeroomTeacherEmail!.trim();
+    }
+    if (profile.activeSchool?.homeroomTeacherEmail != null &&
+        profile.activeSchool!.homeroomTeacherEmail!.trim().isNotEmpty) {
+      return profile.activeSchool!.homeroomTeacherEmail!.trim();
+    }
+    if (profile.user.homeroomTeacherEmail.trim().isNotEmpty) {
+      return profile.user.homeroomTeacherEmail.trim();
+    }
+    return '';
+  }
+
+  void _openHomeroomProfile(BuildContext context) {
+    HapticFeedback.lightImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherProfileScreen(
+          teacherName: _isStaffOrTeacher
+              ? _effectivePrincipalName
+              : _effectiveHomeroomName,
+          roleTitle: _isStaffOrTeacher
+              ? 'Kepala Sekolah / Pimpinan'
+              : 'Wali Kelas $_classroomName',
+          classroomName: _classroomName,
+          phone: _effectiveHomeroomPhone,
+          nip: _effectiveHomeroomNip,
+          specialization: _effectiveHomeroomSpecialization,
+          email: _effectiveHomeroomEmail,
+          profile: profile,
+          student: student,
+          isPrincipal: _isStaffOrTeacher,
+        ),
+      ),
+    );
   }
 
   String get _effectivePrincipalName {
@@ -254,97 +325,115 @@ class ProfileRegisteredInfoSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Wali Kelas Cardlet
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openHomeroomProfile(context),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 19,
-                        backgroundColor: const Color(0xFFDBEAFE),
-                        child: Text(
-                          _isStaffOrTeacher
-                              ? _principalInitials
-                              : _homeroomInitials,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF004AC6),
-                          ),
-                        ),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 19,
+                            backgroundColor: const Color(0xFFDBEAFE),
+                            child: Text(
                               _isStaffOrTeacher
-                                  ? 'Kepala Sekolah / Pimpinan'
-                                  : (_isParent
-                                        ? 'Wali Kelas Anak'
-                                        : 'Wali Kelas ($_classroomName)'),
+                                  ? _principalInitials
+                                  : _homeroomInitials,
                               style: GoogleFonts.plusJakartaSans(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF64748B),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF004AC6),
                               ),
                             ),
-                            const SizedBox(height: 1),
-                            Text(
-                              _isStaffOrTeacher
-                                  ? _effectivePrincipalName
-                                  : _effectiveHomeroomName,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      InkWell(
-                        onTap: () => _launchWa(context),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
                           ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFECFDF5),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFA7F3D0)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.chat_rounded,
-                                size: 13,
-                                color: Color(0xFF007D55),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _isStaffOrTeacher ? 'Chat WA Dinas' : 'Chat WA',
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF007D55),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      _isStaffOrTeacher
+                                          ? 'Kepala Sekolah / Pimpinan'
+                                          : (_isParent
+                                                ? 'Wali Kelas Anak'
+                                                : 'Wali Kelas ($_classroomName)'),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF64748B),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 10,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 1),
+                                Text(
+                                  _isStaffOrTeacher
+                                      ? _effectivePrincipalName
+                                      : _effectiveHomeroomName,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF0F172A),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          InkWell(
+                            onTap: () => _launchWa(context),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFDF5),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFA7F3D0)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.chat_rounded,
+                                    size: 13,
+                                    color: Color(0xFF007D55),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _isStaffOrTeacher ? 'Chat WA Dinas' : 'Chat WA',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF007D55),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 if (!_isParent && !_isStaffOrTeacher) ...[

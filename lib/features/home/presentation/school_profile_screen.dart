@@ -8,6 +8,7 @@ import '../../auth/data/models/user_model.dart';
 import '../data/models/school_dashboard_model.dart';
 import '../logic/home_cubit.dart';
 import '../logic/home_state.dart';
+import '../../profile/presentation/teacher_profile_screen.dart';
 
 /// Halaman Profil Sekolah Resmi Vintech School
 /// Direproduksi 1:1 dari Google Stitch ("Profil Sekolah - Vintech School")
@@ -1070,6 +1071,9 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
         'cert': 'NIP: ${t.nip.isNotEmpty ? t.nip : "-"} • S1/S2 DAPODIK',
         'avatarColor': color,
         'avatarBg': bg,
+        'nip': t.nip,
+        'phone': t.phone,
+        'email': t.email,
       };
     }).toList();
 
@@ -1261,15 +1265,37 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
   }
 
   Widget _buildTeacherCard(Map<String, dynamic> teacher) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeacherProfileScreen(
+                teacherName: teacher['name'] as String? ?? 'Pendidik',
+                roleTitle: teacher['roleBadge'] as String? ?? 'Tenaga Pendidik',
+                classroomName: '-',
+                phone: teacher['phone'] as String? ?? '',
+                nip: teacher['nip'] as String? ?? '',
+                specialization: teacher['subject'] as String? ?? '',
+                email: teacher['email'] as String? ?? '',
+                profile: widget.profile,
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFECEEF0)),
-      ),
-      child: Row(
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFECEEF0)),
+          ),
+          child: Row(
         children: [
           Container(
             width: 44,
@@ -1367,6 +1393,8 @@ class _SchoolProfileScreenState extends State<SchoolProfileScreen> {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

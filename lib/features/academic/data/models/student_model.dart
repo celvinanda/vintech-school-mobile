@@ -9,6 +9,9 @@ class StudentModel {
   final String? parentPhone;
   final String? homeroomTeacherName;
   final String? homeroomTeacherPhone;
+  final String? homeroomTeacherNip;
+  final String? homeroomTeacherSpecialization;
+  final String? homeroomTeacherEmail;
 
   StudentModel({
     required this.id,
@@ -21,6 +24,9 @@ class StudentModel {
     this.parentPhone,
     this.homeroomTeacherName,
     this.homeroomTeacherPhone,
+    this.homeroomTeacherNip,
+    this.homeroomTeacherSpecialization,
+    this.homeroomTeacherEmail,
   });
 
   StudentModel copyWith({
@@ -34,6 +40,9 @@ class StudentModel {
     String? parentPhone,
     String? homeroomTeacherName,
     String? homeroomTeacherPhone,
+    String? homeroomTeacherNip,
+    String? homeroomTeacherSpecialization,
+    String? homeroomTeacherEmail,
   }) {
     return StudentModel(
       id: id ?? this.id,
@@ -46,6 +55,10 @@ class StudentModel {
       parentPhone: parentPhone ?? this.parentPhone,
       homeroomTeacherName: homeroomTeacherName ?? this.homeroomTeacherName,
       homeroomTeacherPhone: homeroomTeacherPhone ?? this.homeroomTeacherPhone,
+      homeroomTeacherNip: homeroomTeacherNip ?? this.homeroomTeacherNip,
+      homeroomTeacherSpecialization:
+          homeroomTeacherSpecialization ?? this.homeroomTeacherSpecialization,
+      homeroomTeacherEmail: homeroomTeacherEmail ?? this.homeroomTeacherEmail,
     );
   }
 
@@ -53,17 +66,34 @@ class StudentModel {
     String? classroomName;
     String? homeroomTeacherName = (json['homeroom_teacher'] as String?)?.trim();
     String? homeroomTeacherPhone = (json['homeroom_teacher_phone'] as String?)?.trim();
+    String? homeroomTeacherNip = (json['homeroom_teacher_nip'] as String?)?.trim();
+    String? homeroomTeacherSpecialization =
+        (json['homeroom_teacher_specialization'] as String?)?.trim();
+    String? homeroomTeacherEmail = (json['homeroom_teacher_email'] as String?)?.trim();
 
     final rawClassroom = json['classroom'];
     if (rawClassroom is Map) {
       classroomName = (rawClassroom['name'] as String?)?.trim();
       final crTeacher = (rawClassroom['homeroom_teacher'] as String?)?.trim();
       final crPhone = (rawClassroom['homeroom_teacher_phone'] as String?)?.trim();
+      final crNip = (rawClassroom['homeroom_teacher_nip'] as String?)?.trim();
+      final crSpec = (rawClassroom['homeroom_teacher_specialization'] as String?)?.trim();
+      final crEmail = (rawClassroom['homeroom_teacher_email'] as String?)?.trim();
       if (homeroomTeacherName == null || homeroomTeacherName.isEmpty) {
         homeroomTeacherName = crTeacher;
       }
       if (homeroomTeacherPhone == null || homeroomTeacherPhone.isEmpty) {
         homeroomTeacherPhone = crPhone;
+      }
+      if (homeroomTeacherNip == null || homeroomTeacherNip.isEmpty) {
+        homeroomTeacherNip = crNip;
+      }
+      if (homeroomTeacherSpecialization == null ||
+          homeroomTeacherSpecialization.isEmpty) {
+        homeroomTeacherSpecialization = crSpec;
+      }
+      if (homeroomTeacherEmail == null || homeroomTeacherEmail.isEmpty) {
+        homeroomTeacherEmail = crEmail;
       }
     } else if (rawClassroom is String) {
       classroomName = rawClassroom.trim();
@@ -80,6 +110,9 @@ class StudentModel {
       parentPhone: json['parent_phone'] as String?,
       homeroomTeacherName: homeroomTeacherName,
       homeroomTeacherPhone: homeroomTeacherPhone,
+      homeroomTeacherNip: homeroomTeacherNip,
+      homeroomTeacherSpecialization: homeroomTeacherSpecialization,
+      homeroomTeacherEmail: homeroomTeacherEmail,
     );
   }
 
@@ -94,5 +127,8 @@ class StudentModel {
     'parent_phone': parentPhone,
     'homeroom_teacher': homeroomTeacherName,
     'homeroom_teacher_phone': homeroomTeacherPhone,
+    'homeroom_teacher_nip': homeroomTeacherNip,
+    'homeroom_teacher_specialization': homeroomTeacherSpecialization,
+    'homeroom_teacher_email': homeroomTeacherEmail,
   };
 }
