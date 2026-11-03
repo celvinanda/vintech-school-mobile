@@ -73,8 +73,8 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                       : (gpa <= 0
                             ? '0'
                             : (gpa == gpa.roundToDouble()
-                                  ? '\${gpa.toInt()}'
-                                  : '\$gpa')),
+                                  ? '${gpa.toInt()}'
+                                  : '$gpa')),
                   subtitle: _isStaffOrTeacher
                       ? 'Beban KBM'
                       : (_isParent ? 'Rata Nilai Anak' : 'Rata-rata Nilai'),
@@ -94,7 +94,7 @@ class ProfileAcademicMetricsCapsules extends StatelessWidget {
                   badgeBg: attendanceRate <= 0
                       ? const Color(0xFFF1F5F9)
                       : const Color(0xFFA7F3D0),
-                  value: '\$attendanceRate%',
+                  value: '$attendanceRate%',
                   subtitle: _isStaffOrTeacher
                       ? 'Presensi Guru'
                       : (_isParent ? 'Presensi Anak' : 'Kehadiran'),
